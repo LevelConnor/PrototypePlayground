@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+._*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Node (for any Vite/React prototypes)
+node_modules/
+dist/
+*.log
