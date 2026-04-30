@@ -1,0 +1,813 @@
+<!-- ============================================================
+     TRUMP ACCOUNT CALCULATOR — Level All
+     Paste this entire block into a Webflow Embed element.
+     Self-contained: styles + markup + script (Chart.js via CDN).
+     ============================================================ -->
+<style>
+  .la-calc * { box-sizing: border-box; margin: 0; padding: 0; }
+  .la-calc {
+    --ink-900:#050B1E; --ink-800:#0A1330; --ink-700:#0F1A3E;
+    --ink-600:#172556; --ink-500:#1E2F6B; --ink-400:#2A3E85;
+    --brand-400:#6FA4FF; --brand-500:#3D7DFF; --brand-600:#1F63FF; --brand-700:#0F47D6;
+    --green:#34D39A; --amber:#FFC542; --softblue:#A9C2FF; --text:#EAF2FF;
+
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    color:var(--text);
+    background:#00173B;
+    padding:20px 16px 32px;
+    -webkit-font-smoothing:antialiased;
+    max-width:480px;
+    margin:0 auto;
+    border-radius:20px;
+  }
+  .la-calc h1 { font-size:23px; font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin-bottom:4px; }
+  .la-calc .sub { font-size:13px; color:var(--softblue); margin-bottom:20px; line-height:1.45; }
+  .la-calc .label {
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--softblue); margin-bottom:10px;
+  }
+
+  /* Field (slider or radio group) */
+  .la-calc .field {
+    padding:16px;
+    background:#172554;
+    border:1px solid #213168;
+    border-radius:14px;
+    margin-bottom:10px;
+  }
+  .la-calc .field:last-of-type { margin-bottom:0; }
+  .la-calc .field-head { display:flex; justify-content:space-between;
+    align-items:baseline; margin-bottom:14px; gap:12px; }
+  .la-calc h2.field-label,
+  .la-calc .field-label { font-size:20px; font-weight:700; letter-spacing:-0.01em;
+    color:var(--text); margin:0; line-height:1.2; }
+
+  /* External card headers (icon squircle + title + optional value) */
+  .la-calc .card-section { margin-top:16px; }
+  .la-calc .card-header {
+    display:flex !important;
+    align-items:flex-end !important;
+    justify-content:space-between !important;
+    gap:12px; margin-bottom:12px; padding:0 2px;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:80px !important;
+  }
+  .la-calc .card-header-left {
+    display:flex; flex-direction:column; align-items:flex-start; gap:16px;
+    min-width:0; flex:1;
+    height:auto !important;
+    min-height:0 !important;
+    align-self:flex-end !important;
+  }
+  .la-calc .card-val { align-self:flex-end !important; }
+  .la-calc .card-icon-wrap {
+    width:36px; height:36px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .la-calc .card-icon-wrap.soft { background:rgba(111,164,255,0.18); color:var(--brand-400); }
+  .la-calc .card-icon-wrap.sprout { background:rgba(104,244,184,0.18); color:#68F4B8; }
+  .la-calc .card-icon-wrap.coin { background:rgba(169,194,255,0.18); color:#A9C2FF; }
+  .la-calc .card-icon-wrap.bright { background:rgba(61,125,255,0.2); color:#3D7DFF; }
+  .la-calc .card-icon-wrap.trend { background:rgba(255,197,66,0.18); color:var(--amber); }
+  .la-calc .card-icon-wrap.shield { background:rgba(104,244,184,0.18); color:#68F4B8; }
+  .la-calc .card-icon { width:20px; height:20px; flex-shrink:0; }
+  .la-calc .card-title {
+    font-size:23px; font-weight:700; letter-spacing:-0.02em;
+    color:var(--text); margin:0; line-height:1.1;
+  }
+  .la-calc .card-val { font-size:22px; font-weight:400; color:#fff;
+    background:#3D7DFF; padding:6px 10px !important; border-radius:9px;
+    white-space:nowrap; flex-shrink:0; }
+  .la-calc .card-val.over { background:var(--amber); color:var(--ink-900); }
+  .la-calc .field-val { font-size:16px; font-weight:700; color:var(--text);
+    white-space:nowrap; }
+  .la-calc .field-range { display:flex; justify-content:space-between;
+    margin-top:8px; padding-top:6px; font-size:12px; color:var(--softblue); }
+  .la-calc .field-help { margin-top:12px; font-size:12px; color:var(--softblue);
+    line-height:1.5; }
+
+  /* Sliders */
+  .la-calc input[type=range] {
+    width:100%; height:6px; appearance:none; -webkit-appearance:none;
+    background:#2A3B78; border-radius:999px; outline:none; cursor:pointer;
+  }
+  .la-calc input[type=range]::-moz-range-progress {
+    background:#3D7DFF; height:6px; border-radius:999px;
+  }
+  .la-calc input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+    background:#fff; border:3px solid var(--brand-500); cursor:pointer;
+    box-shadow:0 2px 8px rgba(61,125,255,0.35);
+  }
+  .la-calc input[type=range]::-moz-range-thumb {
+    width:22px; height:22px; border-radius:50%;
+    background:#fff; border:3px solid var(--brand-500); cursor:pointer;
+    box-shadow:0 2px 8px rgba(61,125,255,0.35);
+  }
+
+  /* Sub-sections within a field card */
+  .la-calc .sub-section + .sub-section {
+    margin-top:14px; padding-top:14px; border-top:1px solid #213168;
+  }
+  .la-calc .sub-label {
+    display:block; font-size:16px; font-weight:700; letter-spacing:-0.005em;
+    color:var(--softblue);
+    margin-bottom:18px;
+  }
+  .la-calc .sub-help { margin-top:10px; font-size:11px; color:var(--softblue);
+    line-height:1.5; }
+  .la-calc .sub-help b { color:var(--text); font-weight:600; }
+  .la-calc .sub-help.warn { color:var(--amber); }
+
+  /* Checkbox */
+  .la-calc .check { display:flex; align-items:center; gap:10px; cursor:pointer;
+    font-size:16px; color:var(--text); font-weight:500;
+    -webkit-tap-highlight-color:transparent; user-select:none; }
+  .la-calc .check.disabled { opacity:0.4; cursor:not-allowed; }
+  .la-calc .check.disabled input { cursor:not-allowed; pointer-events:none; }
+  .la-calc .check input { appearance:none; width:20px; height:20px; border-radius:5px;
+    border:2px solid rgba(169,194,255,0.4); background:transparent; cursor:pointer;
+    flex-shrink:0; position:relative; transition:all .15s; margin:0; }
+  .la-calc .check input:checked { background:var(--brand-600); border-color:var(--brand-600); }
+  .la-calc .check input:checked::after {
+    content:''; position:absolute; inset:0;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><path d='m5 12 5 5L20 7'/></svg>") center/13px no-repeat;
+  }
+
+  /* Seed total + warning */
+  .la-calc .seed-total {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:14px; padding-top:14px; border-top:1px solid #213168;
+  }
+  .la-calc .seed-total-l { font-size:13px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.06em; color:var(--text); }
+  .la-calc .seed-total-v { font-size:13px; font-weight:600; color:#68F4B8; }
+  .la-calc .seed-total-v.over { color:var(--amber); }
+  .la-calc .seed-warn {
+    display:none; margin-top:10px;
+    background:rgba(255,197,66,0.08);
+    border:1px solid rgba(255,197,66,0.35);
+    border-radius:10px; padding:10px 12px;
+    font-size:12px; color:var(--text); line-height:1.45;
+    gap:8px; align-items:flex-start;
+  }
+  .la-calc .seed-warn.show { display:flex; }
+  .la-calc .seed-warn svg { flex-shrink:0; margin-top:1px; }
+  .la-calc .seed-warn b { color:var(--amber); font-weight:700; }
+
+  /* Radio group */
+  .la-calc .radio-group { display:flex; gap:20px; flex-wrap:wrap; }
+  .la-calc .radio { display:flex; align-items:center; gap:10px; cursor:pointer;
+    font-size:16px; color:var(--text); font-weight:500;
+    -webkit-tap-highlight-color:transparent; user-select:none; }
+  .la-calc .radio input { appearance:none; width:20px; height:20px; border-radius:50%;
+    border:2px solid rgba(169,194,255,0.4); background:transparent; cursor:pointer;
+    flex-shrink:0; position:relative; transition:all .15s; margin:0; }
+  .la-calc .radio input:checked { border-color:var(--brand-500); }
+  .la-calc .radio input:checked::after { content:''; position:absolute;
+    inset:3px; background:var(--brand-500); border-radius:50%; }
+
+  /* Legacy .sl for Roth tax slider */
+  .la-calc .sl { margin-bottom:14px; }
+  .la-calc .sl-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .la-calc .sl-name { font-size:16px; color:var(--softblue); }
+  .la-calc .sl-val { font-size:16px; font-weight:700; color:var(--text); }
+
+  /* Metrics */
+  .la-calc .metric-hero {
+    background:#68F4B8;
+    border:1px solid #68F4B8;
+    border-radius:16px; padding:18px 16px; margin-bottom:8px;
+    display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    align-items:center;
+    box-shadow:0 0 40px rgba(104,244,184,0.3), 0 0 80px rgba(104,244,184,0.12);
+  }
+  .la-calc .metric-hero .hero-cell { text-align:center; }
+  .la-calc .metric-hero .hero-cell + .hero-cell {
+    border-left:1px solid rgba(0,46,1,0.2);
+    padding-left:12px;
+  }
+  .la-calc .metric-hero .metric-l { font-size:12px; color:#002E01; margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:0.08em; font-weight:700; opacity:0.75; }
+  .la-calc .metric-hero .hero-main .metric-v,
+  .la-calc .metric-hero .hero-sec .metric-v { font-size:34px; font-weight:800;
+    letter-spacing:-0.025em; color:#002E01; line-height:1; }
+  .la-calc .metrics { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:20px; }
+  .la-calc .metric {
+    background:#172554;
+    border:1px solid #68F4B8;
+    border-radius:12px; padding:12px 14px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .la-calc .metric-l { font-size:12px; color:var(--softblue);
+    text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+  .la-calc .metric-v { font-size:15px; font-weight:700; letter-spacing:-0.01em; }
+
+  /* Divider */
+  .la-calc .div { border:none; border-top:1px solid #213168; margin:16px 0; }
+
+  /* Roth toggle */
+  .la-calc .roth-row { display:flex; align-items:center; gap:10px; cursor:pointer;
+    font-size:13px; color:var(--text); font-weight:500; margin-bottom:12px; user-select:none; }
+  .la-calc .roth-row input { appearance:none; width:40px; height:22px; border-radius:999px;
+    background:#2A3B78; position:relative; cursor:pointer; transition:background .2s;
+    flex-shrink:0; }
+  .la-calc .roth-row input::after {
+    content:''; position:absolute; top:2px; left:2px;
+    width:18px; height:18px; border-radius:50%; background:#EAF2FF;
+    transition:transform .2s;
+  }
+  .la-calc .roth-row input:checked { background:var(--brand-600); }
+  .la-calc .roth-row input:checked::after { transform:translateX(18px); }
+  .la-calc .roth-help { font-size:11px; color:var(--softblue); line-height:1.5;
+    margin:-6px 0 12px 50px; }
+  @media (max-width:360px) { .la-calc .roth-help { margin-left:0; } }
+  .la-calc .roth-opts { display:none; }
+  .la-calc .roth-opts.show { display:block; }
+  .la-calc .roth-tax {
+    background:rgba(255,197,66,0.08);
+    border:1px solid rgba(255,197,66,0.25);
+    border-radius:10px; padding:10px 12px; margin-top:8px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .la-calc .roth-tax-l { font-size:12px; color:var(--softblue); }
+  .la-calc .roth-tax-v { font-size:15px; font-weight:700; color:var(--amber); }
+  .la-calc .roth-tax.good {
+    background:rgba(104,244,184,0.08); border-color:rgba(104,244,184,0.3);
+  }
+  .la-calc .roth-tax.good .roth-tax-v { color:#68F4B8; }
+  .la-calc .tax-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .la-calc .roth-tax.col {
+    margin-top:0;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:6px;
+  }
+  .la-calc .roth-tax.col .roth-tax-l { font-size:12px; line-height:1.3; }
+  .la-calc .roth-tax.col .roth-tax-v { font-size:22px; }
+  .la-calc .tax-explainer { margin-top:12px; margin-bottom:4px;
+    font-size:12px; color:var(--softblue); line-height:1.5; }
+  .la-calc .tax-explainer b { color:var(--text); font-weight:600; }
+
+  /* Chart */
+  .la-calc .legend { display:flex; flex-wrap:wrap; gap:14px; font-size:11px;
+    color:var(--softblue); margin:16px 0 12px; }
+  .la-calc .legend span { display:flex; align-items:center; gap:6px; }
+  .la-calc .legend .dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .la-calc .chart-wrap { position:relative; width:100%; height:220px; margin-bottom:12px; }
+
+  .la-calc .note { font-size:11px; color:rgba(169,194,255,0.6); line-height:1.5;
+    border-top:1px solid #213168; padding-top:12px; margin-top:8px; }
+
+  /* FAQ */
+  .la-calc .faqs { margin:0 0 16px; padding-top:32px; }
+  .la-calc .faq-header { font-size:16px; font-weight:700; color:var(--text);
+    margin-bottom:12px; }
+  .la-calc .faq {
+    background:#172554; border:1px solid #213168; border-radius:12px;
+    margin-bottom:8px; overflow:hidden;
+  }
+  .la-calc .faq summary {
+    padding:14px 44px 14px 16px;
+    cursor:pointer; font-size:14px; font-weight:600;
+    color:var(--text); list-style:none; position:relative;
+    -webkit-tap-highlight-color:transparent; user-select:none;
+  }
+  .la-calc .faq summary::-webkit-details-marker { display:none; }
+  .la-calc .faq summary::after {
+    content:''; position:absolute; right:18px; top:50%;
+    width:9px; height:9px;
+    border-right:2px solid var(--softblue);
+    border-bottom:2px solid var(--softblue);
+    transform:translateY(-70%) rotate(45deg);
+    transition:transform .2s;
+  }
+  .la-calc .faq[open] summary::after {
+    transform:translateY(-30%) rotate(-135deg);
+  }
+  .la-calc .faq-body {
+    padding:0 16px 16px;
+    font-size:13px; line-height:1.6; color:var(--softblue);
+  }
+  .la-calc .faq-body p + p { margin-top:10px; }
+  .la-calc .faq-body ul { margin:8px 0 0 20px; padding:0; }
+  .la-calc .faq-body li { margin:4px 0; }
+  .la-calc .faq-body a { color:var(--brand-400); text-decoration:underline; }
+  .la-calc .faq-body b { color:var(--text); font-weight:600; }
+
+  .la-calc .fields { margin-bottom:20px; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div class="la-calc">
+  <h1>Estimate Your Trump Account Growth</h1>
+  <p class="sub">Projected value from birth to age 65 · Assumes 7% annual return by default</p>
+
+  <div class="fields">
+    <div class="card-section">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon-wrap bright">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <h2 class="card-title">Child's Current Age</h2>
+        </div>
+        <span class="card-val" id="la-v-age">Newborn</span>
+      </div>
+      <div class="field">
+        <input type="range" id="la-s-age" min="0" max="17" step="1" value="0">
+        <div class="field-range"><span>Newborn</span><span>Age 17</span></div>
+        <p class="field-help">Trump Accounts are available for U.S. citizen children under age 18. The account converts to a traditional IRA when the child turns 18.</p>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon-wrap sprout">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-8"/><path d="M12 14c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6Z"/><path d="M12 14c3.5 0 6-2.5 6-6-3.5 0-6 2.5-6 6Z"/></svg>
+          </div>
+          <h2 class="card-title">Seed Deposit (Year 1)</h2>
+        </div>
+        <span class="card-val" id="la-seed-total">$1,000</span>
+      </div>
+      <div class="field">
+      <div class="sub-section">
+        <span class="sub-label">Gov't $1,000 Seed Deposit</span>
+        <div class="radio-group">
+          <label class="radio">
+            <input type="radio" name="la-seed" id="la-seed-yes" checked>
+            <span>Yes &mdash; Born 2025–2028</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="la-seed" id="la-seed-no">
+            <span>No &mdash; Born before 2025</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="sub-section">
+        <span class="sub-label">Philanthropic Contribution</span>
+        <label class="check" id="la-phil-label">
+          <input type="checkbox" id="la-phil">
+          <span>Add $250 Dell philanthropic contribution</span>
+        </label>
+        <p class="sub-help" id="la-phil-help">Available to U.S. citizens born before 2025 in ZIP codes with median household income ≤ $150,000.</p>
+      </div>
+
+      <div class="sub-section">
+        <div class="field-head" style="margin-bottom:18px;">
+          <span class="sub-label" style="margin-bottom:0;">Corporate Seed Match</span>
+          <span class="field-val" id="la-v-corp-seed">$0</span>
+        </div>
+        <input type="range" id="la-s-corp-seed" min="0" max="2500" step="100" value="0">
+        <div class="field-range"><span>$0</span><span>$2,500</span></div>
+      </div>
+
+      <div class="seed-warn" id="la-seed-warn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <span>Year-1 total is capped at <b>$6,000</b> (the $5,000 contribution limit plus the $1,000 gov't seed). Any additional dialed-in amount won't appear in the graph.</span>
+      </div>
+
+      <p class="field-help">The gov't $1,000 and philanthropic $250 don't count against the $5,000 contribution cap. The corporate seed match <b style="color:var(--text)">does</b> count toward the cap. Max year-1 deposit = $6,000. Only U.S. citizens born Jan 1, 2025 – Dec 31, 2028 with a valid SSN qualify for the $1,000 government contribution.</p>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon-wrap bright">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 4 22 10 16 10"/><polyline points="2 20 2 14 8 14"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L22 10"/><path d="M2 14l3.65 4.36A9 9 0 0 0 20.5 15"/></svg>
+          </div>
+          <h2 class="card-title">Annual Contribution</h2>
+        </div>
+        <span class="card-val" id="la-annual-total">$0</span>
+      </div>
+      <div class="field">
+      <div class="sub-section">
+        <div class="field-head" style="margin-bottom:18px;">
+          <span class="sub-label" style="margin-bottom:0;">Your Contribution</span>
+          <span class="field-val" id="la-v-deposit">$0/yr</span>
+        </div>
+        <input type="range" id="la-s-deposit" min="0" max="5000" step="100" value="0">
+        <div class="field-range"><span>$0</span><span>$5,000</span></div>
+      </div>
+
+      <div class="sub-section">
+        <div class="field-head" style="margin-bottom:18px;">
+          <span class="sub-label" style="margin-bottom:0;">Annual Corporate Match</span>
+          <span class="field-val" id="la-v-corp-annual">$0</span>
+        </div>
+        <input type="range" id="la-s-corp-annual" min="0" max="2500" step="100" value="0">
+        <div class="field-range"><span>$0</span><span>$2,500</span></div>
+      </div>
+
+      <div class="seed-warn" id="la-annual-warn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC542" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <span>Annual contributions are capped at <b>$5,000</b>/yr total. Only the $5,000 max will be used in the calculation.</span>
+      </div>
+
+      <p class="field-help">Max $5,000/year (inflation-indexed after 2027). Employers may contribute up to $2,500 pre-tax via Section 125 cafeteria plan.</p>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon-wrap sprout">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+          </div>
+          <h2 class="card-title">Annual Return Rate</h2>
+        </div>
+        <span class="card-val" id="la-v-rate">7.0%</span>
+      </div>
+      <div class="field">
+        <input type="range" id="la-s-rate" min="3" max="12" step="0.5" value="7">
+        <div class="field-range"><span>3%</span><span>12%</span></div>
+        <p class="field-help">Historical S&amp;P 500 long-term average is ~7% after inflation. Actual returns will vary year to year.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="metric-hero">
+    <div class="hero-cell hero-sec">
+      <div class="metric-l">Value at 18</div>
+      <div class="metric-v" id="la-m-18">$186k</div>
+    </div>
+    <div class="hero-cell hero-main">
+      <div class="metric-l">Value at 65</div>
+      <div class="metric-v" id="la-m-65">$4.48M</div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><span class="metric-l">Total contributed</span><span class="metric-v" id="la-m-contrib">$91k</span></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#34D39A"></span><span id="la-leg-text">Trump account</span></span>
+  </div>
+
+  <div class="chart-wrap">
+    <canvas id="la-chart"></canvas>
+  </div>
+
+  <div class="card-section">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-icon-wrap shield">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v7c0 4.5 3.5 8 8 9 4.5-1 8-4.5 8-9V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h2 class="card-title">Roth IRA Conversion</h2>
+      </div>
+    </div>
+    <div class="field roth-card">
+    <label class="roth-row">
+      <input type="checkbox" id="la-roth">
+      <span>Convert to Roth IRA at age 24</span>
+    </label>
+    <p class="roth-help">Pay taxes now on a smaller balance, then every dollar of future growth is tax-free at retirement — often saving far more than the one-time conversion cost.</p>
+
+    <div class="roth-opts" id="la-roth-opts">
+    <div class="sl">
+      <div class="sl-head"><span class="sl-name">Tax Rate at Conversion</span><span class="sl-val" id="la-v-taxrate">22%</span></div>
+      <input type="range" id="la-s-taxrate" min="10" max="37" step="1" value="22">
+      <p class="sub-help">Your <b>marginal federal tax rate</b> at age 24. Conversion amounts count as ordinary income, so the rate depends on your total income that year — salary, side income, etc. By 24, most people have a job, so the conversion may push you into a higher bracket than the Trump Account funds alone would.</p>
+    </div>
+    <p class="tax-explainer">The <b>Value at 65</b> above is now <b>tax-free</b> — you already paid at 24. Without Roth, you'd see a higher number, but you'd owe taxes on every retirement withdrawal.</p>
+    <div class="tax-grid">
+      <div class="roth-tax col">
+        <span class="roth-tax-l">Tax paid at 24</span>
+        <span class="roth-tax-v" id="la-m-tax">$61k</span>
+      </div>
+      <div class="roth-tax good col">
+        <span class="roth-tax-l">Tax avoided at retirement</span>
+        <span class="roth-tax-v" id="la-m-tax-saved">$985k</span>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="faqs">
+    <h2 class="faq-header">Frequently asked questions</h2>
+
+    <details class="faq">
+      <summary>What are these accounts?</summary>
+      <div class="faq-body">
+        <p>They are long-term investment accounts the U.S. Treasury starts for every child at birth. Each account, known as a Trump Account, begins with a public contribution and can grow over time with added contributions from friends, family, employers, and charitable organizations, plus market growth. The money is managed for you and can't be taken out early, so it stays invested as the child grows up. By the time they turn 18, it gives young people a real financial head start as they make big life decisions.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Who is eligible?</summary>
+      <div class="faq-body">
+        <p>All U.S. children under age 18 with a valid Social Security Number are eligible to establish a Trump Account.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Who can contribute?</summary>
+      <div class="faq-body">
+        <p>Anyone can contribute to an account. Parents, family, and friends can add up to $5,000 per year to a child's account. Employers can contribute up to $2,500 per year, and that amount counts toward the $5,000 annual limit. Donors, as well as state and local governments, can also contribute to these accounts. Their contributions are meant to add extra support and don't count against the annual limit.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Who can open a Trump Account?</summary>
+      <div class="faq-body">
+        <p>Parents and guardians can elect to open Trump Accounts for their eligible children.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>When can the money be used?</summary>
+      <div class="faq-body">
+        <p>Funds in a Trump Account are locked until the child turns 18. This protects the savings and gives it time to grow.</p>
+        <p>Once the account holder becomes an adult, they can use the money without penalty for major life milestones, including:</p>
+        <ul>
+          <li><b>Education:</b> tuition, fees, and other costs for college or job training</li>
+          <li><b>Homeownership:</b> a down payment on a first home</li>
+          <li><b>Entrepreneurship:</b> seed money to start a business</li>
+        </ul>
+        <p>Any money not used stays in the account and continues to be invested and grow over time, providing both an early boost at age 18 and long-term financial security later in life.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Why does early investment matter so much?</summary>
+      <div class="faq-body">
+        <p>Early investment matters because money grows with time through compound growth. That means the money earned from investments starts earning money too, so the longer it stays invested, the more it grows. <a href="https://investamerica.org/research/" target="_blank" rel="noopener">Research</a> also shows that having assets early in life is linked to better education, stronger money habits, and better choices in adulthood.</p>
+      </div>
+    </details>
+  </div>
+
+  <p class="note">Hypothetical illustration only. Assumes contributions made throughout the year, reaching the annual cap at year-end (no in-year growth on that year's contributions). Returns not guaranteed. Taxes, fees, and inflation not reflected unless Roth conversion is toggled. The $5,000 annual limit applies across family/friends and employer contributions combined. Withdrawals before age 59½ may be subject to a 10% penalty.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  var fmt = function(n) {
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + Math.round(n / 1e3) + 'k';
+    return '$' + Math.round(n).toLocaleString();
+  };
+  var $ = function(id) { return document.getElementById(id); };
+
+  function getInputs() {
+    var gov = $('la-seed-yes').checked ? 1000 : 0;
+    var phil = $('la-phil').checked ? 250 : 0;
+    var corpSeed = +$('la-s-corp-seed').value;
+    var deposit = +$('la-s-deposit').value;
+    var corpAnnual = +$('la-s-corp-annual').value;
+    var annualRaw = deposit + corpAnnual;
+    var seedDisplay = gov + phil + corpSeed;
+    var year1Raw = gov + phil + corpSeed + deposit + corpAnnual;
+    var year1Deposit = Math.min(year1Raw, 6000);
+    return {
+      currentAge: +$('la-s-age').value,
+      seed: seedDisplay,
+      year1Raw: year1Raw,
+      year1Deposit: year1Deposit,
+      annualDepositRaw: annualRaw,
+      annualDeposit: Math.min(annualRaw, 5000),
+      rate: +$('la-s-rate').value / 100,
+      roth: $('la-roth').checked,
+      taxRate: +$('la-s-taxrate').value / 100,
+    };
+  }
+
+  function project(inp) {
+    var labels=[], vals=[], valsTrad=[];
+    var bal=0, balTrad=0, taxOwed=0;
+    for (var age=inp.currentAge; age<=65; age++) {
+      if (age === inp.currentAge) {
+        bal += inp.year1Deposit;
+        balTrad += inp.year1Deposit;
+      } else {
+        bal *= (1 + inp.rate);
+        balTrad *= (1 + inp.rate);
+        if (age <= 17) {
+          bal += inp.annualDeposit;
+          balTrad += inp.annualDeposit;
+        }
+      }
+      if (inp.roth && age === 24) {
+        taxOwed = Math.round(bal * inp.taxRate);
+        bal -= taxOwed;
+      }
+      labels.push(age);
+      vals.push(Math.round(bal));
+      valsTrad.push(Math.round(balTrad));
+    }
+    var idx18 = 18 - inp.currentAge;
+    var idx65 = 65 - inp.currentAge;
+    return { labels:labels, vals:vals, taxOwed:taxOwed,
+             bal18:vals[idx18], bal65:vals[idx65],
+             balTrad65:valsTrad[idx65] };
+  }
+
+  function totalContrib(inp) {
+    var years = Math.max(0, 18 - inp.currentAge);
+    return inp.seed + inp.annualDeposit * years;
+  }
+
+  var glowPlugin = {
+    id:'lineGlow',
+    beforeDatasetDraw:function(chart, args){
+      var ds = chart.data.datasets[args.index];
+      if (ds && ds._glow) {
+        chart.ctx.save();
+        chart.ctx.shadowColor = ds._glow.color;
+        chart.ctx.shadowBlur = ds._glow.blur;
+      }
+    },
+    afterDatasetDraw:function(chart, args){
+      var ds = chart.data.datasets[args.index];
+      if (ds && ds._glow) chart.ctx.restore();
+    }
+  };
+
+  var chart;
+  function buildChart(data, roth) {
+    var ctx = $('la-chart');
+    var datasets = [{
+      label:'Trump account',
+      data:data.vals,
+      borderColor: roth ? function(c){
+        var area = c.chart.chartArea;
+        if (!area) return '#34D39A';
+        var g = c.chart.ctx.createLinearGradient(area.left, 0, area.right, 0);
+        g.addColorStop(0, '#34D39A');
+        g.addColorStop(0.5, '#A7F3D0');
+        g.addColorStop(1, '#34D39A');
+        return g;
+      } : '#34D39A',
+      backgroundColor: function(c){
+        var area = c.chart.chartArea;
+        if (!area) return 'rgba(52,211,154,0.15)';
+        var g = c.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+        if (roth) {
+          g.addColorStop(0, 'rgba(167,243,208,0.55)');
+          g.addColorStop(0.35, 'rgba(110,231,183,0.3)');
+          g.addColorStop(1, 'rgba(52,211,154,0.02)');
+        } else {
+          g.addColorStop(0, 'rgba(52,211,154,0.22)');
+          g.addColorStop(1, 'rgba(52,211,154,0.02)');
+        }
+        return g;
+      },
+      borderWidth: roth ? 3 : 2,
+      pointRadius:0,
+      fill:true,
+      tension:0.35,
+      _glow: roth ? { color:'rgba(110,231,183,0.85)', blur:16 } : null
+    }];
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type:'line',
+      data:{ labels:data.labels, datasets:datasets },
+      plugins:[glowPlugin],
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            backgroundColor:'rgba(10,19,48,0.95)',
+            titleColor:'#EAF2FF', bodyColor:'#A9C2FF',
+            borderColor:'rgba(169,194,255,0.2)', borderWidth:1,
+            padding:10, cornerRadius:8,
+            callbacks:{
+              title:function(items){ return 'Age ' + items[0].label; },
+              label:function(item){
+                var age = +this.chart.data.labels[item.dataIndex];
+                var name;
+                if (roth && age >= 24) name = 'Roth IRA (tax-free)';
+                else if (age >= 18) name = 'Traditional IRA';
+                else name = 'Trump Account';
+                return name + ': ' + fmt(item.raw);
+              }
+            }
+          }
+        },
+        scales:{
+          x:{
+            ticks:{ color:'#A9C2FF', font:{size:11}, autoSkip:false,
+                    callback:function(v){
+                      var label = this.getLabelForValue(v);
+                      return label % 10 === 0 ? label : '';
+                    } },
+            grid:{
+              color:function(ctx){
+                var label = ctx.tick && ctx.tick.label;
+                return label ? 'rgba(169,194,255,0.18)' : 'transparent';
+              },
+              tickColor:'transparent'
+            },
+            title:{ display:true, text:'Age', color:'#A9C2FF', font:{size:11} }
+          },
+          y:{
+            ticks:{ color:'#A9C2FF', font:{size:11},
+                    callback:function(v){
+                      return v>=1e6 ? '$'+(v/1e6).toFixed(1)+'M' : '$'+(v/1e3).toFixed(0)+'k';
+                    } },
+            grid:{ color:'rgba(169,194,255,0.08)' }
+          }
+        }
+      }
+    });
+  }
+
+  function syncDellEligibility() {
+    var govYes = $('la-seed-yes').checked;
+    var currentAge = +$('la-s-age').value;
+    var phil = $('la-phil');
+    var label = $('la-phil-label');
+    var help = $('la-phil-help');
+    if (govYes) {
+      phil.checked = false;
+      phil.disabled = true;
+      label.classList.add('disabled');
+      help.classList.add('warn');
+      help.textContent = "Not eligible — children receiving the gov't $1,000 deposit don't qualify for the Dell contribution.";
+    } else {
+      phil.disabled = false;
+      label.classList.remove('disabled');
+      help.classList.remove('warn');
+      if (currentAge > 10) {
+        help.textContent = 'Children over age 10 may qualify if funds remain after initial sign-ups. Must live in a ZIP code with median household income ≤ $150,000.';
+      } else {
+        help.textContent = 'Available to children aged 10 and under, born before 2025, in ZIP codes with median household income ≤ $150,000.';
+      }
+    }
+  }
+
+  function update() {
+    syncDellEligibility();
+    var inp = getInputs();
+    var data = project(inp);
+    buildChart(data, inp.roth);
+    $('la-m-contrib').textContent = fmt(totalContrib(inp));
+    $('la-m-18').textContent = fmt(data.bal18 || 0);
+    $('la-m-65').textContent = fmt(data.bal65 || 0);
+    $('la-roth-opts').classList.toggle('show', inp.roth);
+    $('la-leg-text').textContent = inp.roth
+      ? 'Trump Account → Traditional IRA at 18 → Roth IRA at 24'
+      : 'Trump Account → Traditional IRA at 18';
+    if (inp.roth) {
+      $('la-m-tax').textContent = fmt(data.taxOwed);
+      var taxSaved = Math.round(data.balTrad65 * inp.taxRate);
+      $('la-m-tax-saved').textContent = fmt(taxSaved);
+    }
+
+    var seedTotalEl = $('la-seed-total');
+    var seedOver = inp.year1Raw > 6000;
+    seedTotalEl.textContent = '$' + inp.seed.toLocaleString();
+    seedTotalEl.classList.toggle('over', seedOver);
+    $('la-seed-warn').classList.toggle('show', seedOver);
+
+    var annualEl = $('la-annual-total');
+    annualEl.textContent = '$' + inp.annualDepositRaw.toLocaleString();
+    annualEl.classList.toggle('over', inp.annualDepositRaw > 5000);
+    $('la-annual-warn').classList.toggle('show', inp.annualDepositRaw > 5000);
+  }
+
+  function updateFill(s) {
+    var min = +s.min || 0;
+    var max = +s.max || 100;
+    var pct = ((+s.value - min) / (max - min)) * 100;
+    s.style.background = 'linear-gradient(to right, #3D7DFF 0%, #3D7DFF ' + pct +
+      '%, #2A3B78 ' + pct + '%, #2A3B78 100%)';
+  }
+
+  function wireSlider(sid, lid, fmtFn) {
+    var s = $(sid), l = $(lid);
+    s.addEventListener('input', function(){
+      l.textContent = fmtFn(+s.value);
+      updateFill(s);
+      update();
+    });
+    updateFill(s);
+  }
+  wireSlider('la-s-age','la-v-age', function(v){ return v===0 ? 'Newborn' : 'Age '+v; });
+  wireSlider('la-s-deposit','la-v-deposit', function(v){ return '$'+v.toLocaleString()+'/yr'; });
+  wireSlider('la-s-rate','la-v-rate', function(v){ return v.toFixed(1)+'%'; });
+  wireSlider('la-s-corp-seed','la-v-corp-seed', function(v){ return '$'+v.toLocaleString(); });
+  wireSlider('la-s-corp-annual','la-v-corp-annual', function(v){ return '$'+v.toLocaleString(); });
+  wireSlider('la-s-taxrate','la-v-taxrate', function(v){ return v+'%'; });
+
+  $('la-seed-yes').addEventListener('change', update);
+  $('la-seed-no').addEventListener('change', update);
+  $('la-phil').addEventListener('change', update);
+  $('la-roth').addEventListener('change', update);
+
+  function start(){ if (window.Chart) update(); else setTimeout(start, 50); }
+  start();
+})();
+</script>
