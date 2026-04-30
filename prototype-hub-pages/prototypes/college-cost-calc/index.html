@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>College Cost Calculator</title>
+<style>
+  :root {
+    --paper: #f7f3eb;
+    --paper-deep: #efe7d4;
+    --ink: #1a1813;
+    --ink-soft: #524d42;
+    --ink-mute: #8a8474;
+    --rule: #e8e0cf;
+    --accent: #5e4a2d;
+    --accent-soft: #e8d9b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+  .back {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--ink-mute);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 32px;
+  }
+  .back:hover { color: var(--accent); }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .sub {
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 0 0 40px;
+    font-size: 17px;
+  }
+  .field {
+    margin-bottom: 22px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  input[type="number"], input[type="range"] {
+    width: 100%;
+  }
+  input[type="number"] {
+    padding: 10px 14px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: #fffdf7;
+    color: var(--ink);
+    transition: border-color 0.15s ease;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .result {
+    margin-top: 40px;
+    padding: 28px 28px 24px;
+    background: var(--paper-deep);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+  .result__label {
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+  .total {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .breakdown {
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .breakdown__row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .breakdown__row span:last-child {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .footnote {
+    margin-top: 48px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-mute);
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a href="../../" class="back">← Prototype Hub</a>
+
+  <h1>College cost calculator</h1>
+  <p class="sub">A rough four-year estimate.</p>
+
+  <div class="field">
+    <label for="tuition">Annual tuition ($)</label>
+    <input type="number" id="tuition" value="25000" min="0" step="500">
+  </div>
+
+  <div class="field">
+    <label for="roomboard">Annual room &amp; board ($)</label>
+    <input type="number" id="roomboard" value="14000" min="0" step="500">
+  </div>
+
+  <div class="field">
+    <label for="inflation">Annual cost increase (%)</label>
+    <input type="number" id="inflation" value="4" min="0" step="0.5">
+  </div>
+
+  <div class="result">
+    <p class="result__label">Estimated four-year total</p>
+    <p class="total" id="total">$0</p>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <p class="footnote">
+    A simple compounding model. Doesn&rsquo;t account for grants, scholarships,
+    loans, or work-study. Useful for sticker-price ballparking only.
+  </p>
+</main>
+
+<script>
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function recalc() {
+  const t = +document.getElementById('tuition').value || 0;
+  const r = +document.getElementById('roomboard').value || 0;
+  const i = (+document.getElementById('inflation').value || 0) / 100;
+
+  const yearly = [];
+  let total = 0;
+  for (let yr = 0; yr < 4; yr++) {
+    const yearTotal = (t + r) * Math.pow(1 + i, yr);
+    yearly.push(yearTotal);
+    total += yearTotal;
+  }
+
+  document.getElementById('total').textContent = fmt(total);
+
+  const rows = yearly.map((amt, idx) =>
+    '<div class="breakdown__row"><span>Year ' + (idx + 1) + '</span><span>' + fmt(amt) + '</span></div>'
+  ).join('');
+  document.getElementById('breakdown').innerHTML = rows;
+}
+
+document.querySelectorAll('input').forEach(el =>
+  el.addEventListener('input', recalc)
+);
+recalc();
+</script>
+</body>
+</html>
