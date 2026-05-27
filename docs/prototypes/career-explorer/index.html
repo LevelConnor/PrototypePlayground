@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Future</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0A0F2E;--blue:#2B4EFF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#F5F5F2;--mg:#E0E0DC;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off);color:var(--navy);font-family:'Noto Serif',Georgia,serif;font-size:15px;line-height:1.6;min-height:100vh}
+header{background:var(--navy);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-dot{width:28px;height:28px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.logo-dot span{color:#fff;font-size:12px;font-weight:900;font-family:'Arial Black',sans-serif}
+.logo-name{color:#fff;font-size:14px;font-weight:900;font-family:'Arial Black',sans-serif;text-transform:uppercase;letter-spacing:.05em}
+.hdr-right{display:flex;align-items:center;gap:14px}
+.hdr-sub{color:var(--green);font-size:11px;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.tray-btn{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rf);padding:6px 14px;color:#fff;font-size:12px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tray-btn:hover{background:rgba(255,255,255,.18)}
+.tc{background:var(--yellow);color:var(--navy);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'Arial Black',sans-serif}
+nav{background:var(--white);border-bottom:2px solid var(--mg);padding:0 24px;display:flex;overflow-x:auto}
+nav::-webkit-scrollbar{display:none}
+.nt{background:none;border:none;padding:15px 20px;font-size:12px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ts);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s}
+.nt:hover{color:var(--navy)}
+.nt.active{color:var(--navy);border-bottom-color:var(--blue)}
+main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
+.panel{display:none}.panel.active{display:block}
+.pt{font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;font-size:clamp(26px,5vw,42px);color:var(--navy);line-height:1;margin-bottom:6px}
+.pt span{color:var(--blue)}
+.ps{font-size:14px;color:var(--ts);margin-bottom:28px}
+.mock-note{background:#FFFBE6;border:1.5px solid var(--yellow);border-radius:var(--rmd);padding:10px 14px;font-size:12px;font-family:'Inter',sans-serif;color:#5a4a00;margin-bottom:24px;display:flex;gap:8px}
+.cta{background:var(--blue);color:#fff;border:none;border-radius:var(--rf);padding:13px 28px;font-size:12px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.cta:hover{background:#1a3ae8}
+.cta.ghost{background:none;border:2px solid var(--mg);color:var(--navy)}
+.cta.ghost:hover{background:var(--mg)}
+.cta.ylw{background:var(--yellow);color:var(--navy)}
+.ai{background:var(--navy);border-radius:var(--rlg);padding:28px;margin-bottom:28px}
+.ai h2{font-family:'Arial Black',sans-serif;font-size:20px;font-weight:900;text-transform:uppercase;color:#fff;margin-bottom:8px}
+.ai p{font-size:13px;color:rgba(255,255,255,.72);margin-bottom:14px}
+.sl{display:flex;gap:10px;flex-wrap:wrap}
+.si{display:flex;align-items:center;gap:6px;font-size:12px;font-family:'Inter',sans-serif;color:rgba(255,255,255,.65)}
+.sd{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--navy);flex-shrink:0}
+.pw{background:var(--mg);border-radius:var(--rf);height:6px;margin-bottom:24px}
+.pf{height:6px;border-radius:var(--rf);background:var(--blue);transition:width .3s}
+.sdiv{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
+.sdl{font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--blue);white-space:nowrap}
+.sdln{flex:1;height:1px;background:var(--mg)}
+.qr{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--mg)}
+.qr:last-child{border-bottom:none}
+.qt{flex:1;font-size:14px;color:var(--navy)}
+.qs{display:flex;gap:6px;flex-shrink:0}
+.sb{width:34px;height:34px;border-radius:50%;border:2px solid var(--mg);background:var(--white);cursor:pointer;font-size:11px;font-weight:700;font-family:'Inter',sans-serif;color:var(--ts);display:flex;align-items:center;justify-content:center;transition:all .12s}
+.sb:hover{border-color:var(--blue);color:var(--blue)}
+.sb.s1{background:#FF6B6B;border-color:#FF6B6B;color:#fff}
+.sb.s2{background:#FFA94D;border-color:#FFA94D;color:#fff}
+.sb.s3{background:#FFE566;border-color:#FFE566;color:var(--navy)}
+.sb.s4{background:#69DB7C;border-color:#69DB7C;color:#fff}
+.sb.s5{background:var(--blue);border-color:var(--blue);color:#fff}
+.sr{margin-top:28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.qn{font-size:12px;color:var(--ts);font-family:'Inter',sans-serif}
+.rw{display:none}
+.rbc{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:18px;font-family:'Inter',sans-serif;font-size:16px;color:var(--navy)}
+.sav{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 22px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.sav h4{font-family:'Arial Black',sans-serif;font-size:14px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:3px}
+.sav p{font-size:12px;color:var(--ts)}
+.sav-btns{display:flex;gap:10px;flex-wrap:wrap}
+.sbx-w{position:relative;margin-bottom:18px}
+.sbx{width:100%;background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:14px 52px 14px 22px;font-size:15px;font-family:'Noto Serif',serif;color:var(--navy);outline:none;transition:border-color .15s}
+.sbx:focus{border-color:var(--navy)}
+.sbx::placeholder{color:#aaa}
+.si2{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--ts);pointer-events:none}
+.qcta{background:var(--white);border:2px solid var(--navy);border-radius:var(--rlg);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.qcl{display:flex;align-items:center;gap:14px}
+.qci{width:48px;height:48px;border-radius:50%;background:var(--lg);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.qct h4{font-size:15px;font-weight:700;font-family:'Inter',sans-serif;color:var(--navy);margin-bottom:2px}
+.qct p{font-size:13px;color:var(--ts)}
+.qcl2{font-size:14px;font-weight:700;font-family:'Inter',sans-serif;color:var(--blue);cursor:pointer;text-decoration:underline}
+.fl{font-size:13px;font-family:'Inter',sans-serif;font-weight:600;color:var(--navy);margin-bottom:10px}
+.fcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.fc{background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:8px 18px;font-size:13px;font-family:'Inter',sans-serif;font-weight:700;color:var(--navy);cursor:pointer;transition:all .12s}
+.fc:hover{border-color:var(--navy)}
+.fc.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.fd{display:none;background:var(--white);border:2px solid var(--mg);border-radius:var(--rlg);padding:18px 20px;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+.fd.open{display:flex}
+.fg label{display:block;font-size:10px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
+.fg select{background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rsm);padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;min-width:160px}
+.rdiv{border:none;border-top:1px dashed var(--mg);margin:4px 0 16px}
+.rc2{font-size:12px;font-family:'Inter',sans-serif;color:var(--ts);margin-bottom:16px}
+.crow{background:var(--white);border-radius:var(--rmd);border:1.5px solid var(--mg);padding:16px 18px;margin-bottom:4px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.crow:hover{border-color:var(--navy);box-shadow:0 2px 12px rgba(10,15,46,.08)}
+.crow.open{border-color:var(--blue);border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:none}
+.crl h3{font-family:'Arial Black',sans-serif;font-size:14px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:5px;letter-spacing:.01em}
+.crm{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.mb{background:var(--lg);border-radius:var(--rf);padding:3px 10px;font-size:11px;font-family:'Inter',sans-serif;font-weight:600;color:var(--ts)}
+.mb.g{background:#E6FFF4;color:#006633}
+.crp{font-size:11px;font-family:'Inter',sans-serif;color:var(--blue);text-decoration:underline;line-height:1.4}
+.crr{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.bmbtn{background:none;border:1.5px solid var(--mg);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s;flex-shrink:0}
+.bmbtn:hover{border-color:var(--blue)}
+.bmbtn.saved{background:var(--yellow);border-color:var(--yellow)}
+.arr{font-size:18px;color:var(--mg);transition:transform .2s;display:inline-block}
+.arr.open{transform:rotate(90deg)}
+.cdw{display:none;background:var(--navy);border-radius:0 0 var(--rlg) var(--rlg);margin-bottom:14px;overflow:hidden;border:1.5px solid var(--blue);border-top:none}
+.cdw.open{display:block}
+.cdn{display:flex;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.12);padding:0 20px;-webkit-overflow-scrolling:touch}
+.cdn::-webkit-scrollbar{display:none}
+.cdt{background:none;border:none;padding:13px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s}
+.cdt:hover{color:rgba(255,255,255,.8)}
+.cdt.active{color:#fff;border-bottom-color:var(--yellow)}
+.cdb{padding:22px}
+.cdp{display:none}
+.cdp.active{display:block}
+.csg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+.csb{background:rgba(255,255,255,.07);border-radius:var(--rmd);padding:12px}
+.csl{font-size:9px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.4);margin-bottom:4px}
+.csv{font-family:'Arial Black',sans-serif;font-size:17px;font-weight:900;color:var(--yellow)}
+.css2{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+.csh{font-size:10px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--green);margin-bottom:8px;margin-top:16px}
+.csh:first-child{margin-top:0}
+.ctgs{display:flex;flex-wrap:wrap;gap:6px}
+.ctg{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--rf);padding:5px 12px;font-size:12px;color:rgba(255,255,255,.85);font-family:'Inter',sans-serif}
+.ctl{list-style:none}
+.ctl li{font-size:13px;color:rgba(255,255,255,.72);padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:10px;line-height:1.5}
+.ctl li:last-child{border-bottom:none}
+.cta2{color:var(--green);flex-shrink:0}
+.pwl{display:flex;flex-direction:column;gap:10px}
+.pwi{background:rgba(255,255,255,.06);border-radius:var(--rmd);padding:14px 16px;border-left:3px solid var(--yellow)}
+.pwn{font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;text-transform:uppercase;color:var(--yellow);text-decoration:underline;margin-bottom:4px}
+.pwd{font-size:12px;color:rgba(255,255,255,.65);line-height:1.5}
+.cdf{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.cdbm{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rf);padding:9px 18px;color:#fff;font-size:12px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.cdbm:hover{background:rgba(255,255,255,.18)}
+.cdbm.saved{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+.opill{display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:8px 16px;font-size:11px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.clc{background:var(--white);border-radius:var(--rlg);border:2px solid var(--mg);overflow:hidden;cursor:pointer;transition:all .18s;position:relative}
+.clc:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.clc.active{transform:translateY(-3px);box-shadow:0 4px 18px rgba(0,0,0,.13)}
+.climg{height:130px;overflow:hidden}
+.climg img{width:100%;height:100%;object-fit:cover;display:block}
+.clbd{padding:12px 14px 14px}
+.clnm{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--blue);text-decoration:underline;margin-bottom:6px;line-height:1.3}
+.cldc{font-size:12px;color:var(--ts);line-height:1.5}
+.clbg{position:absolute;top:8px;right:8px;border-radius:var(--rf);padding:2px 8px;font-size:9px;font-family:'Inter',sans-serif;font-weight:900;text-transform:uppercase;color:var(--navy);z-index:1}
+.subp{display:none;background:var(--lg);border-radius:var(--rlg);padding:20px 22px;margin-bottom:20px;border:1.5px solid var(--mg)}
+.spp{border-radius:var(--rf);padding:8px 16px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;color:var(--navy);cursor:pointer;transition:all .12s;border:1.5px solid var(--mg);background:var(--white)}
+.spp:hover{border-color:var(--navy)}
+.spp.active{border-width:2px}
+.tov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,15,46,.5);z-index:300;display:none}
+.tov.open{display:block}
+.tpn{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--white);z-index:400;display:flex;flex-direction:column;box-shadow:-4px 0 30px rgba(10,15,46,.2);transform:translateX(100%);transition:transform .25s ease}
+.tpn.open{transform:translateX(0)}
+.thdr{background:var(--navy);padding:20px 22px;display:flex;align-items:center;justify-content:space-between}
+.thdr h2{font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;color:#fff}
+.tclose{background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tbody2{flex:1;overflow-y:auto;padding:20px}
+.tempty{text-align:center;padding:40px 20px;color:var(--ts);font-size:14px}
+.ti{background:var(--off);border-radius:var(--rmd);padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ti h4{font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
+.tft{padding:16px 20px;border-top:1.5px solid var(--mg);display:flex;flex-direction:column;gap:10px}
+.tfn{font-size:11px;color:var(--ts);text-align:center;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;border-radius:var(--rf);padding:12px 22px;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,15,46,.7);z-index:600;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:var(--rlg);padding:28px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+/* RIASEC legend table inside "How it works" box */
+.riasec-table{width:100%;border-collapse:collapse;margin-top:18px}
+.riasec-table td{padding:7px 10px;font-size:12px;font-family:'Inter',sans-serif;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.75);line-height:1.4}
+.riasec-table tr:last-child td{border-bottom:none}
+.riasec-table .rt-code{font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;color:#fff;white-space:nowrap;padding-right:14px}
+.riasec-table .rt-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle;flex-shrink:0}
+@media print{header,nav,.mock-note,.sav,.tov,.tpn,.toast,.modal-overlay,#panel-search,#panel-clusters,#afw{display:none!important}.panel{display:block!important}.rw{display:block!important}body{background:#fff}#print-header,#print-footer{display:block!important}.pt{font-size:28px}}
+#print-header{display:none;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #000}
+#print-footer{display:none;margin-top:32px;padding-top:16px;border-top:1px solid #ccc;font-size:11px;color:#666;font-family:'Inter',sans-serif}
+#print-restore-url{font-size:10px;word-break:break-all;color:#333;margin-top:4px}
+@media(max-width:600px){main{padding:22px 14px 60px}.qs{gap:3px}.sb{width:28px;height:28px;font-size:10px}.sav-btns{flex-direction:column}.sav-btns .cta{width:100%;text-align:center}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-dot"><span>LA</span></div><span class="logo-name">Level All</span></div>
+  <div class="hdr-right">
+    <span class="hdr-sub">Career Explorer</span>
+    <button class="tray-btn" id="open-tray-btn">♡ Saved <span class="tc" id="tc">0</span></button>
+  </div>
+</header>
+
+<nav>
+  <button class="nt active" data-tab="assessment">Career Assessment</button>
+  <button class="nt" data-tab="search">Search Careers</button>
+  <button class="nt" data-tab="clusters">Career Clusters</button>
+</nav>
+
+<main>
+
+<!-- ASSESSMENT -->
+<div class="panel active" id="panel-assessment">
+  <div id="afw">
+    <div class="pt" style="color:var(--blue)">Career Assessment</div>
+    <p class="ps">Rate how much you'd enjoy each activity. There are no right or wrong answers.</p>
+    <div class="ai">
+      <h2>How it works</h2>
+      <p>Rate each activity 1–5. Your answers reveal your top interest areas using the RIASEC model — the same framework used by O*NET.</p>
+      <div class="sl">
+        <div class="si"><div class="sd" style="background:#FF6B6B">1</div>Strongly Dislike</div>
+        <div class="si"><div class="sd" style="background:#FFA94D">2</div>Dislike</div>
+        <div class="si"><div class="sd" style="background:#FFE566">3</div>Unsure</div>
+        <div class="si"><div class="sd" style="background:#69DB7C">4</div>Like</div>
+        <div class="si"><div class="sd" style="background:var(--blue);color:#fff">5</div>Strongly Like</div>
+      </div>
+
+    </div>
+    <div class="pw"><div class="pf" id="pf" style="width:0%"></div></div>
+    <div id="qwrap">
+      <div class="sdiv"><span class="sdl">Section 1 — Hands-On &amp; Technical</span><div class="sdln"></div></div>
+      <div class="qr" data-t="R"><span class="qt">Build or repair furniture, appliances, or machinery</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="R"><span class="qt">Operate heavy equipment or power tools on a job site</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="R"><span class="qt">Work outdoors in construction, agriculture, or conservation</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="R"><span class="qt">Install or maintain electrical wiring or plumbing systems</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="R"><span class="qt">Work with your hands to make something real and tangible</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="sdiv"><span class="sdl">Section 2 — Research &amp; Analysis</span><div class="sdln"></div></div>
+      <div class="qr" data-t="I"><span class="qt">Conduct experiments to test a scientific hypothesis</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="I"><span class="qt">Study the causes of a medical condition or disease</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="I"><span class="qt">Analyze large datasets to find patterns and insights</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="I"><span class="qt">Research and write a detailed report on a complex topic</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="I"><span class="qt">Solve a difficult math or logic puzzle</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="sdiv"><span class="sdl">Section 3 — Creative &amp; Artistic</span><div class="sdln"></div></div>
+      <div class="qr" data-t="A"><span class="qt">Design graphics, logos, or layouts for a brand</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="A"><span class="qt">Write short stories, poetry, screenplays, or journalism</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="A"><span class="qt">Perform in theater, music, dance, or spoken word</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="A"><span class="qt">Design a website, app, or interactive digital experience</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="A"><span class="qt">Direct or produce a film, video, or multimedia project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="sdiv"><span class="sdl">Section 4 — Helping &amp; Teaching</span><div class="sdln"></div></div>
+      <div class="qr" data-t="S"><span class="qt">Teach or tutor students of any age in a subject you know</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="S"><span class="qt">Help someone work through a personal problem or crisis</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="S"><span class="qt">Provide medical or physical care to a patient or client</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="S"><span class="qt">Volunteer or work with community organizations</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="S"><span class="qt">Counsel or guide people through major life decisions</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="sdiv"><span class="sdl">Section 5 — Leading &amp; Persuading</span><div class="sdln"></div></div>
+      <div class="qr" data-t="E"><span class="qt">Start and manage your own business or side project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="E"><span class="qt">Lead a team toward a shared goal or deadline</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="E"><span class="qt">Pitch an idea, product, or cause to an audience</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="E"><span class="qt">Negotiate deals or contracts on behalf of others</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="E"><span class="qt">Develop and execute a marketing or sales strategy</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="sdiv"><span class="sdl">Section 6 — Organizing &amp; Managing</span><div class="sdln"></div></div>
+      <div class="qr" data-t="C"><span class="qt">Manage financial records, budgets, or accounts</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="C"><span class="qt">Create detailed systems, spreadsheets, or databases</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="C"><span class="qt">Follow a defined process to complete a task accurately</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="C"><span class="qt">Process and verify data, invoices, or legal documents</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div class="qr" data-t="C"><span class="qt">Plan and coordinate the logistics of an event or project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+    </div>
+    <div class="sr">
+      <button class="cta" id="btn-submit">See My Results →</button>
+      <button class="cta ghost" id="btn-reset">Reset</button>
+      <span class="qn" id="qans">0 of 30 answered</span>
+    </div>
+  </div>
+
+  <div class="rw" id="rw">
+    <div id="print-header"><div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;text-transform:uppercase">Level All — Career Assessment Results</div><div style="font-size:13px;color:#555;margin-top:4px" id="print-date"></div></div>
+    <div style="text-align:center;max-width:640px;margin:0 auto 28px"><p style="font-size:clamp(16px,2.5vw,20px);font-weight:600;line-height:1.6">Based on the assessment, this chart shows your interest areas.<br><span style="font-weight:400">Remember, your interests and career goals can change.</span></p></div>
+    <div class="rbc" id="r3"></div>
+    <p style="text-align:center;font-size:13px;color:var(--ts);margin-bottom:16px">Your top interest areas are represented by larger bubbles.</p>
+    <div style="display:flex;justify-content:center;margin-bottom:10px"><canvas id="bc" width="420" height="300" style="max-width:100%"></canvas></div>
+    <div id="bleg" style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+    <!-- RIASEC legend on results page -->
+    <div id="riasec-results-legend" style="background:var(--navy);border-radius:var(--rlg);padding:20px 24px;margin:0 auto 32px;max-width:560px">
+      <div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:12px">What each letter means</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px" id="riasec-legend-grid"></div>
+    </div>
+    <div style="text-align:center;margin-bottom:20px"><div class="pt" style="font-size:clamp(18px,3vw,28px)">Careers matching your <span>interest areas.</span></div><p style="font-size:14px;color:var(--ts);margin-top:6px;margin-bottom:20px">Based on your answers, these careers match your combination of interest areas.</p></div>
+    <div id="mcards" style="display:grid;gap:12px;max-width:680px;margin:0 auto 24px"></div>
+    <div style="text-align:center;margin-bottom:24px"><button class="cta ghost" id="btn-explore-matches">Explore Your Career Assessment Matches</button></div>
+    <div class="sav">
+      <div><h4>Don't lose your results</h4><p>Choose how you want to save — no account needed.</p></div>
+      <div class="sav-btns">
+        <button class="cta ylw" id="btn-copy-link">🔗 Copy Link</button>
+        <button class="cta ghost" id="btn-email">✉️ Email Myself</button>
+        <button class="cta ghost" id="btn-print">🖨 Save as PDF</button>
+        <button class="cta ghost" id="btn-homescreen">📱 Add to Home Screen</button>
+        <button class="cta ghost" id="btn-retake">↩ Retake</button>
+      </div>
+    </div>
+    <div id="print-footer"><div>To return to your results, visit this link:</div><div id="print-restore-url"></div><div style="margin-top:6px">Generated by Level All Career Explorer</div></div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="panel" id="panel-search">
+  <div class="pt" style="color:var(--blue)">Search Careers</div>
+  <p class="ps" style="margin-bottom:18px">Search by keyword, or narrow results using the filters below.</p>
+  <div class="mock-note"><span>🔧</span><div><strong>Dev note:</strong> Search uses mock career data. O*NET live integration ready — requires proxy setup on your backend.</div></div>
+  <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
+  <div class="qcta">
+    <div class="qcl"><div class="qci">😊✨</div><div class="qct"><h4>Not sure where to start?</h4><p>Get careers matched to your interests with our Career Assessment.</p></div></div>
+    <span class="qcl2" id="btn-go-assess">Take the Assessment</span>
+  </div>
+  <div class="fl">Narrow your search</div>
+  <div class="fcs">
+    <button class="fc" data-filter="income">Income</button>
+    <button class="fc" data-filter="edu">Education</button>
+    <button class="fc" data-filter="interest">Interest Areas</button>
+  </div>
+  <div class="fd" id="filter-income"><div class="fg"><label>Minimum Salary</label><select id="fsal"><option value="0">Any</option><option value="40000">$40,000+</option><option value="60000">$60,000+</option><option value="80000">$80,000+</option><option value="100000">$100,000+</option></select></div></div>
+  <div class="fd" id="filter-edu"><div class="fg"><label>Education Level</label><select id="fedu"><option value="">Any</option><option>No Degree / Self-Taught</option><option>No Degree / Apprenticeship</option><option>Certificate</option><option>Associate's Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option></select></div></div>
+  <div class="fd" id="filter-interest"><div class="fg" style="width:100%"><label>Interest Areas — select one or more</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+    <button class="fc" data-r="R">Realistic</button><button class="fc" data-r="I">Investigative</button><button class="fc" data-r="A">Artistic</button><button class="fc" data-r="S">Social</button><button class="fc" data-r="E">Enterprising</button><button class="fc" data-r="C">Conventional</button>
+  </div></div></div>
+  <hr class="rdiv"><div class="rc2" id="rcount"></div>
+  <div id="slist"></div>
+</div>
+
+<!-- CLUSTERS -->
+<div class="panel" id="panel-clusters">
+  <div class="pt" style="color:var(--blue)">Career Clusters</div>
+  <p class="ps">Explore 14 career clusters — broad fields that group similar careers. Tap any cluster to see its pathways and careers.</p>
+  <div id="cgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px"></div>
+  <div id="subp" class="subp"></div>
+  <div id="crwrap" style="display:none"><hr class="rdiv"><div class="rc2" id="crcount"></div><div id="crlist"></div></div>
+</div>
+
+</main>
+
+<!-- TRAY -->
+<div class="tov" id="tov"></div>
+<div class="tpn" id="tpn">
+  <div class="thdr"><h2>♡ Saved Careers</h2><button class="tclose" id="btn-close-tray">✕</button></div>
+  <div class="tbody2" id="tbody"></div>
+  <div class="tft">
+    <button class="cta ylw" id="btn-tray-link" style="width:100%">🔗 Copy Save Link</button>
+    <button class="cta ghost" id="btn-tray-print" style="width:100%">🖨 Save as PDF</button>
+    <p class="tfn">No account needed. Your link restores saved careers if you close this page.</p>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="email-modal">
+  <div class="modal-box">
+    <div style="font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">✉️ Email My Results</div>
+    <p style="font-size:13px;color:var(--ts);margin-bottom:18px;line-height:1.6">Copy the message below and paste it into an email to yourself — or just copy the restore link.</p>
+    <div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:14px;font-size:13px;font-family:'Noto Serif',serif;color:var(--navy);line-height:1.7;border:1.5px solid var(--mg)">
+      <strong>Subject:</strong> My Career Assessment Results — Level All<br><br>
+      My top interest areas: <span id="email-top3" style="font-weight:700"></span><br>
+      Saved careers: <span id="email-saved"></span><br><br>
+      To return to my results, paste this link into any browser:<br>
+      <span id="email-url" style="font-size:11px;word-break:break-all;color:var(--blue)"></span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="cta" id="btn-copy-email-msg" style="flex:1">📋 Copy Message</button>
+      <button class="cta ghost" id="btn-copy-email-link" style="flex:1">🔗 Copy Link Only</button>
+    </div>
+    <button id="btn-close-email" style="width:100%;margin-top:10px;background:none;border:none;font-size:13px;font-family:'Inter',sans-serif;color:var(--ts);cursor:pointer;padding:8px">Close</button>
+  </div>
+</div>
+
+<!-- HOME SCREEN MODAL -->
+<div class="modal-overlay" id="hsc-modal">
+  <div class="modal-box">
+    <div style="font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">📱 Add to Home Screen</div>
+    <p style="font-size:13px;color:var(--ts);margin-bottom:18px;line-height:1.6">Saves a shortcut to your phone that opens directly to your results — no link to remember.</p>
+    <div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:10px">
+      <div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:8px">iPhone / Safari</div>
+      <ol style="font-size:13px;color:var(--navy);padding-left:18px;display:flex;flex-direction:column;gap:6px;line-height:1.5;font-family:'Noto Serif',serif">
+        <li>Tap the <strong>Share</strong> button at the bottom of Safari</li>
+        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+        <li>Tap <strong>Add</strong> — done!</li>
+      </ol>
+    </div>
+    <div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:18px">
+      <div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:8px">Android / Chrome</div>
+      <ol style="font-size:13px;color:var(--navy);padding-left:18px;display:flex;flex-direction:column;gap:6px;line-height:1.5;font-family:'Noto Serif',serif">
+        <li>Tap the <strong>⋮ menu</strong> in the top-right corner of Chrome</li>
+        <li>Tap <strong>"Add to Home Screen"</strong></li>
+        <li>Tap <strong>Add</strong> — done!</li>
+      </ol>
+    </div>
+    <p style="font-size:12px;color:var(--ts);margin-bottom:16px;font-family:'Noto Serif',serif">Your results link has been copied to clipboard — paste it in the address bar first, then follow the steps above.</p>
+    <button class="cta" id="btn-close-hsc" style="width:100%">Got It</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   SINGLE GLOBAL CLICK HANDLER — no inline onclick anywhere
+══════════════════════════════════════════ */
+document.addEventListener('click', function(e) {
+  const t = e.target;
+
+  // ZIP SEARCH
+  const zipBtn = t.closest('[id^="zip-btn-"]');
+  if (zipBtn) { handleZipSearch(zipBtn.dataset.pid, zipBtn.dataset.career, zipBtn.dataset.code); return; }
+
+  // NAV TABS
+  const nt = t.closest('.nt');
+  if (nt && nt.dataset.tab) { switchTab(nt.dataset.tab, nt); return; }
+
+  // ASSESSMENT rating buttons
+  const sb = t.closest('.sb');
+  if (sb && sb.closest('#qwrap')) { rate(sb); return; }
+
+  // ASSESSMENT submit / reset
+  if (t.id === 'btn-submit') { submitAssessment(); return; }
+  if (t.id === 'btn-reset') { resetAssessment(); return; }
+  if (t.id === 'btn-retake') { resetAssessment(); return; }
+  if (t.id === 'btn-explore-matches') { goToSearch(); return; }
+  if (t.id === 'btn-go-assess') { goToAssessment(); return; }
+
+  // SAVE BUTTONS
+  if (t.id === 'btn-copy-link') { copyLink(); return; }
+  if (t.id === 'btn-email') { emailResults(); return; }
+  if (t.id === 'btn-print') { printResults(); return; }
+  if (t.id === 'btn-homescreen') { addToHomeScreen(); return; }
+  if (t.id === 'btn-copy-email-msg') { copyEmailContent(); return; }
+  if (t.id === 'btn-copy-email-link') { copyEmailLink(); return; }
+  if (t.id === 'btn-close-email') { document.getElementById('email-modal').classList.remove('open'); return; }
+  if (t.id === 'btn-close-hsc') { document.getElementById('hsc-modal').classList.remove('open'); return; }
+
+  // TRAY
+  if (t.id === 'open-tray-btn' || t.closest('#open-tray-btn')) { openTray(); return; }
+  if (t.id === 'btn-close-tray') { closeTray(); return; }
+  if (t.id === 'tov') { closeTray(); return; }
+  if (t.id === 'btn-tray-link') { copyTrayLink(); return; }
+  if (t.id === 'btn-tray-print') { window.print(); return; }
+
+  // SEARCH filters
+  const fc = t.closest('.fc[data-filter]');
+  if (fc) { toggleF(fc.dataset.filter, fc); return; }
+  const fr = t.closest('.fc[data-r]');
+  if (fr && fr.closest('#filter-interest')) { toggleR(fr); return; }
+  const fsal = t.closest('#fsal');
+  if (fsal) { doSearch(); return; }
+  const fedu = t.closest('#fedu');
+  if (fedu) { doSearch(); return; }
+
+  // CAREER ROWS
+  const crow = t.closest('.crow');
+  if (crow && crow.id && crow.id.startsWith('crow-')) {
+    const bm = t.closest('.bmbtn');
+    if (bm) {
+      e.stopPropagation();
+      const parts = crow.id.split('-');
+      toggleSave(parseInt(parts[parts.length-1]));
+      return;
+    }
+    const parts = crow.id.split('-');
+    const prefix = parts.slice(1, parts.length-1).join('-');
+    const idx = parseInt(parts[parts.length-1]);
+    openDetail(idx, prefix);
+    return;
+  }
+
+  // CAREER DETAIL TABS
+  const cdt = t.closest('.cdt');
+  if (cdt && cdt.dataset.panel) { switchDTab(cdt); return; }
+
+  // SAVE button inside drawer
+  const cdbm = t.closest('.cdbm');
+  if (cdbm && cdbm.dataset.idx !== undefined) { toggleSaveBtn(cdbm, parseInt(cdbm.dataset.idx)); return; }
+
+  // RELATED career click inside drawer (mock)
+  const relCard = t.closest('[data-rel-idx]');
+  if (relCard) { const prefix = relCard.dataset.prefix; openDetail(parseInt(relCard.dataset.relIdx), prefix); return; }
+
+
+});
+
+// Search input — use input event
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'sinput') doSearch();
+});
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'fsal' || e.target.id === 'fedu') doSearch();
+});
+
+/* ══ STATE ══ */
+const saved = new Set(), answered = {};
+let lastResults = null;
+const activeR = new Set();
+let activeCluster = '', activeSub = '';
+const BC = {R:'#2B4EFF',I:'#F4845F',A:'#9B72CF',S:'#F9C846',E:'#A8B4D8',C:'#E8E8A0'};
+const RI = {
+  R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, machines, and physical tasks.',bg:'#0A0F2E'},
+  I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, science, and solving complex problems.',bg:'#1D0E32'},
+  A:{name:'Artistic — The Creator',short:'Artistic',desc:'Design, writing, performance, and creative expression.',bg:'#1a0a00'},
+  S:{name:'Social — The Helper',short:'Social',desc:'Teaching, counseling, healthcare, and supporting others.',bg:'#002E01'},
+  E:{name:'Enterprising — The Leader',short:'Enterprising',desc:'Business, sales, management, and persuading others.',bg:'#1a003a'},
+  C:{name:'Conventional — The Organizer',short:'Conventional',desc:'Data, systems, finance, and structured processes.',bg:'#1a1a0a'}
+};
+
+/* ══ TOAST ══ */
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ══ NAV ══ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else document.querySelector('.nt[data-tab="'+id+'"]').classList.add('active');
+}
+function goToAssessment() { switchTab('assessment'); window.scrollTo({top:0,behavior:'smooth'}); }
+function goToSearch() {
+  switchTab('search');
+  if (lastResults) {
+    const top3 = Object.entries(lastResults).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
+    top3.forEach(code => {
+      if (!activeR.has(code)) {
+        activeR.add(code);
+        const b = document.querySelector('.fc[data-r="'+code+'"]');
+        if (b) b.classList.add('active');
+      }
+    });
+    const fd = document.getElementById('filter-interest');
+    if (!fd.classList.contains('open')) {
+      fd.classList.add('open');
+      const chip = document.querySelector('.fc[data-filter="interest"]');
+      if (chip) chip.classList.add('active');
+    }
+    doSearch();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goToSearchAndOpen(idx) {
+  switchTab('search');
+  renderList(CAREERS, 'slist', 'sd');
+  setTimeout(() => openDetail(idx, 'sd'), 80);
+}
+
+/* ══ ASSESSMENT ══ */
+function rate(btn) {
+  const row = btn.closest('.qr');
+  row.querySelectorAll('.sb').forEach(b => b.className = 'sb');
+  btn.classList.add('s' + btn.dataset.v);
+  const idx = Array.from(document.querySelectorAll('.qr')).indexOf(row);
+  answered[idx] = {type: row.dataset.t, val: parseInt(btn.dataset.v)};
+  const n = Object.keys(answered).length;
+  document.getElementById('qans').textContent = n + ' of 30 answered';
+  document.getElementById('pf').style.width = Math.round((n/30)*100) + '%';
+}
+
+function submitAssessment() {
+  if (Object.keys(answered).length < 20) { alert('Please answer at least 20 questions.'); return; }
+  const tot={R:0,I:0,A:0,S:0,E:0,C:0}, cnt={R:0,I:0,A:0,S:0,E:0,C:0};
+  Object.values(answered).forEach(({type,val}) => { tot[type]+=val; cnt[type]++; });
+  const avgs = {};
+  Object.keys(tot).forEach(k => avgs[k] = cnt[k] ? +(tot[k]/cnt[k]).toFixed(2) : 0);
+  lastResults = avgs;
+  renderResults(avgs);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderResults(avgs) {
+  const sorted = Object.entries(avgs).sort((a,b) => b[1]-a[1]);
+  document.getElementById('r3').innerHTML = sorted.slice(0,3).map(([k],i) =>
+    `<span style="font-weight:${i===0?700:400}">${i+1}. <strong>${RI[k].short}</strong></span>`).join('');
+  drawBubbles(sorted);
+  document.getElementById('bleg').innerHTML = sorted.map(([k]) =>
+    `<span style="display:flex;align-items:center;gap:5px;font-size:12px;font-family:'Inter',sans-serif;color:var(--navy)"><span style="width:14px;height:14px;border-radius:50%;background:${BC[k]};flex-shrink:0"></span><strong>${k}</strong>: ${RI[k].short}</span>`).join('');
+
+  // Render RIASEC explanations on results page, ordered by score
+  const grid = document.getElementById('riasec-legend-grid');
+  if (grid) {
+    grid.innerHTML = sorted.map(([k]) =>
+      `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0">
+        <span style="width:24px;height:24px;border-radius:50%;background:${BC[k]};display:flex;align-items:center;justify-content:center;font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;color:#1a1a2e;flex-shrink:0">${k}</span>
+        <div>
+          <div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;color:#fff;letter-spacing:.03em">${RI[k].short}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);font-family:'Noto Serif',serif;line-height:1.4;margin-top:1px">${RI[k].desc}</div>
+        </div>
+      </div>`
+    ).join('');
+  }
+
+  const top3 = sorted.slice(0,3).map(([k])=>k);
+  const matched = CAREERS.filter(c => top3.includes(c.r)).slice(0,5);
+  document.getElementById('mcards').innerHTML = matched.map((c,i) => {
+    const idx = CAREERS.indexOf(c);
+    return `<div style="background:var(--white);border-radius:var(--rlg);border:${i===matched.length-1?'2px solid var(--navy)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer;" id="mcard-${idx}">
+      <div style="font-size:17px;font-weight:700;color:var(--navy);margin-bottom:12px">${c.t}</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">💲</div><span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600">$${c.salary.toLocaleString()}</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">🎓</div><span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600">${(c.pathways&&c.pathways[0])?c.pathways[0].deg:'Varies'}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  matched.forEach(c => {
+    const idx = CAREERS.indexOf(c);
+    const el = document.getElementById('mcard-'+idx);
+    if (el) el.addEventListener('click', () => goToSearchAndOpen(idx));
+  });
+  document.getElementById('afw').style.display = 'none';
+  document.getElementById('rw').style.display = 'block';
+}
+
+function drawBubbles(sorted) {
+  const cv = document.getElementById('bc'), ctx = cv.getContext('2d');
+  const W=420, H=300;
+  ctx.clearRect(0,0,W,H);
+  const mx = sorted[0][1] || 5;
+  const bubbles = sorted.map(([k,v]) => ({k,v,r:Math.max(16,Math.round((v/mx)*72)),x:0,y:0}));
+  const placed = [];
+  bubbles.forEach((b,i) => {
+    if (i===0) { b.x=W/2; b.y=H/2; placed.push(b); return; }
+    let ok = false;
+    for (let a=0; a<400&&!ok; a++) {
+      const ref = placed[Math.floor(Math.random()*placed.length)];
+      const angle = Math.random()*Math.PI*2;
+      const dist = ref.r+b.r+4+Math.random()*8;
+      const tx = ref.x+Math.cos(angle)*dist, ty = ref.y+Math.sin(angle)*dist;
+      if (tx-b.r<4||tx+b.r>W-4||ty-b.r<4||ty+b.r>H-4) continue;
+      if (placed.every(p => Math.hypot(tx-p.x,ty-p.y) >= p.r+b.r+3)) {
+        b.x=tx; b.y=ty; placed.push(b); ok=true;
+      }
+    }
+    if (!ok) { b.x=Math.min(W-b.r-4,Math.max(b.r+4,W/2+(i%3-1)*90)); b.y=Math.min(H-b.r-4,Math.max(b.r+4,H/2+Math.floor(i/3)*80-40)); placed.push(b); }
+  });
+  bubbles.forEach(b => {
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fillStyle=BC[b.k]; ctx.globalAlpha=.88; ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle='#1a1a2e';
+    ctx.font=`bold ${Math.max(11,Math.round(b.r*.52))}px Arial Black,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(b.k,b.x,b.y);
+  });
+}
+
+function resetAssessment() {
+  Object.keys(answered).forEach(k => delete answered[k]);
+  lastResults = null;
+  document.querySelectorAll('.sb').forEach(b => b.className = 'sb');
+  document.getElementById('qans').textContent = '0 of 30 answered';
+  document.getElementById('pf').style.width = '0%';
+  document.getElementById('afw').style.display = 'block';
+  document.getElementById('rw').style.display = 'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══ SAVE / EMAIL / PRINT ══ */
+function getStateUrl() {
+  const data = btoa(JSON.stringify({results:lastResults, saved:[...saved]}));
+  return location.href.split('?')[0] + '?state=' + data;
+}
+function copyLink() {
+  navigator.clipboard.writeText(getStateUrl()).then(() => toast('✓ Results link copied!')).catch(() => toast('Copy failed'));
+}
+function emailResults() {
+  if (!lastResults) return;
+  const url = getStateUrl();
+  const sorted = Object.entries(lastResults).sort((a,b)=>b[1]-a[1]);
+  const top3 = sorted.slice(0,3).map(([k],i) => `${i+1}. ${RI[k].short}`).join(', ');
+  const sl = saved.size ? [...saved].map(i=>CAREERS[i]?CAREERS[i].t:'').filter(Boolean).join(', ') : 'None yet';
+  document.getElementById('email-top3').textContent = top3;
+  document.getElementById('email-saved').textContent = sl;
+  const urlEl = document.getElementById('email-url');
+  urlEl.textContent = url; urlEl.dataset.url = url;
+  document.getElementById('email-modal').classList.add('open');
+}
+function copyEmailContent() {
+  const top3 = document.getElementById('email-top3').textContent;
+  const sl = document.getElementById('email-saved').textContent;
+  const url = document.getElementById('email-url').dataset.url;
+  const text = ['Subject: My Career Assessment Results — Level All','','My top interest areas: '+top3,'Saved careers: '+sl,'','Return link (paste into browser):',url].join('\n');
+  navigator.clipboard.writeText(text).then(() => toast('✓ Message copied — paste into an email!')).catch(() => toast('Copy failed'));
+}
+function copyEmailLink() {
+  const url = document.getElementById('email-url').dataset.url;
+  navigator.clipboard.writeText(url).then(() => toast('✓ Link copied!')).catch(() => toast('Copy failed'));
+  document.getElementById('email-modal').classList.remove('open');
+}
+function printResults() {
+  if (!lastResults) return;
+  const url = getStateUrl();
+  const d = new Date();
+  const el = document.getElementById('print-date');
+  if (el) el.textContent = 'Printed on ' + d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const fu = document.getElementById('print-restore-url');
+  if (fu) fu.textContent = url;
+  window.print();
+}
+function addToHomeScreen() {
+  if (!lastResults) return;
+  navigator.clipboard.writeText(getStateUrl()).catch(()=>{});
+  document.getElementById('hsc-modal').classList.add('open');
+}
+function copyTrayLink() {
+  navigator.clipboard.writeText(getStateUrl()).then(() => toast('✓ Save link copied!')).catch(() => toast('Copy failed'));
+}
+
+/* ══ SEARCH ══ */
+function toggleF(key, btn) {
+  btn.classList.toggle('active');
+  document.getElementById('filter-'+key).classList.toggle('open', btn.classList.contains('active'));
+}
+function toggleR(btn) {
+  const code = btn.dataset.r;
+  if (activeR.has(code)) { activeR.delete(code); btn.classList.remove('active'); }
+  else { activeR.add(code); btn.classList.add('active'); }
+  doSearch();
+}
+
+// Debounce timer for search input
+const detailCache = {};
+
+function doSearch() { _execSearch(); }
+
+async function _execSearch() {
+  const q = document.getElementById('sinput').value.trim();
+  const minSal = parseInt(document.getElementById('fsal').value) || 0;
+  const edu = document.getElementById('fedu').value;
+  const ql = q.toLowerCase();
+
+  const results = CAREERS.filter(c => {
+    const mQ = !q || c.t.toLowerCase().includes(ql) || c.desc.toLowerCase().includes(ql) || c.cluster.toLowerCase().includes(ql);
+    const mR = activeR.size === 0 || activeR.has(c.r);
+    const mS = c.salary >= minSal;
+    const mE = !edu || (c.pathways||[]).some(p => p.deg === edu);
+    return mQ && mR && mS && mE;
+  });
+  document.getElementById('rcount').textContent = results.length + ' career' + (results.length!==1?'s':'') + ' found';
+  renderList(results, 'slist', 'sd');
+}
+
+// Render a list of live O*NET results (title + code, no salary yet)
+function renderLiveList(list, listId, prefix) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ts);font-size:14px">No careers found. Try a different keyword.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const idx = c.code; // use code as key for live results
+    const isSaved = saved.has('live-'+idx);
+    const cached = detailCache[idx];
+    const salary = cached ? '$' + cached.salary.median.toLocaleString() + '/yr' : '—';
+    const growth = cached ? cached.outlook.growth : '—';
+    const cluster = cached ? cached.cluster : '';
+    const badges = [
+      c.tags?.brightOutlook ? `<span class="mb g">☀️ Bright Outlook</span>` : '',
+      c.tags?.apprenticeship ? `<span class="mb">🔨 Apprenticeship</span>` : '',
+      c.tags?.stem ? `<span class="mb">🔬 STEM</span>` : '',
+      salary !== '—' ? `<span class="mb g">💰 ${salary}</span>` : '',
+      growth !== '—' ? `<span class="mb">📈 ${growth}</span>` : '',
+      cluster ? `<span class="mb">${cluster}</span>` : ''
+    ].filter(Boolean).join('');
+
+    return `<div class="crow" id="crow-${prefix}-${idx}">
+      <div class="crl">
+        <h3>${c.title}</h3>
+        <div class="crm">${badges || '<span class="mb">Loading details…</span>'}</div>
+      </div>
+      <div class="crr">
+        <button class="bmbtn${isSaved?' saved':''}">${isSaved?'♥':'♡'}</button>
+        <span class="arr" id="arr-${prefix}-${idx}">›</span>
+      </div>
+    </div>
+    <div class="cdw" id="cdw-${prefix}-${idx}"></div>`;
+  }).join('');
+}
+
+// Fetch detail for a live result, cache it, then build the drawer
+async function openLiveDetail(code, prefix) {
+  const wrap = document.getElementById('cdw-'+prefix+'-'+code);
+  const crow = document.getElementById('crow-'+prefix+'-'+code);
+  const arr  = document.getElementById('arr-'+prefix+'-'+code);
+  if (!wrap || !crow) return;
+
+  const isOpen = wrap.classList.contains('open');
+
+  // Close any open drawers in this list
+  document.querySelectorAll('[id^="cdw-'+prefix+'-"].open').forEach(el => {
+    el.classList.remove('open');
+    const ci = el.id.replace('cdw-'+prefix+'-','');
+    const cr = document.getElementById('crow-'+prefix+'-'+ci);
+    const ar = document.getElementById('arr-'+prefix+'-'+ci);
+    if (cr) cr.classList.remove('open');
+    if (ar) ar.classList.remove('open');
+  });
+
+  if (isOpen) return;
+
+  crow.classList.add('open');
+  arr.classList.add('open');
+  wrap.classList.add('open');
+
+  // If already cached, render immediately
+  if (detailCache[code]) {
+    wrap.innerHTML = buildLiveDetail(detailCache[code], code, prefix);
+    setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+    return;
+  }
+
+  // Show skeleton while loading
+  wrap.innerHTML = `<div class="cdb" style="display:flex;flex-direction:column;gap:12px">
+    ${[80,55,95,65,70].map(w=>`<div style="height:12px;width:${w}%;background:rgba(255,255,255,.1);border-radius:4px;animation:pulse 1.2s ease-in-out infinite"></div>`).join('')}
+    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+  </div>`;
+  setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+
+  try {
+      // Look up in mock CAREERS data by code
+    const mockCareer = CAREERS.find(c => c.code === code);
+    if (!mockCareer) throw new Error('Career not found in mock data');
+    const detail = {
+      code,
+      title:        mockCareer.t,
+      description:  mockCareer.desc,
+      sampleTitles: [],
+      tags: { brightOutlook: false, apprenticeship: false, stem: false, green: false },
+      salary:  { median: mockCareer.salary, low: mockCareer.salaryLow, high: mockCareer.salaryHigh },
+      outlook: { growth: mockCareer.growth, openings: mockCareer.hiring ? mockCareer.hiring.openings : '' },
+      education: (mockCareer.eduBreakdown || []).map(e => ({ level: e.level, pct: e.pct })),
+      cluster:  mockCareer.cluster,
+      riasec:   [mockCareer.r],
+      related:  []
+    };
+    detailCache[code] = detail;
+
+    // Update the card badges now that we have real data
+    const crow2 = document.getElementById('crow-'+prefix+'-'+code);
+    if (crow2) {
+      const bm = crow2.querySelector('.crm');
+      if (bm) {
+        const sal = detail.salary?.median ? `<span class="mb g">💰 $${detail.salary.median.toLocaleString()}/yr</span>` : '';
+        const gr  = detail.outlook?.growth ? `<span class="mb">📈 ${detail.outlook.growth}</span>` : '';
+        const cl  = detail.cluster ? `<span class="mb">${detail.cluster}</span>` : '';
+        const bo  = detail.tags?.brightOutlook ? `<span class="mb g">☀️ Bright Outlook</span>` : '';
+        const ap  = detail.tags?.apprenticeship ? `<span class="mb">🔨 Apprenticeship</span>` : '';
+        const st  = detail.tags?.stem ? `<span class="mb">🔬 STEM</span>` : '';
+        bm.innerHTML = [bo, ap, st, sal, gr, cl].filter(Boolean).join('');
+      }
+    }
+
+    wrap.innerHTML = buildLiveDetail(detail, code, prefix);
+
+  } catch (err) {
+    console.error('Detail error:', err);
+    wrap.innerHTML = `<div class="cdb"><p style="color:rgba(255,255,255,.6);font-size:13px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--yellow)">View on O*NET →</a></p></div>`;
+  }
+}
+
+// Build the detail drawer for a live O*NET result
+function buildLiveDetail(d, code, prefix) {
+  const pid = prefix + '-' + code;
+  const isSaved = saved.has('live-' + code);
+  const sal = d.salary || {};
+  const out = d.outlook || {};
+  const saveBtn = `<button class="cdbm${isSaved?' saved':''}" data-live-code="${code}">${isSaved?'♥ Saved':'♡ Save this Career'}</button>`;
+  const footer = `<div class="cdf">${saveBtn}<a class="opill" href="https://www.onetonline.org/link/summary/${code}" target="_blank">View on O*NET →</a></div>`;
+
+  const tags = [
+    d.tags?.brightOutlook  ? `<span class="ctg">☀️ Bright Outlook</span>` : '',
+    d.tags?.apprenticeship ? `<span class="ctg">🔨 Apprenticeship Available</span>` : '',
+    d.tags?.stem           ? `<span class="ctg">🔬 STEM</span>` : '',
+    d.tags?.green          ? `<span class="ctg">🌱 Green Economy</span>` : ''
+  ].filter(Boolean).join('');
+
+  return `<div class="cdn">
+    <button class="cdt active" data-panel="ov-${pid}">Overview</button>
+    <button class="cdt" data-panel="ih-${pid}">Income &amp; Outlook</button>
+    <button class="cdt" data-panel="ed-${pid}">Education</button>
+    <button class="cdt" data-panel="rc-${pid}">Related</button>
+  </div>
+  <div class="cdb">
+
+  <div class="cdp active" id="ov-${pid}">
+    <div class="csg">
+      ${sal.median ? `<div class="csb"><div class="csl">Median Salary</div><div class="csv">$${sal.median.toLocaleString()}</div><div class="css2">per year</div></div>` : ''}
+      ${out.growth ? `<div class="csb"><div class="csl">Job Growth</div><div class="csv">${out.growth}</div></div>` : ''}
+      ${out.openings ? `<div class="csb"><div class="csl">Annual Openings</div><div class="csv" style="font-size:14px">${out.openings}</div><div class="css2">nationally</div></div>` : ''}
+      ${d.cluster ? `<div class="csb"><div class="csl">Career Cluster</div><div class="csv" style="font-size:12px;line-height:1.3">${d.cluster}</div></div>` : ''}
+    </div>
+    ${tags ? `<div class="ctgs" style="margin-bottom:16px">${tags}</div>` : ''}
+    <p style="font-size:14px;color:rgba(255,255,255,.82);line-height:1.75;margin-bottom:16px">${d.description}</p>
+    ${d.sampleTitles?.length ? `<div class="csh">Also called</div><div class="ctgs" style="margin-bottom:16px">${d.sampleTitles.slice(0,6).map(t=>`<span class="ctg">${t}</span>`).join('')}</div>` : ''}
+    ${footer}
+  </div>
+
+  <div class="cdp" id="ih-${pid}">
+    ${sal.median ? `
+    <div class="csh" style="margin-top:0">Salary range</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:14px;line-height:1.6">Ten percent earned less than $${(sal.low||0).toLocaleString()} and ten percent earned more than $${(sal.high||0).toLocaleString()}.</p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <thead><tr style="background:rgba(255,255,255,.1)">
+        <th style="text-align:left;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Percentile</th>
+        <th style="text-align:right;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Annual Salary</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.07)"><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">Low (10%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:#fff">$${(sal.low||0).toLocaleString()}</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04)"><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">Median (50%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:var(--yellow)">$${sal.median.toLocaleString()}</td></tr>
+        <tr><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">High (90%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:var(--green)">$${(sal.high||0).toLocaleString()}</td></tr>
+      </tbody>
+    </table>` : '<p style="color:rgba(255,255,255,.5);font-size:13px">Salary data not available.</p>'}
+    ${out.growth ? `<div style="background:rgba(255,255,255,.07);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-family:'Inter',sans-serif;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth</div><div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;color:var(--green)">${out.growth}</div></div>` : ''}
+    ${footer}
+  </div>
+
+  <div class="cdp" id="ed-${pid}">
+    ${d.education?.length ? `
+    <div class="csh" style="margin-top:0">Education level of current workers</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <thead><tr style="background:rgba(255,255,255,.1)">
+        <th style="text-align:left;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Education Level</th>
+        <th style="text-align:right;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">%</th>
+      </tr></thead>
+      <tbody>${d.education.map((e,i)=>`
+        <tr style="border-bottom:1px solid rgba(255,255,255,.07);${i%2===1?'background:rgba(255,255,255,.03)':''}">
+          <td style="padding:11px 14px;font-size:13px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">${e.level}</td>
+          <td style="padding:11px 14px;text-align:right">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px">
+              <div style="width:80px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden"><div style="width:${Math.min(e.pct,100)}%;height:100%;background:var(--yellow);border-radius:3px"></div></div>
+              <span style="font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;color:#fff;min-width:42px;text-align:right">${e.pct.toFixed(1)}%</span>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>` : ''}
+    ${d.tags?.apprenticeship ? `
+    <div style="background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.3);border-radius:var(--rmd);padding:16px;margin-bottom:16px">
+      <div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--yellow);margin-bottom:6px">🔨 Registered Apprenticeship Available</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;margin-bottom:10px">A registered apprenticeship program exists for this career — earn while you learn, no college debt required.</p>
+      <a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${code}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:8px 16px;font-size:11px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;text-decoration:none">Find Apprenticeships →</a>
+    </div>` : ''}
+    ${footer}
+  </div>
+
+  <div class="cdp" id="rc-${pid}">
+    <div class="csh" style="margin-top:0">Related Careers</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:16px;line-height:1.6">These careers share similar skills, interests, or education pathways.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+      ${(d.related||[]).map(r=>`
+        <div data-live-rel="${r.code}" data-prefix="${prefix}" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--rmd);padding:14px;cursor:pointer;transition:background .15s">
+          <div style="font-family:'Arial Black',sans-serif;font-size:12px;font-weight:900;text-transform:uppercase;color:#fff;line-height:1.3;margin-bottom:6px">${r.title}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);font-family:'Inter',sans-serif">${r.code}</div>
+        </div>`).join('')}
+    </div>
+    ${footer}
+  </div>
+
+  </div>`;
+}
+
+/* ══ RENDER LIST ══ */
+function renderList(list, listId, prefix) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  el.innerHTML = list.map(c => {
+    const idx = CAREERS.indexOf(c);
+    const isSaved = saved.has(idx);
+    const degs = (c.pathways||[]).map(p=>p.deg).join(' · ');
+    return `<div class="crow" id="crow-${prefix}-${idx}">
+      <div class="crl">
+        <h3>${c.t}</h3>
+        <div class="crm"><span class="mb g">💰 $${c.salary.toLocaleString()}/yr</span><span class="mb">📈 ${c.growth}</span><span class="mb">${c.cluster}</span></div>
+        <div class="crp">${degs}</div>
+      </div>
+      <div class="crr">
+        <button class="bmbtn${isSaved?' saved':''}">${isSaved?'♥':'♡'}</button>
+        <span class="arr" id="arr-${prefix}-${idx}">›</span>
+      </div>
+    </div>
+    <div class="cdw" id="cdw-${prefix}-${idx}"></div>`;
+  }).join('');
+}
+
+/* ══ OPEN DETAIL ══ */
+function openDetail(idx, prefix) {
+  const wrap = document.getElementById('cdw-'+prefix+'-'+idx);
+  const crow = document.getElementById('crow-'+prefix+'-'+idx);
+  const arr = document.getElementById('arr-'+prefix+'-'+idx);
+  if (!wrap || !crow) return;
+  const isOpen = wrap.classList.contains('open');
+  document.querySelectorAll('[id^="cdw-'+prefix+'-"].open').forEach(el => {
+    el.classList.remove('open');
+    const ci = el.id.replace('cdw-'+prefix+'-','');
+    const cr = document.getElementById('crow-'+prefix+'-'+ci);
+    const ar = document.getElementById('arr-'+prefix+'-'+ci);
+    if (cr) cr.classList.remove('open');
+    if (ar) ar.classList.remove('open');
+  });
+  if (isOpen) return;
+  wrap.innerHTML = buildDetail(idx, prefix);
+  wrap.classList.add('open'); crow.classList.add('open'); arr.classList.add('open');
+  setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+}
+
+/* ══ BUILD DETAIL ══ */
+function buildDetail(idx, prefix) {
+  const c = CAREERS[idx];
+  if (!c) return '<div class="cdb"><p style="color:#fff;padding:20px">Career not found.</p></div>';
+  const isSaved = saved.has(idx);
+  const rel = getRelated(idx);
+  const pid = prefix+'-'+idx;
+  const pw = c.pathways||[], pr = c.prepare||[], eb = c.eduBreakdown||[], tk = c.tasks||[];
+  const h = c.hiring||{ind:[],states:[],openings:'N/A'};
+  const slo = c.salaryLow||0, shi = c.salaryHigh||0;
+  const saveBtn = (extra='') => `<button class="cdbm${isSaved?' saved':''}" data-idx="${idx}"${extra}>${isSaved?'♥ Saved':'♡ Save this Career'}</button>`;
+  const footer = `<div class="cdf">${saveBtn()}<a class="opill" href="https://www.onetonline.org/link/summary/${c.code}" target="_blank">View on O*NET →</a></div>`;
+
+  return `<div class="cdn">
+    <button class="cdt active" data-panel="ov-${pid}">Overview</button>
+    <button class="cdt" data-panel="ih-${pid}">Income &amp; Hiring</button>
+    <button class="cdt" data-panel="ed-${pid}">Education</button>
+    <button class="cdt" data-panel="wp-${pid}">Ways to Prepare</button>
+    <button class="cdt" data-panel="rc-${pid}">Related Careers</button>
+  </div>
+  <div class="cdb">
+  <div class="cdp active" id="ov-${pid}">
+    <div class="csg">
+      <div class="csb"><div class="csl">Median Salary</div><div class="csv">$${c.salary.toLocaleString()}</div><div class="css2">per year</div></div>
+      <div class="csb"><div class="csl">Job Growth</div><div class="csv">${c.growth}</div><div class="css2">${c.outlook}</div></div>
+      <div class="csb"><div class="csl">Annual Openings</div><div class="csv" style="font-size:14px">${h.openings}</div><div class="css2">nationally</div></div>
+      <div class="csb"><div class="csl">Career Cluster</div><div class="csv" style="font-size:12px;line-height:1.3">${c.cluster}</div></div>
+    </div>
+    <p style="font-size:14px;color:rgba(255,255,255,.82);line-height:1.75;margin-bottom:16px">${c.desc}</p>
+    ${tk.length?`<div class="csh">Common Tasks</div><ul class="ctl">${tk.map(t=>`<li><span class="cta2">→</span>${t}</li>`).join('')}</ul>`:''}
+    ${footer}
+  </div>
+  <div class="cdp" id="ih-${pid}">
+    <div class="csh" style="margin-top:0">How much do ${c.t}s earn yearly?</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:14px;line-height:1.6">Ten percent earned less than $${slo.toLocaleString()} and ten percent earned more than $${shi.toLocaleString()}.</p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <thead><tr style="background:rgba(255,255,255,.1)"><th style="text-align:left;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Income Percentile</th><th style="text-align:right;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Income</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.07)"><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">Low (10%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:#fff">$${slo.toLocaleString()}</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04)"><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">Median (50%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:var(--yellow)">$${c.salary.toLocaleString()}</td></tr>
+        <tr><td style="padding:13px 14px;font-size:14px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">High (90%)</td><td style="padding:13px 14px;text-align:right;font-family:'Arial Black',sans-serif;font-size:16px;font-weight:900;color:var(--green)">$${shi.toLocaleString()}</td></tr>
+      </tbody>
+    </table>
+    <div style="background:rgba(255,255,255,.07);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-family:'Inter',sans-serif;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth Rate</div><div style="font-family:'Arial Black',sans-serif;font-size:22px;font-weight:900;color:var(--green)">${c.growth} <span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.5)">${c.outlook}</span></div></div>
+    ${h.ind.length?`<div class="csh">Top Hiring Industries</div><div class="ctgs" style="margin-bottom:14px">${h.ind.map(i=>`<span class="ctg">${i}</span>`).join('')}</div>`:''}
+    ${h.states.length?`<div class="csh">Top Hiring States</div><div class="ctgs">${h.states.map(s=>`<span class="ctg">${s}</span>`).join('')}</div>`:''}
+    ${footer}
+  </div>
+  <div class="cdp" id="ed-${pid}">
+    ${pw.length?`<div class="csh" style="margin-top:0">Education Pathways</div><div class="pwl" style="margin-bottom:20px">${pw.map(p=>`<div class="pwi"><div class="pwn">${p.lbl||p.deg}</div><div class="pwd">${p.desc}</div></div>`).join('')}</div>`:''}
+    ${eb.length?`<div class="csh">What education level do ${c.t}s have?</div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:rgba(255,255,255,.1)"><th style="text-align:left;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Education Level</th><th style="text-align:right;padding:10px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5)">Percentage</th></tr></thead>
+      <tbody>${eb.map((e,i)=>`<tr style="border-bottom:1px solid rgba(255,255,255,.07);${i%2===1?'background:rgba(255,255,255,.03)':''}"><td style="padding:11px 14px;font-size:13px;color:rgba(255,255,255,.75);font-family:'Noto Serif',serif">${e.level}</td><td style="padding:11px 14px;text-align:right"><div style="display:flex;align-items:center;justify-content:flex-end;gap:10px"><div style="width:80px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden"><div style="width:${e.pct}%;height:100%;background:var(--yellow);border-radius:3px"></div></div><span style="font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;color:#fff;min-width:42px;text-align:right">${e.pct.toFixed(2)}%</span></div></td></tr>`).join('')}</tbody>
+    </table>`:''}
+
+    <!-- FIND PROGRAMS NEAR YOU -->
+    <div style="margin-top:22px;background:rgba(255,255,255,.05);border-radius:var(--rmd);padding:18px;border:1px solid rgba(255,255,255,.12)">
+      <div class="csh" style="margin-top:0;margin-bottom:4px">Find Programs Near You</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.55);font-family:'Noto Serif',serif;margin-bottom:14px;line-height:1.5">Enter your zip code to find accredited training programs and schools near you for this career.</p>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <input id="zip-${pid}" type="text" maxlength="5" placeholder="Enter zip code" style="flex:1;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rf);padding:10px 16px;font-size:14px;font-family:'Noto Serif',serif;color:#fff;outline:none;min-width:0" />
+        <button id="zip-btn-${pid}" data-pid="${pid}" data-career="${c.t}" data-code="${c.code}" style="background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:10px 18px;font-size:12px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;white-space:nowrap">Search</button>
+      </div>
+      <div id="zip-results-${pid}" style="margin-top:12px"></div>
+      <p style="font-size:10px;color:rgba(255,255,255,.3);font-family:'Inter',sans-serif;margin-top:10px">🔧 Dev note: Will call CareerOneStop Training Finder API with O*NET code <code style="font-size:10px">${c.code}</code> + zip. Mock data shown below after search.</p>
+    </div>
+
+    ${footer}
+  </div>
+  <div class="cdp" id="wp-${pid}">
+    <div class="csh" style="margin-top:0">How to prepare for a career as a ${c.t}</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:16px;line-height:1.6">You can start building toward this career right now — in high school.</p>
+    ${pr.map(s=>`<div style="background:rgba(255,255,255,.06);border-radius:var(--rmd);padding:16px;margin-bottom:12px;border-left:3px solid var(--green)"><div style="font-family:'Arial Black',sans-serif;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:10px">${s.type}</div><ul style="list-style:none;display:flex;flex-direction:column;gap:7px">${(s.items||[]).map(item=>`<li style="display:flex;gap:10px;font-size:13px;color:rgba(255,255,255,.78);font-family:'Noto Serif',serif;line-height:1.5"><span style="color:var(--yellow);flex-shrink:0">✓</span>${item}</li>`).join('')}</ul></div>`).join('')}
+    ${footer}
+  </div>
+  <div class="cdp" id="rc-${pid}">
+    <div class="csh" style="margin-top:0">Related Careers</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:16px;line-height:1.6">These careers share similar interests, skills, or education pathways with ${c.t}. Click any to explore.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+      ${rel.map(ri => {
+        const rc = CAREERS[ri]; if (!rc) return '';
+        return `<div data-rel-idx="${ri}" data-prefix="${prefix}" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--rmd);padding:14px;cursor:pointer;transition:background .15s;display:flex;flex-direction:column;gap:8px">
+          <div style="font-family:'Arial Black',sans-serif;font-size:12px;font-weight:900;text-transform:uppercase;color:#fff;line-height:1.3">${rc.t}</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:13px;font-family:'Arial Black',sans-serif;color:var(--yellow);font-weight:900">$${rc.salary.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--green);font-family:'Inter',sans-serif;font-weight:700">${rc.growth} growth</div>
+          </div>
+          ${(rc.pathways&&rc.pathways[0])?`<div style="font-size:10px;color:rgba(255,255,255,.5);font-family:'Inter',sans-serif;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;line-height:1.4">${rc.pathways[0].deg}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    ${footer}
+  </div>
+  </div>`;
+}
+
+function switchDTab(btn) {
+  const wrap = btn.closest('.cdw');
+  const panelId = btn.dataset.panel;
+  wrap.querySelectorAll('.cdt').forEach(t => t.classList.remove('active'));
+  wrap.querySelectorAll('.cdp').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.add('active');
+}
+
+function getRelated(idx) {
+  const c = CAREERS[idx];
+  const top = lastResults ? Object.entries(lastResults).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k) : [];
+  const groups = [
+    ['Healthcare & Human Services','Education'],
+    ['Digital Technology','Advanced Manufacturing'],
+    ['Financial Services','Marketing & Sales','Management & Entrepreneurship'],
+    ['Construction','Energy & Natural Resources','Supply Chain & Transportation','Agriculture'],
+    ['Arts, Entertainment & Design'],
+    ['Public Service & Safety','Hospitality, Events & Tourism']
+  ];
+  return CAREERS.map((o,i) => {
+    if (i===idx) return {i,s:-1};
+    let s=0;
+    if (o.r===c.r) s+=4;
+    if (o.cluster===c.cluster) s+=3;
+    if (top.includes(o.r)) s+=2;
+    if (groups.some(g=>g.includes(c.cluster)&&g.includes(o.cluster))) s+=1;
+    return {i,s};
+  }).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,10).map(x=>x.i);
+}
+
+/* ══ SAVE ══ */
+function toggleSave(idx) {
+  if (saved.has(idx)) { saved.delete(idx); toast('Removed from saved careers'); }
+  else { saved.add(idx); toast('♥ Career saved!'); }
+  document.getElementById('tc').textContent = saved.size;
+  if (document.getElementById('tpn').classList.contains('open')) renderTray();
+  document.querySelectorAll('.crow').forEach(el => {
+    const parts = el.id.split('-');
+    const i = parseInt(parts[parts.length-1]);
+    if (i===idx) {
+      const b = el.querySelector('.bmbtn');
+      if (b) { b.classList.toggle('saved',saved.has(idx)); b.textContent = saved.has(idx)?'♥':'♡'; }
+    }
+  });
+  document.querySelectorAll('.cdbm[data-idx="'+idx+'"]').forEach(b => {
+    b.classList.toggle('saved',saved.has(idx));
+    b.textContent = saved.has(idx)?'♥ Saved':'♡ Save this Career';
+  });
+}
+function toggleSaveBtn(btn, idx) { toggleSave(idx); }
+
+function toggleLiveSave(code) {
+  const key = 'live-' + code;
+  const cached = detailCache[code];
+  if (saved.has(key)) { saved.delete(key); toast('Removed from saved careers'); }
+  else { saved.add(key); toast('♥ Career saved!'); }
+  document.getElementById('tc').textContent = saved.size;
+  if (document.getElementById('tpn').classList.contains('open')) renderTray();
+  document.querySelectorAll(`.cdbm[data-live-code="${code}"]`).forEach(b => {
+    b.classList.toggle('saved', saved.has(key));
+    b.textContent = saved.has(key) ? '♥ Saved' : '♡ Save this Career';
+  });
+  document.querySelectorAll(`.crow[id="crow-sd-${code}"] .bmbtn`).forEach(b => {
+    b.classList.toggle('saved', saved.has(key));
+    b.textContent = saved.has(key) ? '♥' : '♡';
+  });
+}
+
+/* ══ TRAY ══ */
+function openTray() { renderTray(); document.getElementById('tov').classList.add('open'); document.getElementById('tpn').classList.add('open'); }
+function closeTray() { document.getElementById('tov').classList.remove('open'); document.getElementById('tpn').classList.remove('open'); }
+function renderTray() {
+  const b = document.getElementById('tbody');
+  if (!saved.size) { b.innerHTML=`<div class="tempty"><div style="font-size:36px;margin-bottom:12px">♡</div><p>No saved careers yet.<br>Hit ♡ on any career to save it here.</p></div>`; return; }
+  b.innerHTML = [...saved].map(i => {
+    const c = CAREERS[i]; if (!c) return '';
+    return `<div class="ti"><div><h4>${c.t}</h4><div style="display:flex;flex-wrap:wrap;gap:6px"><span class="mb g">$${c.salary.toLocaleString()}/yr</span><span class="mb">${(c.pathways&&c.pathways[0])?c.pathways[0].deg:'N/A'}</span></div></div><button class="trm" data-remove="${i}">✕</button></div>`;
+  }).join('');
+  b.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', () => { toggleSave(parseInt(btn.dataset.remove)); });
+  });
+}
+
+/* ══ RESTORE FROM URL ══ */
+function restoreFromURL() {
+  try {
+    const s = new URLSearchParams(location.search).get('state');
+    if (!s) return;
+    const d = JSON.parse(atob(s));
+    if (d.saved) d.saved.forEach(i => saved.add(i));
+    document.getElementById('tc').textContent = saved.size;
+    if (d.results) { lastResults = d.results; renderResults(d.results); }
+    toast('✓ Your saved results have been restored!');
+  } catch(e) { console.warn('Restore failed', e); }
+}
+
+/* ══ CLUSTERS ══ */
+const CLUSTERS = [
+  {name:'Advanced Manufacturing',icon:'⚙️',img:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80',desc:'Make products using machines, robotics, and smart technology.',accent:'#FFA94D',r:'R',subs:['Engineering','Industrial Machinery','Production & Automation','Robotics','Safety & Quality Assurance']},
+  {name:'Agriculture',icon:'🌾',img:'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80',desc:'Work with plants, animals, and the environment to grow food.',accent:'#68F4B8',r:'R',subs:['Agribusiness','Agricultural Technology & Automation','Animal Systems','Food Science & Processing','Plant Systems','Water Systems']},
+  {name:'Arts, Entertainment & Design',icon:'🎨',img:'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400&q=80',desc:'Express ideas through art, performance, and digital creation.',accent:'#AD6BFF',r:'A',subs:['Design & Digital Arts','Fashion & Interiors','Fine Arts','Lighting & Sound Technology','Media Production & Broadcasting','Performing Arts']},
+  {name:'Construction',icon:'🏗️',img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',desc:'Design and build homes, buildings, roads, and other structures.',accent:'#FFA94D',r:'R',subs:['Architecture & Civil Engineering','Construction Planning & Development','Equipment Operation & Maintenance','Skilled Trades']},
+  {name:'Digital Technology',icon:'💻',img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',desc:'Use computers, code, and smart systems to solve problems.',accent:'#2B4EFF',r:'I',subs:['Data Science & AI','Network Systems & Cybersecurity','IT Support & Services','Software Solutions','Unmanned Vehicle Technology','Web & Cloud']},
+  {name:'Education',icon:'📚',img:'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&q=80',desc:'Help others to learn, grow, and reach their goals.',accent:'#F49FFB',r:'S',subs:['Early Childhood Development','Education Administration & Leadership','Learner Support & Community Engagement','Teaching, Training & Facilitation']},
+  {name:'Energy & Natural Resources',icon:'⚡',img:'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&q=80',desc:'Power and protect the planet through energy and natural systems.',accent:'#68F4B8',r:'R',subs:['Clean & Alternative Energy','Conservation & Land Management','Ecological Research & Development','Environmental Protection','Resource Extraction','Utilities']},
+  {name:'Financial Services',icon:'💰',img:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',desc:'Help people and businesses make smart money decisions.',accent:'#FFD810',r:'C',subs:['Accounting','Banking & Credit','Financial Strategy & Investments','Insurance','Real Estate']},
+  {name:'Healthcare & Human Services',icon:'🏥',img:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&q=80',desc:"Take care of people's physical and emotional health.",accent:'#68F4B8',r:'S',subs:['Behavioral & Mental Health','Biotechnology Research & Development','Community & Social Services','Health Data & Administration','Personal Care Services','Physical Health']},
+  {name:'Hospitality, Events & Tourism',icon:'🍽️',img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80',desc:'Help people enjoy travel, dining, and other experiences.',accent:'#FFD810',r:'E',subs:['Accommodations','Conferences & Events','Culinary & Food Services','Travel & Leisure']},
+  {name:'Management & Entrepreneurship',icon:'🚀',img:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80',desc:'Lead people, start businesses, and bring new ideas to life.',accent:'#2B4EFF',r:'E',subs:['Business Information Management','Entrepreneurship & Small Business','Leadership & Operations','Project Management','Regulation']},
+  {name:'Marketing & Sales',icon:'📣',img:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80',desc:'Communicate ideas and help people find products they love.',accent:'#AD6BFF',r:'E',subs:['Marketing & Advertising','Market Research, Analytics & Ethics','Retail & Customer Experience','Strategic Sales']},
+  {name:'Public Service & Safety',icon:'🛡️',img:'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&q=80',desc:'Protect people and help communities stay safe and supported.',accent:'#2B4EFF',r:'S',subs:['Emergency Response','Judicial Systems','Local, State & Federal Services','Military & National Security','Public Safety']},
+  {name:'Supply Chain & Transportation',icon:'🚚',img:'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&q=80',desc:'Move people, goods, and information safely and efficiently.',accent:'#FFA94D',r:'R',subs:['Air & Space Transportation','Ground & Rail Transportation','Maintenance & Repair','Marine Transportation','Planning & Logistics','Purchasing & Warehousing']}
+];
+
+function renderClusters() {
+  const top = lastResults ? Object.entries(lastResults).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k) : [];
+  const grid = document.getElementById('cgrid');
+  grid.innerHTML = '';
+  CLUSTERS.forEach((cl,i) => {
+    const isActive = activeCluster===cl.name, isMatch = top.includes(cl.r);
+    const div = document.createElement('div');
+    div.className = 'clc' + (isActive?' active':'');
+    div.style.borderColor = isActive?cl.accent:isMatch?cl.accent+'88':'var(--mg)';
+    div.innerHTML = `${isActive?`<div class="clbg" style="background:${cl.accent}">✓ Active</div>`:isMatch?`<div class="clbg" style="background:${cl.accent}">Matches you</div>`:''}
+      <div class="climg"><img src="${cl.img}" alt="${cl.name}" loading="lazy" onerror="this.parentElement.style.background='${cl.accent}33';this.style.display='none'"></div>
+      <div class="clbd"><div class="clnm">${cl.name}</div><div class="cldc">${cl.desc}</div></div>`;
+    div.addEventListener('click', () => handleCluster(i));
+    grid.appendChild(div);
+  });
+  const sub = document.getElementById('subp');
+  if (activeCluster) {
+    const cl = CLUSTERS.find(c=>c.name===activeCluster);
+    sub.style.display = 'block';
+    sub.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <div><div style="font-family:'Arial Black',sans-serif;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--navy)">${cl.name}</div>
+      <div style="font-size:12px;color:var(--ts);margin-top:3px">Select a pathway to narrow careers, or browse all below.</div></div>
+      <button id="clrbtn" style="background:none;border:1.5px solid var(--mg);border-radius:var(--rf);padding:6px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;color:var(--ts)">✕ Clear</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="subpills">
+      ${cl.subs.map((s,si)=>`<button class="spp${activeSub===s?' active':''}" style="${activeSub===s?'background:'+cl.accent+';border-color:'+cl.accent+';border-width:2px;':''}" data-si="${si}">${s}</button>`).join('')}
+    </div>`;
+    document.getElementById('clrbtn').addEventListener('click', () => { activeCluster=''; activeSub=''; renderClusters(); renderClusterResults(); });
+    document.querySelectorAll('#subpills .spp').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = cl.subs[parseInt(btn.dataset.si)];
+        activeSub = activeSub===s ? '' : s;
+        renderClusters(); renderClusterResults();
+      });
+    });
+  } else { sub.style.display='none'; activeSub=''; }
+}
+
+function handleCluster(i) {
+  const cl = CLUSTERS[i];
+  activeCluster = activeCluster===cl.name ? '' : cl.name;
+  activeSub = '';
+  renderClusters(); renderClusterResults();
+  if (activeCluster) setTimeout(() => document.getElementById('subp').scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+}
+
+function renderClusterResults() {
+  const wrap = document.getElementById('crwrap');
+  if (!activeCluster) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  const results = CAREERS.filter(c => c.cluster===activeCluster);
+  document.getElementById('crcount').innerHTML = `<strong>${activeSub||activeCluster}</strong> — ${results.length} career${results.length!==1?'s':''} found`;
+  renderList(results, 'crlist', 'cl');
+  setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 80);
+}
+
+/* ══ CAREERS DATA ══ */
+const CAREERS=[
+{t:'Registered Nurse',code:'29-1141.00',salary:81220,salaryLow:61000,salaryHigh:120000,growth:'+6%',outlook:'Faster than average',cluster:'Healthcare & Human Services',r:'S',desc:'Registered Nurses are the backbone of patient care. They assess symptoms, administer medications, run tests, and coordinate with doctors and specialists. RNs work in hospitals, outpatient clinics, schools, homes, and virtually every corner of the healthcare system. The role demands both clinical precision and deep human empathy.',eduBreakdown:[{level:'High school or less',pct:0},{level:'Certificate',pct:2},{level:"Associate's degree",pct:35},{level:"Bachelor's degree",pct:55},{level:"Master's or higher",pct:8}],tasks:['Monitor vital signs and patient status','Administer medications and treatments','Educate patients and families on care plans','Collaborate with physicians and care teams','Document patient progress in health records'],prepare:[{type:'Courses',items:['Anatomy & Physiology','Microbiology','Nutrition','Psychology','Statistics']},{type:'Certifications',items:['CPR / BLS (American Heart Association)','CNA — great first step','NCLEX-RN (required for licensure)']},{type:'High School Activities',items:['Volunteer at a hospital or clinic','Join HOSA (Health Occupations Students of America)','Take AP Biology or Chemistry','Shadow a nurse or medical professional']}],pathways:[{deg:"Associate's Degree",lbl:"Associate's Degree (ADN)",desc:"2-year community college program. Qualifies you for the NCLEX-RN licensing exam."},{deg:"Bachelor's Degree",lbl:"Bachelor of Science in Nursing (BSN)",desc:"4-year university program. Increasingly preferred by hospitals."},{deg:"Master's Degree",lbl:"Master of Science in Nursing (MSN)",desc:"For advanced practice roles: Nurse Practitioner, Nurse Anesthetist, or Educator."}],hiring:{ind:['Hospitals','Outpatient Care','Nursing Facilities','Government'],states:['California','Texas','New York','Florida'],openings:'~200,000/yr'}},
+{t:'Software Developer',code:'15-1252.00',salary:127260,salaryLow:75000,salaryHigh:185000,growth:'+25%',outlook:'Much faster than average',cluster:'Digital Technology',r:'I',desc:'Software Developers design and build the apps, websites, and systems that power modern life. They write code, debug problems, and work closely with designers and product managers. Many top developers are self-taught or bootcamp graduates.',eduBreakdown:[{level:'High school or less',pct:5},{level:'Certificate / bootcamp',pct:15},{level:"Associate's degree",pct:8},{level:"Bachelor's degree",pct:58},{level:"Master's or higher",pct:14}],tasks:['Write and test code in various languages','Analyze user requirements','Design system architecture','Maintain and improve existing applications','Collaborate with product and design teams'],prepare:[{type:'Courses',items:['Intro to Programming (Python or JavaScript)','Data Structures & Algorithms','Web Development (HTML, CSS, React)','AP Computer Science']},{type:'Certifications & Programs',items:['freeCodeCamp (free online)','Google IT Support Certificate','AWS Cloud Practitioner']},{type:'High School Activities',items:['Build a personal project or website','Join coding club or hackathons','Participate in FIRST Robotics']}],pathways:[{deg:'No Degree / Self-Taught',lbl:'Bootcamp or Self-Taught',desc:"Coding bootcamps (12–24 weeks) or self-study. Portfolio matters more than your degree."},{deg:'Certificate',lbl:'Technical Certificate',desc:"1-year focused programs in web dev, data science, or cybersecurity."},{deg:"Associate's Degree",lbl:"Associate's in Computer Science",desc:"2-year degree covering programming fundamentals."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Computer Science",desc:"4-year degree. Standard at major tech companies."},{deg:"Master's Degree",lbl:"Master's in CS or Software Engineering",desc:"For AI/ML, systems research, or senior engineering roles."}],hiring:{ind:['Tech Companies','Finance','Healthcare IT','Government'],states:['California','Washington','Texas','New York'],openings:'~180,000/yr'}},
+{t:'Electrician',code:'47-2111.00',salary:60240,salaryLow:38000,salaryHigh:98000,growth:'+11%',outlook:'Faster than average',cluster:'Construction',r:'R',desc:'Electricians install, maintain, and repair the electrical systems that keep our world running — from residential wiring to industrial power grids to EV charging infrastructure. The path in does not require a four-year degree.',eduBreakdown:[{level:'High school or less',pct:40},{level:'Certificate / vocational',pct:35},{level:'Apprenticeship',pct:20},{level:"Associate's or higher",pct:5}],tasks:['Install and connect electrical wiring','Read and interpret blueprints','Test circuits and verify safety','Diagnose electrical faults','Inspect systems for code compliance'],prepare:[{type:'Courses',items:['Algebra & Geometry','Physics (circuits and electricity)','Electrical Technology (if offered)','Blueprint Reading']},{type:'Certifications & Programs',items:['OSHA 10-Hour Construction Safety','Pre-apprenticeship programs through IBEW or NECA']},{type:'High School Activities',items:['Take vocational/trade classes','Join SkillsUSA','Build simple electrical circuits at home']}],pathways:[{deg:'No Degree / Apprenticeship',lbl:'Registered Apprenticeship (4–5 years)',desc:"Earn while you learn — leads to Journeyman license."},{deg:'Certificate',lbl:'Electrical Technology Certificate',desc:"1–2 year vocational program covering electrical theory, wiring, and code."}],hiring:{ind:['Construction','Manufacturing','Utilities','Government'],states:['Texas','California','Florida','New York'],openings:'~80,000/yr'}},
+{t:'Graphic Designer',code:'27-1024.00',salary:57990,salaryLow:31000,salaryHigh:119000,growth:'+3%',outlook:'About as fast as average',cluster:'Arts, Entertainment & Design',r:'A',desc:'Graphic Designers create the visual language of brands, products, and ideas. The field blends artistic creativity with strategic thinking — a great designer makes things communicate, not just look good. Portfolios matter far more than degrees.',eduBreakdown:[{level:'High school or less',pct:15},{level:'Certificate',pct:0},{level:'Some college',pct:5},{level:"Associate's degree",pct:5},{level:"Bachelor's degree",pct:65},{level:"Master's or higher",pct:10}],tasks:['Design layouts for print and digital media','Create logos and brand identity','Collaborate with clients on creative briefs','Prepare production-ready files','Present concepts and incorporate feedback'],prepare:[{type:'Courses',items:['Art & Design Foundations','Digital Media / Graphic Arts','Photography','AP Studio Art']},{type:'Tools to Learn',items:['Adobe Photoshop & Illustrator','Canva (great beginner tool)','Figma (UI/UX crossover)']},{type:'High School Activities',items:['Build a design portfolio','Design posters or graphics for school clubs','Enter design competitions']}],pathways:[{deg:'Certificate',lbl:'Graphic Design Certificate',desc:"1-year vocational program covering design fundamentals and portfolio building."},{deg:"Associate's Degree",lbl:"Associate's in Graphic Design",desc:"2-year program covering design theory, typography, and digital tools."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Graphic or Communication Design",desc:"4-year degree. Most agency positions prefer a bachelor's."}],hiring:{ind:['Advertising Agencies','Publishing','Tech','Retail'],states:['New York','California','Texas','Illinois'],openings:'~25,000/yr'}},
+{t:'High School Teacher',code:'25-2031.00',salary:62360,salaryLow:42000,salaryHigh:99000,growth:'+5%',outlook:'About as fast as average',cluster:'Education',r:'S',desc:'High School Teachers mentor, challenge, and inspire young people during some of the most formative years of their lives. Demand is especially strong in STEM, special education, and underserved areas.',eduBreakdown:[{level:'High school or less',pct:0},{level:'Some college',pct:1},{level:"Bachelor's degree",pct:68},{level:"Master's degree",pct:28},{level:'Doctoral degree',pct:3}],tasks:['Plan and deliver engaging lessons','Assess student performance','Communicate with parents and administrators','Adapt instruction to diverse learning needs','Participate in professional development'],prepare:[{type:'Courses',items:['AP courses in your subject area','Educational Psychology','Child Development','Public Speaking']},{type:'Certifications',items:['State teaching license (required)','Praxis Subject Assessments','Substitute teaching experience']},{type:'High School Activities',items:['Tutor peers or younger students','Volunteer at youth organizations','Join Future Educators of America']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor's in Education or Subject Area",desc:"Required in all states. Includes student teaching practicum."},{deg:"Master's Degree",lbl:"Master's in Education (MEd)",desc:"Increases salary and opens leadership roles."}],hiring:{ind:['Public Schools','Private Schools','Charter Schools'],states:['California','Texas','New York','Florida'],openings:'~90,000/yr'}},
+{t:'HVAC Technician',code:'49-9021.00',salary:57300,salaryLow:35000,salaryHigh:90000,growth:'+9%',outlook:'Faster than average',cluster:'Advanced Manufacturing',r:'R',desc:'HVAC Technicians install and maintain the heating, cooling, and ventilation systems in every building. As the U.S. moves toward greener energy, techs with skills in heat pumps and energy-efficient equipment are increasingly sought after.',eduBreakdown:[{level:'High school or less',pct:25},{level:'Certificate / vocational',pct:50},{level:'Apprenticeship',pct:20},{level:"Associate's or higher",pct:5}],tasks:['Install and commission HVAC equipment','Diagnose system malfunctions','Perform preventive maintenance','Follow EPA and safety regulations','Maintain service records'],prepare:[{type:'Courses',items:['Physics (thermodynamics)','Algebra','Electrical Systems / Electronics','Blueprint Reading']},{type:'Certifications',items:['EPA 608 Refrigerant Certification (required by law)','NATE Certification','OSHA 10-Hour Safety']},{type:'High School Activities',items:['Take vocational/trade courses','Join SkillsUSA HVAC competitions','Shadow a local HVAC technician']}],pathways:[{deg:'Certificate',lbl:'HVAC/R Certificate Program',desc:"6 months to 2 years at a trade school. Leads to EPA 608 certification."},{deg:'No Degree / Apprenticeship',lbl:'Apprenticeship (3–5 years)',desc:"Earn-and-learn path through trade unions or contractor programs."}],hiring:{ind:['HVAC Contractors','Construction','Property Management','Manufacturing'],states:['Texas','California','Florida','New York'],openings:'~40,000/yr'}},
+{t:'Social Worker',code:'21-1029.00',salary:58380,salaryLow:36000,salaryHigh:88000,growth:'+9%',outlook:'Faster than average',cluster:'Healthcare & Human Services',r:'S',desc:'Social Workers advocate for individuals and families facing poverty, abuse, mental illness, and addiction. They connect people to resources, navigate complex systems, and work to change the conditions that create inequity.',eduBreakdown:[{level:'High school or less',pct:2},{level:'Some college',pct:5},{level:"Bachelor's degree",pct:45},{level:"Master's degree",pct:46},{level:'Doctoral degree',pct:2}],tasks:['Assess client needs and risk factors','Develop individualized support plans','Connect clients to community resources','Document all case interactions','Collaborate with courts, schools, and healthcare'],prepare:[{type:'Courses',items:['Sociology','Psychology','Human Development','Ethics & Philosophy','Statistics']},{type:'Certifications & Programs',items:['Volunteer or intern at a nonprofit','Mental Health First Aid certification','Crisis intervention training']},{type:'High School Activities',items:['Volunteer at a food bank, shelter, or community org','Join Key Club or National Honor Society','Participate in peer mediation']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor of Social Work (BSW)",desc:"Entry-level degree for generalist roles in schools, agencies, and child welfare."},{deg:"Master's Degree",lbl:"Master of Social Work (MSW)",desc:"Required for clinical roles and LCSW licensing."}],hiring:{ind:['Government','Hospitals','Schools','Nonprofits'],states:['California','New York','Texas','Illinois'],openings:'~60,000/yr'}},
+{t:'Data Analyst',code:'15-2051.00',salary:99380,salaryLow:58000,salaryHigh:150000,growth:'+35%',outlook:'Much faster than average',cluster:'Digital Technology',r:'I',desc:'Data Analysts help organizations make sense of enormous amounts of information. They clean data, build dashboards, identify trends, and turn numbers into actionable recommendations. Analysts with strong communication skills are among the most in-demand professionals.',eduBreakdown:[{level:'High school or less',pct:3},{level:'Certificate / bootcamp',pct:10},{level:'Some college',pct:7},{level:"Bachelor's degree",pct:60},{level:"Master's or higher",pct:20}],tasks:['Write SQL queries to extract and clean data','Build dashboards and visual reports','Identify trends and anomalies','Present findings to stakeholders','Collaborate with engineering and product teams'],prepare:[{type:'Courses',items:['Statistics & Probability','AP Computer Science Principles','Algebra & Pre-Calculus']},{type:'Certifications & Tools',items:['Google Data Analytics Certificate (Coursera)','SQL basics (free on SQLZoo)','Tableau Public (free data visualization tool)']},{type:'High School Activities',items:['Analyze data for a school club or sports team','Enter science fair with a data-driven project','Learn Python basics online (free)','Take AP Statistics']}],pathways:[{deg:'Certificate',lbl:'Data Analytics Bootcamp or Certificate',desc:"Intensive 12–24 week programs covering SQL, Python, and visualization tools."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Statistics, Math, or CS",desc:"Most analyst roles prefer a 4-year degree in a quantitative field."},{deg:"Master's Degree",lbl:"Master's in Data Science or Analytics",desc:"For senior analyst or data scientist roles."}],hiring:{ind:['Tech','Finance','Healthcare','Consulting'],states:['California','New York','Texas','Washington'],openings:'~110,000/yr'}},
+{t:'Accountant',code:'13-2011.00',salary:79880,salaryLow:47000,salaryHigh:128000,growth:'+4%',outlook:'About as fast as average',cluster:'Financial Services',r:'C',desc:'Accountants are the financial backbone of every business, nonprofit, and government agency. CPAs are among the most trusted professionals in business and the credential opens doors across industries.',eduBreakdown:[{level:'High school or less',pct:1},{level:'Some college',pct:4},{level:"Bachelor's degree",pct:62},{level:"Master's degree",pct:31},{level:'Doctoral degree',pct:2}],tasks:['Prepare income statements and balance sheets','Manage federal and state tax filings','Conduct audits','Advise on financial decisions','Ensure regulatory compliance'],prepare:[{type:'Courses',items:['Algebra & Pre-Calculus','AP Macroeconomics','Business & Finance electives','Intro to Accounting (if offered)']},{type:'Certifications',items:['CPA Exam (after completing 150 credit hours)','Bookkeeping certificate','QuickBooks certification']},{type:'High School Activities',items:['Join FBLA (Future Business Leaders of America)','Manage finances for a school club','Take AP Economics']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor's in Accounting or Finance",desc:"Standard requirement for most accounting roles."},{deg:"Master's Degree",lbl:"Master's in Accounting (MAcc)",desc:"Required for CPA licensure in many states."}],hiring:{ind:['Accounting Firms','Finance','Government','Healthcare'],states:['New York','California','Texas','Illinois'],openings:'~70,000/yr'}},
+{t:'Marketing Manager',code:'11-2021.00',salary:142170,salaryLow:80000,salaryHigh:220000,growth:'+10%',outlook:'Faster than average',cluster:'Marketing & Sales',r:'E',desc:'Marketing Managers shape how the world sees a brand. They develop strategies, lead campaigns, analyze results, and ensure every message reaches the right audience. Marketing blends creative instincts with analytical rigor.',eduBreakdown:[{level:'High school or less',pct:2},{level:'Some college',pct:5},{level:"Bachelor's degree",pct:63},{level:"Master's degree",pct:27},{level:'Doctoral degree',pct:3}],tasks:['Develop and execute marketing strategies','Manage multi-channel campaigns','Analyze market data','Oversee creative relationships','Coordinate with sales and product'],prepare:[{type:'Courses',items:['AP Language & Composition','Business Marketing electives','Psychology (consumer behavior)','Statistics']},{type:'Certifications & Tools',items:['Google Digital Marketing Certificate','HubSpot Marketing Certification (free)','Google Analytics']},{type:'High School Activities',items:['Run social media for a school org','Start a blog or YouTube channel','Join DECA (marketing competitions)']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor's in Marketing, Business, or Communications",desc:"Standard entry point."},{deg:"Master's Degree",lbl:"MBA with Marketing Concentration",desc:"For senior manager, director, and VP-level roles."}],hiring:{ind:['Tech','Retail','Advertising','Finance'],states:['New York','California','Texas','Illinois'],openings:'~35,000/yr'}},
+{t:'Architect',code:'17-1011.00',salary:93310,salaryLow:57000,salaryHigh:148000,growth:'+5%',outlook:'About as fast as average',cluster:'Construction',r:'A',desc:'Architects design the physical spaces where people live, work, learn, and heal. It combines artistic vision with deep technical knowledge of structures, materials, codes, and sustainability.',eduBreakdown:[{level:'High school or less',pct:0},{level:'Some college',pct:2},{level:"Bachelor's degree",pct:48},{level:"Master's degree",pct:46},{level:'Doctoral degree',pct:4}],tasks:['Develop conceptual and schematic designs','Create technical construction documents','Oversee construction','Meet with clients','Coordinate with engineers and contractors'],prepare:[{type:'Courses',items:['AP Studio Art or Art & Design','Geometry & Pre-Calculus','Physics','Drafting / CAD if available']},{type:'Tools to Learn',items:['AutoCAD or SketchUp (free student versions)','Revit (industry standard BIM software)']},{type:'High School Activities',items:['Enter architecture design competitions (ACE Mentor Program)','Build physical models at home']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor of Architecture (B.Arch)",desc:"5-year professional degree. Required first step toward licensure."},{deg:"Master's Degree",lbl:"Master of Architecture (M.Arch)",desc:"For those with a 4-year degree in another field."}],hiring:{ind:['Architecture Firms','Construction','Government','Real Estate'],states:['New York','California','Texas','Florida'],openings:'~12,000/yr'}},
+{t:'Dental Hygienist',code:'29-2021.00',salary:81400,salaryLow:52000,salaryHigh:113000,growth:'+9%',outlook:'Faster than average',cluster:'Healthcare & Human Services',r:'S',desc:'Dental Hygienists are the primary preventive care providers in oral health. Excellent pay relative to education required, strong stability, and increasingly flexible schedules.',eduBreakdown:[{level:'High school or less',pct:1},{level:'Certificate',pct:5},{level:"Associate's degree",pct:72},{level:"Bachelor's degree",pct:18},{level:"Master's or higher",pct:4}],tasks:['Clean and polish teeth','Take dental X-rays','Screen for oral diseases','Educate patients on oral hygiene','Document treatment progress'],prepare:[{type:'Courses',items:['Biology & Chemistry','Anatomy','Algebra','Health Science electives']},{type:'Certifications',items:['CPR/BLS Certification','National Board Dental Hygiene Exam (after graduation)']},{type:'High School Activities',items:['Shadow a dental hygienist or dentist','Join HOSA','Volunteer at a community health clinic']}],pathways:[{deg:"Associate's Degree",lbl:"Associate's in Dental Hygiene",desc:"Standard pathway — 2-year community college. Must pass NBDHE board exam."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Dental Hygiene",desc:"Opens doors to teaching, public health, and management roles."}],hiring:{ind:['Dental Offices','Public Health','Schools','Hospitals'],states:['California','Texas','New York','Florida'],openings:'~20,000/yr'}},
+{t:'Physical Therapist',code:'29-1123.00',salary:97720,salaryLow:66000,salaryHigh:130000,growth:'+17%',outlook:'Much faster than average',cluster:'Healthcare & Human Services',r:'S',desc:'Physical Therapists help people recover from injuries, manage chronic pain, and rebuild strength and mobility. PT is one of the fastest-growing healthcare careers — deeply rewarding and in demand nationwide.',eduBreakdown:[{level:'High school or less',pct:0},{level:"Bachelor's degree",pct:10},{level:'Doctoral degree (DPT)',pct:90}],tasks:['Evaluate patients and diagnose movement disorders','Develop treatment plans','Guide therapeutic exercises','Apply manual therapy','Track patient progress'],prepare:[{type:'Courses',items:['AP Biology','Chemistry & Physics','Anatomy & Physiology','Psychology']},{type:'Experience (Required)',items:['Volunteer or work as a PT aide (100+ hours required)','Shadow a physical therapist in multiple settings']},{type:'High School Activities',items:['Volunteer at a rehabilitation center','Stay active in sports','Take college-level biology or anatomy early']}],pathways:[{deg:'Doctoral Degree',lbl:'Doctor of Physical Therapy (DPT)',desc:"Required for licensure. 3-year graduate program. Total education: ~7 years."}],hiring:{ind:['Hospitals','Outpatient Clinics','Schools','Nursing Facilities'],states:['California','Texas','New York','Florida'],openings:'~30,000/yr'}},
+{t:'Cybersecurity Analyst',code:'15-1212.00',salary:112000,salaryLow:70000,salaryHigh:170000,growth:'+32%',outlook:'Much faster than average',cluster:'Digital Technology',r:'I',desc:'Cybersecurity Analysts protect organizations from hackers, data breaches, and ransomware. There is a massive global talent shortage, making it one of the best career opportunities of the decade.',eduBreakdown:[{level:'High school or less',pct:3},{level:'Certificate / bootcamp',pct:18},{level:'Some college',pct:8},{level:"Bachelor's degree",pct:55},{level:"Master's or higher",pct:16}],tasks:['Monitor networks for security threats','Investigate security incidents','Conduct vulnerability assessments','Install and configure security software','Report findings and recommend improvements'],prepare:[{type:'Courses',items:['AP Computer Science','Networking fundamentals','Linux basics (free on TryHackMe)','Python programming']},{type:'Certifications',items:['CompTIA IT Fundamentals (ITF+)','Google Cybersecurity Certificate (Coursera)','TryHackMe or Hack The Box (free)']},{type:'High School Activities',items:['Compete in CyberPatriot (national competition)','Follow cybersecurity news','Join CTF (Capture the Flag) competitions']}],pathways:[{deg:'Certificate',lbl:'CompTIA Security+ / CEH Certification',desc:"Industry certifications accepted by many employers."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Cybersecurity or Computer Science",desc:"Most corporate and government roles prefer a 4-year degree."},{deg:"Master's Degree",lbl:"Master's in Cybersecurity",desc:"For senior analyst, CISO, or policy roles."}],hiring:{ind:['Government','Finance','Tech','Healthcare'],states:['Virginia','California','Texas','Maryland'],openings:'~65,000/yr'}},
+{t:'Civil Engineer',code:'17-2051.00',salary:88050,salaryLow:57000,salaryHigh:133000,growth:'+7%',outlook:'About as fast as average',cluster:'Construction',r:'R',desc:'Civil Engineers design and oversee infrastructure — roads, bridges, water treatment plants, and public transit. It combines rigorous technical analysis with real-world problem solving and meaningful community impact.',eduBreakdown:[{level:'High school or less',pct:1},{level:'Some college',pct:3},{level:"Bachelor's degree",pct:60},{level:"Master's degree",pct:32},{level:'Doctoral degree',pct:4}],tasks:['Design civil structures','Analyze survey and geotechnical data','Manage construction projects','Ensure code compliance','Prepare cost estimates'],prepare:[{type:'Courses',items:['AP Calculus (essential)','AP Physics','Chemistry','CAD if available']},{type:'Programs & Tools',items:['AutoCAD Student License (free)','MATHCOUNTS or Science Olympiad','ASCE student chapters']},{type:'High School Activities',items:['Enter bridge-building or structure competitions','Participate in FIRST Robotics','Visit local infrastructure projects']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor's in Civil Engineering",desc:"Required for entry-level roles. ABET-accredited programs preferred."},{deg:"Master's Degree",lbl:"Master's in Civil or Structural Engineering",desc:"For specialization in structural, environmental, or transportation engineering."}],hiring:{ind:['Engineering Firms','Government','Construction','Utilities'],states:['California','Texas','New York','Florida'],openings:'~25,000/yr'}},
+{t:'UX Designer',code:'27-1021.00',salary:103220,salaryLow:63000,salaryHigh:158000,growth:'+16%',outlook:'Faster than average',cluster:'Arts, Entertainment & Design',r:'A',desc:'UX Designers make digital products intuitive, useful, and enjoyable. They conduct user research, create prototypes, and test their designs. UX sits at the intersection of psychology, design, and technology — portfolio speaks louder than credentials.',eduBreakdown:[{level:'High school or less',pct:2},{level:'Certificate / bootcamp',pct:20},{level:'Some college',pct:8},{level:"Bachelor's degree",pct:55},{level:"Master's or higher",pct:15}],tasks:['Conduct user interviews and usability tests','Create wireframes and prototypes','Collaborate with engineers and product managers','Iterate on designs based on feedback','Maintain design systems'],prepare:[{type:'Courses',items:['Art & Design Foundations','Psychology','Intro to Computer Science','Statistics & Research Methods']},{type:'Tools to Learn',items:['Figma (free for students — industry standard)','Google UX Design Certificate (Coursera)']},{type:'High School Activities',items:['Redesign an app or website (add to portfolio)','Conduct a simple usability test','Build a portfolio on Behance or Dribbble']}],pathways:[{deg:'Certificate',lbl:'UX Design Bootcamp or Certificate',desc:"Intensive 3–6 month programs. Portfolio is critical."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Design, HCI, or Psychology",desc:"Many UX designers come from graphic design, psychology, or CS."},{deg:"Master's Degree",lbl:"Master's in Human-Computer Interaction",desc:"For specialized research or senior product design roles."}],hiring:{ind:['Tech','Finance','Healthcare','Consulting'],states:['California','New York','Washington','Texas'],openings:'~45,000/yr'}},
+{t:'Financial Advisor',code:'13-2052.00',salary:95390,salaryLow:47000,salaryHigh:208000,growth:'+13%',outlook:'Faster than average',cluster:'Financial Services',r:'E',desc:'Financial Advisors help individuals and families build wealth, plan for retirement, and achieve financial security. It is one of the few careers where earning potential is largely uncapped.',eduBreakdown:[{level:'High school or less',pct:2},{level:'Some college',pct:6},{level:"Bachelor's degree",pct:62},{level:"Master's degree",pct:26},{level:'Doctoral degree',pct:4}],tasks:['Assess client financial situations','Develop investment strategies','Monitor and rebalance portfolios','Prepare financial plans','Stay current on regulations'],prepare:[{type:'Courses',items:['AP Macroeconomics','Statistics & Probability','Personal Finance (if offered)','Business electives']},{type:'Certifications',items:['Securities Industry Essentials (SIE) Exam — can take at 18','CFP (Certified Financial Planner)']},{type:'High School Activities',items:['Participate in stock market simulations','Join FBLA','Track real portfolio performance using free tools']}],pathways:[{deg:"Bachelor's Degree",lbl:"Bachelor's in Finance, Economics, or Business",desc:"Required for most entry-level advisor roles."},{deg:"Master's Degree",lbl:"MBA or Master's in Finance",desc:"For wealth management or senior advisory roles."}],hiring:{ind:['Financial Services Firms','Banks','Insurance','Independent RIAs'],states:['New York','California','Texas','Florida'],openings:'~25,000/yr'}},
+{t:'Paramedic',code:'29-2040.00',salary:49090,salaryLow:32000,salaryHigh:77000,growth:'+11%',outlook:'Faster than average',cluster:'Public Service & Safety',r:'R',desc:'Paramedics deliver emergency medical care in the highest-stakes situations — accidents, cardiac arrests, overdoses, and disasters. Many go on to become nurses, PAs, or physicians, making it an excellent entry point into healthcare.',eduBreakdown:[{level:'High school or less',pct:20},{level:'Certificate (EMT)',pct:35},{level:"Associate's degree (Paramedic)",pct:40},{level:"Bachelor's or higher",pct:5}],tasks:['Respond to 911 emergency calls','Assess and stabilize patients on scene','Administer emergency medications','Transport patients safely','Document all patient care'],prepare:[{type:'Courses',items:['Biology & Anatomy','Chemistry','Psychology','Health Science electives']},{type:'Certifications',items:['CPR/BLS Certification (can get in high school)','EMT-Basic course (some high schools offer this)']},{type:'High School Activities',items:['Volunteer with local fire department or EMS','Take a CPR/First Aid course','Shadow a paramedic on a ride-along']}],pathways:[{deg:'Certificate',lbl:'EMT Basic Certificate (EMT-B)',desc:"First step — 100–150 hour program. Required before paramedic training."},{deg:"Associate's Degree",lbl:"Paramedic / Associate's in EMS",desc:"1–2 year program combining classroom with clinical and field rotations."}],hiring:{ind:['Emergency Services','Fire Departments','Hospitals','Air Medical'],states:['California','Texas','New York','Florida'],openings:'~18,000/yr'}},
+{t:'Database Administrator',code:'15-1242.00',salary:101000,salaryLow:63000,salaryHigh:148000,growth:'+9%',outlook:'Faster than average',cluster:'Digital Technology',r:'C',desc:'Database Administrators are the custodians of an organization\'s most valuable asset: its data. As organizations move to cloud infrastructure, DBAs are evolving into cloud data engineers — one of the most sought-after specializations in tech.',eduBreakdown:[{level:'High school or less',pct:2},{level:'Certificate',pct:12},{level:'Some college',pct:8},{level:"Bachelor's degree",pct:62},{level:"Master's or higher",pct:16}],tasks:['Install and configure database systems','Maintain data integrity','Monitor and tune performance','Implement backup plans','Manage user access controls'],prepare:[{type:'Courses',items:['AP Computer Science','Database concepts (SQL)','Algebra & Logic','Intro to Networking']},{type:'Certifications',items:['Oracle Database Foundations (free)','Microsoft Azure Data Fundamentals','SQL basics on SQLZoo (free)']},{type:'High School Activities',items:['Learn SQL online','Build a simple database for a school project','Participate in AP Computer Science or coding club']}],pathways:[{deg:'Certificate',lbl:'Oracle / Microsoft SQL Server Certification',desc:"Industry certifications accepted by many employers."},{deg:"Bachelor's Degree",lbl:"Bachelor's in Computer Science or Information Systems",desc:"Standard requirement for DBA roles."},{deg:"Master's Degree",lbl:"Master's in Information Systems",desc:"For senior DBA, data architecture, or cloud database management."}],hiring:{ind:['Tech','Finance','Healthcare','Government'],states:['California','Texas','New York','Virginia'],openings:'~15,000/yr'}}
+];
+
+/* ══ PROGRAM FINDER (MOCK) ══ */
+const ZIP_REGIONS = {
+  '100':'New York City, NY','101':'New York City, NY','102':'New York City, NY','103':'Staten Island, NY','104':'Bronx, NY','105':'Westchester, NY','106':'Westchester, NY','107':'Westchester, NY','108':'Westchester, NY','109':'Westchester, NY',
+  '110':'Queens, NY','111':'Queens, NY','112':'Brooklyn, NY','113':'Queens, NY','114':'Queens, NY','115':'Queens, NY','116':'Queens, NY','117':'Long Island, NY','118':'Long Island, NY','119':'Long Island, NY',
+  '200':'Washington, DC','201':'Northern VA','202':'Washington, DC','203':'Fairfield County, CT','060':'Hartford, CT','061':'Hartford, CT','062':'New Haven, CT',
+  '021':'Boston, MA','022':'Boston, MA','023':'South Shore, MA','024':'Cape Cod, MA','010':'Springfield, MA','011':'Springfield, MA','012':'Pittsfield, MA',
+  '770':'Houston, TX','750':'Dallas, TX','733':'Houston, TX','787':'Austin, TX','782':'San Antonio, TX',
+  '900':'Los Angeles, CA','902':'Los Angeles, CA','940':'San Francisco, CA','941':'San Francisco, CA','945':'Oakland, CA','925':'San Jose, CA',
+  '600':'Chicago, IL','601':'Chicago, IL','606':'Chicago, IL',
+  '300':'Atlanta, GA','303':'Atlanta, GA',
+  '331':'Miami, FL','320':'Jacksonville, FL','327':'Orlando, FL','337':'Tampa, FL',
+  '980':'Seattle, WA','981':'Seattle, WA','972':'Portland, OR',
+  '850':'Phoenix, AZ','852':'Phoenix, AZ',
+  '800':'Denver, CO','802':'Denver, CO',
+  '481':'Detroit, MI','482':'Detroit, MI',
+  '191':'Philadelphia, PA','190':'Philadelphia, PA'
+};
+
+const REGION_SCHOOLS = {
+  'New York City, NY': {
+    trade:[
+      {name:'Apex Technical School',type:'Trade School',address:'635 Ave of the Americas, New York, NY'},
+      {name:'Manhattan Institute',type:'Vocational School',address:'214 W 29th St, New York, NY'},
+      {name:'NYCCT Trade Programs',type:'Trade School',address:'300 Jay St, Brooklyn, NY'},
+    ],
+    community:[
+      {name:'Borough of Manhattan Community College',type:'Community College',address:'199 Chambers St, New York, NY',accred:'Middle States Accredited'},
+      {name:'Bronx Community College',type:'Community College',address:'2155 University Ave, Bronx, NY',accred:'Middle States Accredited'},
+      {name:'LaGuardia Community College',type:'Community College',address:'31-10 Thomson Ave, Queens, NY',accred:'Middle States Accredited'},
+      {name:'Kingsborough Community College',type:'Community College',address:'2001 Oriental Blvd, Brooklyn, NY',accred:'Middle States Accredited'},
+    ],
+    university:[
+      {name:'City College of New York',type:'4-Year University',address:'160 Convent Ave, New York, NY',accred:'Middle States Accredited'},
+      {name:'Hunter College',type:'4-Year University',address:'695 Park Ave, New York, NY',accred:'Middle States Accredited'},
+      {name:'Baruch College',type:'4-Year University',address:'55 Lexington Ave, New York, NY',accred:'Middle States Accredited'},
+    ]
+  },
+  'Long Island, NY': {
+    trade:[
+      {name:'Lincoln Technical Institute',type:'Trade School',address:'5 Aerial Way, Syosset, NY'},
+      {name:'BOCES Career & Technical Education',type:'Trade School',address:'507 Deer Park Rd, Dix Hills, NY'},
+    ],
+    community:[
+      {name:'Nassau Community College',type:'Community College',address:'1 Education Dr, Garden City, NY',accred:'Middle States Accredited'},
+      {name:'Suffolk County Community College',type:'Community College',address:'533 College Rd, Selden, NY',accred:'Middle States Accredited'},
+    ],
+    university:[
+      {name:'Hofstra University',type:'4-Year University',address:'100 Hofstra University, Hempstead, NY',accred:'Middle States Accredited'},
+      {name:'Stony Brook University',type:'4-Year University',address:'100 Nicolls Rd, Stony Brook, NY',accred:'Middle States Accredited'},
+    ]
+  },
+  'Boston, MA': {
+    trade:[
+      {name:'Porter and Chester Institute',type:'Trade School',address:'670 Lordship Blvd, Stratford, MA'},
+      {name:'Lincoln Technical Institute',type:'Trade School',address:'5 Middlesex Ave, Somerville, MA'},
+    ],
+    community:[
+      {name:'Bunker Hill Community College',type:'Community College',address:'250 New Rutherford Ave, Boston, MA',accred:'NECHE Accredited'},
+      {name:'Roxbury Community College',type:'Community College',address:'1234 Columbus Ave, Boston, MA',accred:'NECHE Accredited'},
+      {name:'Middlesex Community College',type:'Community College',address:'591 Springs Rd, Bedford, MA',accred:'NECHE Accredited'},
+    ],
+    university:[
+      {name:'University of Massachusetts Boston',type:'4-Year University',address:'100 Morrissey Blvd, Boston, MA',accred:'NECHE Accredited'},
+      {name:'Northeastern University',type:'4-Year University',address:'360 Huntington Ave, Boston, MA',accred:'NECHE Accredited'},
+    ]
+  },
+  'Houston, TX': {
+    trade:[
+      {name:'Texas School of Business',type:'Trade School',address:'711 E Airtex Dr, Houston, TX'},
+      {name:'Fortis Institute Houston',type:'Vocational School',address:'9990 Richmond Ave, Houston, TX'},
+    ],
+    community:[
+      {name:'Houston Community College',type:'Community College',address:'3100 Main St, Houston, TX',accred:'SACSCOC Accredited'},
+      {name:'San Jacinto College',type:'Community College',address:'8060 Spencer Hwy, Pasadena, TX',accred:'SACSCOC Accredited'},
+      {name:'Lone Star College',type:'Community College',address:'5000 Research Forest Dr, The Woodlands, TX',accred:'SACSCOC Accredited'},
+    ],
+    university:[
+      {name:'University of Houston',type:'4-Year University',address:'4800 Calhoun Rd, Houston, TX',accred:'SACSCOC Accredited'},
+      {name:'Texas Southern University',type:'4-Year University',address:'3100 Cleburne St, Houston, TX',accred:'SACSCOC Accredited'},
+    ]
+  },
+  'Dallas, TX': {
+    trade:[
+      {name:'Lincoln Tech Dallas',type:'Trade School',address:'2915 Alouette Dr, Grand Prairie, TX'},
+      {name:'Caris College',type:'Vocational School',address:'8585 N Stemmons Fwy, Dallas, TX'},
+    ],
+    community:[
+      {name:'Dallas College',type:'Community College',address:'1402 Corinth St, Dallas, TX',accred:'SACSCOC Accredited'},
+      {name:'Tarrant County College',type:'Community College',address:'1500 Houston St, Fort Worth, TX',accred:'SACSCOC Accredited'},
+    ],
+    university:[
+      {name:'University of Texas at Dallas',type:'4-Year University',address:'800 W Campbell Rd, Richardson, TX',accred:'SACSCOC Accredited'},
+      {name:'Southern Methodist University',type:'4-Year University',address:'6425 Boaz St, Dallas, TX',accred:'SACSCOC Accredited'},
+    ]
+  },
+  'Los Angeles, CA': {
+    trade:[
+      {name:'Advance Beauty College',type:'Trade School',address:'14100 Rosecrans Ave, La Mirada, CA'},
+      {name:'Los Angeles Trade Technical College',type:'Trade School',address:'400 W Washington Blvd, Los Angeles, CA'},
+    ],
+    community:[
+      {name:'Los Angeles City College',type:'Community College',address:'855 N Vermont Ave, Los Angeles, CA',accred:'ACCJC Accredited'},
+      {name:'Santa Monica College',type:'Community College',address:'1900 Pico Blvd, Santa Monica, CA',accred:'ACCJC Accredited'},
+      {name:'East Los Angeles College',type:'Community College',address:'1301 Avenida Cesar Chavez, Monterey Park, CA',accred:'ACCJC Accredited'},
+    ],
+    university:[
+      {name:'California State University, LA',type:'4-Year University',address:'5151 State University Dr, Los Angeles, CA',accred:'WSCUC Accredited'},
+      {name:'UCLA',type:'4-Year University',address:'405 Hilgard Ave, Los Angeles, CA',accred:'WSCUC Accredited'},
+    ]
+  },
+  'Chicago, IL': {
+    trade:[
+      {name:'Coyne College',type:'Trade School',address:'330 N Green St, Chicago, IL'},
+      {name:'Lincoln Technical Institute',type:'Trade School',address:'8317 W North Ave, Melrose Park, IL'},
+    ],
+    community:[
+      {name:'City Colleges of Chicago',type:'Community College',address:'226 W Jackson Blvd, Chicago, IL',accred:'HLC Accredited'},
+      {name:'Triton College',type:'Community College',address:'2000 5th Ave, River Grove, IL',accred:'HLC Accredited'},
+      {name:'College of DuPage',type:'Community College',address:'425 Fawell Blvd, Glen Ellyn, IL',accred:'HLC Accredited'},
+    ],
+    university:[
+      {name:'University of Illinois Chicago',type:'4-Year University',address:'601 S Morgan St, Chicago, IL',accred:'HLC Accredited'},
+      {name:'DePaul University',type:'4-Year University',address:'1 E Jackson Blvd, Chicago, IL',accred:'HLC Accredited'},
+    ]
+  },
+  'default': {
+    trade:[
+      {name:'Lincoln Technical Institute',type:'Trade School',address:'Local Campus — see website for address'},
+      {name:'Fortis Institute',type:'Vocational School',address:'Local Campus — see website for address'},
+      {name:'Porter and Chester Institute',type:'Trade School',address:'Local Campus — see website for address'},
+    ],
+    community:[
+      {name:'Local Community College',type:'Community College',address:'Search community colleges in your area',accred:'Regionally Accredited'},
+      {name:'Regional Technical College',type:'Community College',address:'Search technical colleges in your area',accred:'Regionally Accredited'},
+    ],
+    university:[
+      {name:'Regional State University',type:'4-Year University',address:'Search state universities in your area',accred:'Regionally Accredited'},
+      {name:'Local Private University',type:'4-Year University',address:'Search universities in your area',accred:'Regionally Accredited'},
+    ]
+  }
+};
+
+function getRegionFromZip(zip) {
+  const prefix3 = zip.substring(0,3);
+  const prefix2 = zip.substring(0,2);
+  for (const [key, val] of Object.entries(ZIP_REGIONS)) {
+    if (key === prefix3 || key === prefix2) return val;
+  }
+  return 'default';
+}
+
+function handleZipSearch(pid, careerTitle, onetCode) {
+  const zipEl = document.getElementById('zip-' + pid);
+  const resultsEl = document.getElementById('zip-results-' + pid);
+  const zip = zipEl ? zipEl.value.trim() : '';
+
+  if (!zip || zip.length !== 5 || !/^\d+$/.test(zip)) {
+    if (resultsEl) resultsEl.innerHTML = `<p style="font-size:12px;color:#FF6B6B;font-family:'Inter',sans-serif">Please enter a valid 5-digit zip code.</p>`;
+    return;
+  }
+
+  resultsEl.innerHTML = `<div style="font-size:13px;color:rgba(255,255,255,.5);font-family:'Inter',sans-serif;padding:10px 0">Searching for programs near ${zip}...</div>`;
+
+  setTimeout(() => {
+    const region = getRegionFromZip(zip);
+    const regionData = REGION_SCHOOLS[region] || REGION_SCHOOLS['default'];
+    const c = CAREERS.find(c => c.t === careerTitle);
+    const pathways = c ? (c.pathways||[]).map(p=>p.deg) : [];
+
+    let pool = [];
+    if (pathways.some(p => p.includes('Apprenticeship') || p.includes('Certificate') || p.includes('No Degree'))) {
+      pool = [...(regionData.trade||[]), ...(regionData.community||[])];
+    } else if (pathways.some(p => p.includes("Associate"))) {
+      pool = [...(regionData.community||[])];
+    } else {
+      pool = [...(regionData.community||[]), ...(regionData.university||[])];
+    }
+
+    const results = pool.slice(0, 4);
+    const regionLabel = region === 'default' ? `zip code ${zip}` : region;
+
+    resultsEl.innerHTML = `
+      <div style="font-size:11px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:10px">
+        ${results.length} programs found near ${regionLabel}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${results.map(p => {
+          const degrees = p.degrees || (p.type==='Trade School'?['Certificate']:p.type==='Community College'?["Associate's Degree",'Certificate']:["Bachelor's Degree"]);
+          const accred = p.accred || 'Accredited';
+          const url = p.url || '#';
+          return `<div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--rmd);padding:13px 14px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">
+              <div>
+                <div style="font-family:'Arial Black',sans-serif;font-size:13px;font-weight:900;text-transform:uppercase;color:#fff;margin-bottom:2px">${p.name}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5);font-family:'Inter',sans-serif">${p.type}</div>
+              </div>
+              <a href="${url}" target="_blank" style="background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:6px 12px;font-size:10px;font-family:'Arial Black',sans-serif;font-weight:900;text-transform:uppercase;text-decoration:none;white-space:nowrap;flex-shrink:0">Visit →</a>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,.45);font-family:'Inter',sans-serif;margin-bottom:6px">${p.address}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+              ${degrees.map(d=>`<span style="background:rgba(255,215,16,.12);border:1px solid rgba(255,215,16,.3);border-radius:var(--rf);padding:2px 8px;font-size:10px;font-family:'Inter',sans-serif;color:rgba(255,215,16,.9)">${d}</span>`).join('')}
+              <span style="background:rgba(104,244,184,.1);border:1px solid rgba(104,244,184,.25);border-radius:var(--rf);padding:2px 8px;font-size:10px;font-family:'Inter',sans-serif;color:var(--green)">${accred}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,.3);font-family:'Inter',sans-serif;margin-top:10px;line-height:1.5">🔧 Mock data for demo. Real results via CareerOneStop Training Finder API using zip ${zip} + O*NET code <code style="font-size:10px">${onetCode}</code>.</p>`;
+  }, 800);
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', function() {
+  restoreFromURL();
+  renderClusters();
+  renderList(CAREERS, 'slist', 'sd');
+  document.getElementById('rcount').textContent = 'Showing all ' + CAREERS.length + ' careers';
+});
+</script>
+</body>
+</html>
