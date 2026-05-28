@@ -102,6 +102,9 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
 .fg select{background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rsm);padding:8px 12px;font-size:15px;color:var(--navy);outline:none;min-width:160px}
 .rdiv{border:none;border-top:1px dashed var(--mg);margin:4px 0 16px}
+.search-chips{display:flex;gap:8px;flex-wrap:wrap}
+#search-empty-state{display:none}
+#search-empty-state.show{display:block}
 .rc2{font-size:12px;color:var(--ts);margin-bottom:16px}
 .crow{background:var(--white);border-radius:var(--rmd);border:1.5px solid var(--mg);padding:16px 18px;margin-bottom:4px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .crow:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(10,15,46,.08)}
@@ -325,6 +328,26 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   </div></div></div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
+
+  <!-- DEFAULT EMPTY STATE: starter chips + Bright Outlook -->
+  <div id="search-empty-state">
+    <div style="margin-bottom:28px">
+      <div class="t-eyebrow" style="color:var(--blue);margin-bottom:12px">Browse by area</div>
+      <div class="search-chips">
+        <button class="fc schip" data-q="healthcare">🏥 Healthcare</button>
+        <button class="fc schip" data-q="technology">💻 Technology</button>
+        <button class="fc schip" data-q="electrician">🔧 Skilled trades</button>
+        <button class="fc schip" data-q="designer">🎨 Creative</button>
+        <button class="fc schip" data-q="firefighter">🛡️ Public service</button>
+        <button class="fc schip" data-q="manager">🚀 Business</button>
+      </div>
+    </div>
+    <div>
+      <div class="t-eyebrow" style="color:var(--blue);margin-bottom:6px">Careers projected to grow rapidly</div>
+      <p style="font-size:15px;color:var(--ts);margin-bottom:14px">Bright Outlook careers — pulled live from O*NET.</p>
+      <div id="bo-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- CLUSTERS -->
@@ -453,6 +476,16 @@ document.addEventListener('click', function(e) {
   if (fc) { toggleF(fc.dataset.filter, fc); return; }
   const fr = t.closest('.fc[data-r]');
   if (fr && fr.closest('#filter-interest')) { toggleR(fr); return; }
+
+  // Starter chips in the search-page empty state
+  const schip = t.closest('.schip');
+  if (schip && schip.dataset.q) {
+    const input = document.getElementById('sinput');
+    input.value = schip.dataset.q;
+    doSearch();
+    input.focus();
+    return;
+  }
   const fsal = t.closest('#fsal');
   if (fsal) { doSearch(); return; }
   const fedu = t.closest('#fedu');
@@ -581,7 +614,9 @@ function goToSearch() {
 }
 function goToSearchAndOpen(idx) {
   switchTab('search');
+  hideEmptyState();
   renderList(CAREERS, 'slist', 'sd');
+  document.getElementById('rcount').textContent = 'From your assessment matches';
   setTimeout(() => openDetail(idx, 'sd'), 80);
 }
 
@@ -763,7 +798,54 @@ const detailCache = {};
 // Debounced live search — fires after 300ms of input pause
 const debouncedLiveSearch = debounce(_execLiveSearch, 300);
 
+// Show/hide the default empty state (starter chips + Bright Outlook).
+// Empty state is shown when: query is empty AND no filters active AND no
+// interest tags selected.
+function isSearchEmpty() {
+  const q = document.getElementById('sinput').value.trim();
+  const minSal = parseInt(document.getElementById('fsal').value) || 0;
+  const edu = document.getElementById('fedu').value;
+  return !q && !minSal && !edu && activeR.size === 0;
+}
+function showEmptyState() {
+  document.getElementById('search-empty-state').classList.add('show');
+  document.getElementById('slist').innerHTML = '';
+  document.getElementById('rcount').textContent = '';
+  renderBrightOutlook();
+}
+function hideEmptyState() {
+  document.getElementById('search-empty-state').classList.remove('show');
+}
+
+// Cache for Bright Outlook results so we only fetch once per session.
+let brightOutlookLoaded = false;
+async function renderBrightOutlook() {
+  if (brightOutlookLoaded) return;
+  const el = document.getElementById('bo-list');
+  if (!el) return;
+  // Skeleton while loading
+  el.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
+  try {
+    const data = await onetGet('/bright_outlook/grow?end=10');
+    const careers = (data.career || []).map(c => ({
+      code: c.code,
+      title: c.title,
+      tags: { brightOutlook: true, apprenticeship: false, stem: false, green: false },
+    }));
+    brightOutlookLoaded = true;
+    renderLiveList(careers, 'bo-list', 'bo');
+  } catch (err) {
+    console.error('Bright Outlook fetch failed:', err);
+    el.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Couldn\'t reach O*NET. Try the search above.</div>';
+  }
+}
+
 function doSearch() {
+  if (isSearchEmpty()) {
+    showEmptyState();
+    return;
+  }
+  hideEmptyState();
   const q = document.getElementById('sinput').value.trim();
   if (q.length >= 2) { debouncedLiveSearch(q); return; }
   _execLocalSearch();
@@ -1610,8 +1692,7 @@ function handleZipSearch(pid, careerTitle, onetCode) {
 document.addEventListener('DOMContentLoaded', function() {
   restoreFromURL();
   renderClusters();
-  renderList(CAREERS, 'slist', 'sd');
-  document.getElementById('rcount').textContent = 'Showing all ' + CAREERS.length + ' careers';
+  showEmptyState();
 });
 </script>
 </body>

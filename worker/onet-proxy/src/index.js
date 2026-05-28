@@ -10,6 +10,8 @@
 //   GET /career/{code}/details/{slice}          -> /online/occupations/{code}/details/{slice}
 //        slice ∈ { tasks, skills, knowledge, work_activities, abilities,
 //                  interests, work_context, job_zone, education, related_occupations }
+//   GET /bright_outlook/{category}?start=1&end=20  -> /mnm/bright_outlook/{category}
+//        category ∈ { grow, openings, emerging }
 
 const ONET_BASE = 'https://api-v2.onetcenter.org';
 
@@ -48,6 +50,7 @@ const ALLOWED_DETAIL_SLICES = new Set([
   'tasks', 'skills', 'knowledge', 'work_activities', 'abilities',
   'interests', 'work_context', 'job_zone', 'education', 'related_occupations',
 ]);
+const ALLOWED_BRIGHT_OUTLOOK_CATEGORIES = new Set(['grow', 'openings', 'emerging']);
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin');
@@ -120,6 +123,10 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/search?keyword=${encodeURIComponent(keyword)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === 'bright_outlook' && parts.length === 2 && ALLOWED_BRIGHT_OUTLOOK_CATEGORIES.has(parts[1])) {
+      const start = url.searchParams.get('start') || '1';
+      const end = url.searchParams.get('end') || '20';
+      onetPath = `/mnm/bright_outlook/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
     } else if (parts[0] === 'career' && parts[1] && CAREER_CODE_RE.test(parts[1])) {
       const code = parts[1];
       if (parts.length === 2) {
