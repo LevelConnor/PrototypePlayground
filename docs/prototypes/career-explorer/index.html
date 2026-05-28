@@ -102,7 +102,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
 .fg select{background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rsm);padding:8px 12px;font-size:15px;color:var(--navy);outline:none;min-width:160px}
 .rdiv{border:none;border-top:1px dashed var(--mg);margin:4px 0 16px}
-.search-chips{display:flex;gap:8px;flex-wrap:wrap}
 #search-empty-state{display:none}
 #search-empty-state.show{display:block}
 .rc2{font-size:12px;color:var(--ts);margin-bottom:16px}
@@ -320,6 +319,12 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <button class="fc" data-filter="income">Income</button>
     <button class="fc" data-filter="edu">Education</button>
     <button class="fc" data-filter="interest">Interest Areas</button>
+    <button class="fc schip" data-q="healthcare">🏥 Healthcare</button>
+    <button class="fc schip" data-q="technology">💻 Technology</button>
+    <button class="fc schip" data-q="electrician">🔧 Skilled trades</button>
+    <button class="fc schip" data-q="designer">🎨 Creative</button>
+    <button class="fc schip" data-q="firefighter">🛡️ Public service</button>
+    <button class="fc schip" data-q="manager">🚀 Business</button>
   </div>
   <div class="fd" id="filter-income"><div class="fg"><label>Minimum Salary</label><select id="fsal"><option value="0">Any</option><option value="40000">$40,000+</option><option value="60000">$60,000+</option><option value="80000">$80,000+</option><option value="100000">$100,000+</option></select></div></div>
   <div class="fd" id="filter-edu"><div class="fg"><label>Education Level</label><select id="fedu"><option value="">Any</option><option>No Degree / Self-Taught</option><option>No Degree / Apprenticeship</option><option>Certificate</option><option>Associate's Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option></select></div></div>
@@ -329,24 +334,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
 
-  <!-- DEFAULT EMPTY STATE: starter chips + Bright Outlook -->
+  <!-- DEFAULT EMPTY STATE: Bright Outlook careers -->
   <div id="search-empty-state">
-    <div style="margin-bottom:28px">
-      <div class="t-eyebrow" style="color:var(--blue);margin-bottom:12px">Browse by area</div>
-      <div class="search-chips">
-        <button class="fc schip" data-q="healthcare">🏥 Healthcare</button>
-        <button class="fc schip" data-q="technology">💻 Technology</button>
-        <button class="fc schip" data-q="electrician">🔧 Skilled trades</button>
-        <button class="fc schip" data-q="designer">🎨 Creative</button>
-        <button class="fc schip" data-q="firefighter">🛡️ Public service</button>
-        <button class="fc schip" data-q="manager">🚀 Business</button>
-      </div>
-    </div>
-    <div>
-      <div class="t-eyebrow" style="color:var(--blue);margin-bottom:6px">Careers projected to grow rapidly</div>
-      <p style="font-size:15px;color:var(--ts);margin-bottom:14px">Bright Outlook careers — pulled live from O*NET.</p>
-      <div id="bo-list"></div>
-    </div>
+    <div class="t-eyebrow" style="color:var(--blue);margin-bottom:6px">Careers projected to grow rapidly</div>
+    <p style="font-size:15px;color:var(--ts);margin-bottom:14px">Bright Outlook careers — pulled live from O*NET.</p>
+    <div id="bo-list"></div>
   </div>
 </div>
 
@@ -477,13 +469,21 @@ document.addEventListener('click', function(e) {
   const fr = t.closest('.fc[data-r]');
   if (fr && fr.closest('#filter-interest')) { toggleR(fr); return; }
 
-  // Starter chips in the search-page empty state
+  // Area chips in the filter row. Click to apply (sets the search keyword +
+  // visually activates). Click the active chip again to clear. Single-active.
   const schip = t.closest('.schip');
   if (schip && schip.dataset.q) {
     const input = document.getElementById('sinput');
-    input.value = schip.dataset.q;
+    const wasActive = schip.classList.contains('active');
+    // Reset all area chips, then toggle this one if it wasn't already active.
+    document.querySelectorAll('.schip').forEach(c => c.classList.remove('active'));
+    if (wasActive) {
+      input.value = '';
+    } else {
+      schip.classList.add('active');
+      input.value = schip.dataset.q;
+    }
     doSearch();
-    input.focus();
     return;
   }
   const fsal = t.closest('#fsal');
@@ -841,6 +841,13 @@ async function renderBrightOutlook() {
 }
 
 function doSearch() {
+  // Keep area-chip active state in sync with the search input value, regardless
+  // of whether the change came from a chip click or direct typing.
+  const v = document.getElementById('sinput').value.trim().toLowerCase();
+  document.querySelectorAll('.schip').forEach(c => {
+    c.classList.toggle('active', (c.dataset.q || '').toLowerCase() === v);
+  });
+
   if (isSearchEmpty()) {
     showEmptyState();
     return;
