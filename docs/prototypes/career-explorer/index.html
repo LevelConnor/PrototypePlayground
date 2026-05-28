@@ -338,6 +338,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <div class="t-eyebrow" style="color:var(--blue);margin-bottom:6px">Careers projected to grow rapidly</div>
     <p style="font-size:15px;color:var(--ts);margin-bottom:14px">Bright Outlook careers — pulled live from O*NET.</p>
     <div id="bo-list"></div>
+    <div id="bo-more-wrap" style="display:none;margin-top:14px;text-align:center">
+      <button class="cta ghost" id="bo-more-btn">Show more</button>
+      <div id="bo-count" style="font-size:12px;color:var(--ts);margin-top:8px"></div>
+    </div>
   </div>
 </div>
 
@@ -467,6 +471,9 @@ document.addEventListener('click', function(e) {
   if (fc) { toggleF(fc.dataset.filter, fc); return; }
   const fr = t.closest('.fc[data-r]');
   if (fr && fr.closest('#filter-interest')) { toggleR(fr); return; }
+
+  // Bright Outlook "Show more" pagination button
+  if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
   // Area chips in the filter row. Click to apply (sets the search keyword +
   // visually activates). Click the active chip again to clear. Single-active.
@@ -816,27 +823,51 @@ function hideEmptyState() {
   document.getElementById('search-empty-state').classList.remove('show');
 }
 
-// Cache for Bright Outlook results so we only fetch once per session.
-let brightOutlookLoaded = false;
-async function renderBrightOutlook() {
-  if (brightOutlookLoaded) return;
-  const el = document.getElementById('bo-list');
-  if (!el) return;
-  // Skeleton while loading
-  el.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
+// Bright Outlook state: cached careers + paging cursor.
+const BO_PAGE_SIZE = 15;
+let boCareers = [];     // accumulated careers across all loaded pages
+let boTotal = null;     // total available (set after first fetch)
+let boLoading = false;
+
+async function loadBrightOutlookPage() {
+  if (boLoading) return;
+  boLoading = true;
+  const start = boCareers.length + 1;
+  const end = start + BO_PAGE_SIZE - 1;
   try {
-    const data = await onetGet('/bright_outlook/grow?end=10');
-    const careers = (data.career || []).map(c => ({
+    const data = await onetGet(`/bright_outlook/grow?start=${start}&end=${end}`);
+    const page = (data.career || []).map(c => ({
       code: c.code,
       title: c.title,
       tags: { brightOutlook: true, apprenticeship: false, stem: false, green: false },
     }));
-    brightOutlookLoaded = true;
-    renderLiveList(careers, 'bo-list', 'bo');
+    boTotal = data.total || boTotal || page.length;
+    boCareers = boCareers.concat(page);
+    renderLiveList(boCareers, 'bo-list', 'bo');
+    // Update "Show more" affordance
+    const moreWrap = document.getElementById('bo-more-wrap');
+    const countLabel = document.getElementById('bo-count');
+    const hasMore = boCareers.length < boTotal;
+    moreWrap.style.display = boCareers.length > 0 ? 'block' : 'none';
+    document.getElementById('bo-more-btn').style.display = hasMore ? '' : 'none';
+    countLabel.textContent = `Showing ${boCareers.length} of ${boTotal} Bright Outlook careers`;
   } catch (err) {
     console.error('Bright Outlook fetch failed:', err);
-    el.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Couldn\'t reach O*NET. Try the search above.</div>';
+    if (boCareers.length === 0) {
+      document.getElementById('bo-list').innerHTML =
+        '<div style="color:var(--ts);font-size:15px;padding:14px 0">Couldn\'t reach O*NET. Try the search above.</div>';
+    }
+  } finally {
+    boLoading = false;
   }
+}
+
+async function renderBrightOutlook() {
+  if (boCareers.length > 0) return; // already loaded
+  const el = document.getElementById('bo-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
+  await loadBrightOutlookPage();
 }
 
 function doSearch() {
