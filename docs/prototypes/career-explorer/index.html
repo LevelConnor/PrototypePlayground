@@ -83,10 +83,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .sav-btns{display:flex;gap:10px;flex-wrap:wrap}
 .sbx-w{position:relative;margin-bottom:18px}
 .sbx{width:100%;background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:14px 52px 14px 22px;font-size:15px;color:var(--navy);outline:none;transition:border-color .15s}
-.sbx:focus{border-color:var(--navy)}
+.sbx:focus{border-color:var(--blue)}
 .sbx::placeholder{color:#aaa}
 .si2{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--ts);pointer-events:none}
-.qcta{background:var(--white);border:2px solid var(--navy);border-radius:var(--rlg);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.qcta{background:var(--white);border:2px solid var(--blue);border-radius:var(--rlg);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
 .qcl{display:flex;align-items:center;gap:14px}
 .qci{width:48px;height:48px;border-radius:50%;background:var(--lg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .qct h4{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:2px}
@@ -96,7 +96,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
 .fc{background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:8px 18px;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .12s}
 .fc:hover{border-color:var(--blue)}
-.fc.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.fc.active{background:var(--blue);border-color:var(--blue);color:#fff}
 .fd{display:none;background:var(--white);border:2px solid var(--mg);border-radius:var(--rlg);padding:18px 20px;margin-bottom:18px;gap:16px;flex-wrap:wrap}
 .fd.open{display:flex}
 .fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
@@ -187,7 +187,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .riasec-table .rt-code{font-size:15px;font-weight:900;color:var(--navy);white-space:nowrap;padding-right:14px}
 .riasec-table .rt-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle;flex-shrink:0}
 @media print{header,nav,.mock-note,.sav,.tov,.tpn,.toast,.modal-overlay,#panel-search,#panel-clusters,#afw{display:none!important}.panel{display:block!important}.rw{display:block!important}body{background:#fff}#print-header,#print-footer{display:block!important}.pt{font-size:20px}}
-#print-header{display:none;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #000}
+#print-header{display:none;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--blue)}
 #print-footer{display:none;margin-top:32px;padding-top:16px;border-top:1px solid #BFDBFE;font-size:11px;color:#666;}
 #print-restore-url{font-size:11px;word-break:break-all;color:#333;margin-top:4px}
 @media(max-width:600px){main{padding:22px 14px 60px}.qs{gap:3px}.sb{width:28px;height:28px;font-size:11px}.sav-btns{flex-direction:column}.sav-btns .cta{width:100%;text-align:center}}
@@ -634,7 +634,7 @@ function renderResults(avgs) {
   const matched = CAREERS.filter(c => top3.includes(c.r)).slice(0,5);
   document.getElementById('mcards').innerHTML = matched.map((c,i) => {
     const idx = CAREERS.indexOf(c);
-    return `<div style="background:var(--white);border-radius:var(--rlg);border:${i===matched.length-1?'2px solid var(--navy)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer;" id="mcard-${idx}">
+    return `<div style="background:var(--white);border-radius:var(--rlg);border:${i===matched.length-1?'2px solid var(--blue)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer;" id="mcard-${idx}">
       <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px">${c.t}</div>
       <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
         <div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">💲</div><span style="font-size:15px;font-weight:700">$${c.salary.toLocaleString()}</span></div>
