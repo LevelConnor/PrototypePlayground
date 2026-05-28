@@ -482,6 +482,11 @@ document.addEventListener('click', function(e) {
   // Bright Outlook "Show more" pagination button
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
+  // Cluster results "Show more" pagination button
+  if (t.id === 'cluster-more-btn' && loadedClusterCode) {
+    loadClusterPage(loadedClusterCode); return;
+  }
+
   // Area chips in the filter row. Click to apply (sets the search keyword +
   // visually activates). Click the active chip again to clear. Single-active.
   const schip = t.closest('.schip');
@@ -1489,13 +1494,110 @@ function handleCluster(i) {
   if (activeCluster) setTimeout(() => document.getElementById('subp').scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
 }
 
+// Map our local cluster names to O*NET career-cluster codes
+// (from GET /mnm/career_clusters). Note the Oxford comma differences in
+// "Arts, Entertainment, & Design" and "Hospitality, Events, & Tourism"
+// — our local names drop the comma but the codes still map.
+const CLUSTER_CODES = {
+  'Advanced Manufacturing':        '010100',
+  'Construction':                  '010200',
+  'Supply Chain & Transportation': '010300',
+  'Arts, Entertainment & Design':  '020100',
+  'Hospitality, Events & Tourism': '020200',
+  'Financial Services':            '030100',
+  'Education':                     '040100',
+  'Healthcare & Human Services':   '040200',
+  'Public Service & Safety':       '040300',
+  'Agriculture':                   '050100',
+  'Energy & Natural Resources':    '050200',
+  'Digital Technology':            '060100',
+  'Management & Entrepreneurship': '060200',
+  'Marketing & Sales':             '060300',
+};
+
+// Pagination state for the live cluster results.
+const CLUSTER_PAGE_SIZE = 15;
+let clusterCareers = [];
+let clusterTotal = null;
+let clusterLoading = false;
+let loadedClusterCode = null;  // tracks which cluster's data we currently hold
+
+async function loadClusterPage(code) {
+  if (clusterLoading) return;
+  clusterLoading = true;
+  const start = clusterCareers.length + 1;
+  const end = start + CLUSTER_PAGE_SIZE - 1;
+  try {
+    const data = await onetGet(`/career_cluster/${code}?start=${start}&end=${end}`);
+    const page = (data.career || []).map(c => ({
+      code: c.code,
+      title: c.title,
+      tags: {
+        brightOutlook:  !!(c.tags && c.tags.bright_outlook),
+        apprenticeship: !!(c.tags && c.tags.apprenticeship),
+        stem:           !!(c.tags && c.tags.stem),
+        green:          !!(c.tags && c.tags.green),
+      },
+    }));
+    clusterTotal = data.total || clusterTotal || page.length;
+    clusterCareers = clusterCareers.concat(page);
+    renderLiveList(clusterCareers, 'crlist', 'cl');
+    updateClusterCountAndMore();
+  } catch (err) {
+    console.error('Cluster fetch failed:', err);
+    document.getElementById('crlist').innerHTML =
+      '<div style="color:var(--ts);font-size:15px;padding:14px 0">Couldn\'t reach O*NET. Try again later.</div>';
+  } finally {
+    clusterLoading = false;
+  }
+}
+
+function updateClusterCountAndMore() {
+  const label = activeSub || activeCluster;
+  document.getElementById('crcount').innerHTML =
+    `<strong>${label}</strong> — showing ${clusterCareers.length} of ${clusterTotal} career${clusterTotal!==1?'s':''}`;
+  let more = document.getElementById('cluster-more-wrap');
+  if (!more) {
+    const wrap = document.getElementById('crwrap');
+    const div = document.createElement('div');
+    div.id = 'cluster-more-wrap';
+    div.style.cssText = 'margin-top:14px;text-align:center';
+    div.innerHTML = '<button class="cta ghost" id="cluster-more-btn">Show more</button>';
+    wrap.appendChild(div);
+    more = div;
+  }
+  more.style.display = clusterCareers.length > 0 ? 'block' : 'none';
+  document.getElementById('cluster-more-btn').style.display =
+    clusterCareers.length < clusterTotal ? '' : 'none';
+}
+
 function renderClusterResults() {
   const wrap = document.getElementById('crwrap');
   if (!activeCluster) { wrap.style.display='none'; return; }
   wrap.style.display = 'block';
-  const results = CAREERS.filter(c => c.cluster===activeCluster);
-  document.getElementById('crcount').innerHTML = `<strong>${activeSub||activeCluster}</strong> — ${results.length} career${results.length!==1?'s':''} found`;
-  renderList(results, 'crlist', 'cl');
+
+  const code = CLUSTER_CODES[activeCluster];
+  if (!code) {
+    document.getElementById('crcount').textContent =
+      `Couldn't find an O*NET code for "${activeCluster}".`;
+    document.getElementById('crlist').innerHTML = '';
+    return;
+  }
+
+  // Reset pagination state when switching clusters
+  if (loadedClusterCode !== code) {
+    clusterCareers = [];
+    clusterTotal = null;
+    loadedClusterCode = code;
+    document.getElementById('crlist').innerHTML =
+      '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
+    document.getElementById('crcount').innerHTML =
+      `<strong>${activeSub || activeCluster}</strong> — loading…`;
+    loadClusterPage(code);
+  } else {
+    // Same cluster — just refresh count/heading (e.g. when activeSub label changes)
+    updateClusterCountAndMore();
+  }
   setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 80);
 }
 
