@@ -1,6 +1,6 @@
 // O*NET Web Services v2 proxy.
 // - Holds the X-API-Key as a Worker secret (ONET_API_KEY).
-// - Adds CORS so the browser-side Career Explorer can call it.
+// - Restricts CORS and request origin to approved domains.
 // - Caches O*NET responses on the Cloudflare edge for 1h.
 //
 // Endpoints (all return JSON from O*NET as-is):
@@ -12,7 +12,36 @@
 //                  interests, work_context, job_zone, education, related_occupations }
 
 const ONET_BASE = 'https://api-v2.onetcenter.org';
-const ALLOWED_ORIGIN = '*';
+
+// Origins allowed to call this Worker. Browsers send Origin; non-browser callers
+// (curl, scripts) usually don't, so they get blocked by isAllowedRequest.
+// Note: Origin/Referer can be spoofed. This is abuse-deterrence, not a hard
+// security boundary — add Cloudflare Rate Limiting Rules for stronger protection.
+const EXACT_ORIGINS = new Set([
+  'https://levelconnor.github.io',
+  'https://www.levelall.com',
+  'https://levelall.com',
+]);
+const ORIGIN_PATTERNS = [
+  /^https:\/\/[a-z0-9-]+\.webflow\.io$/i, // Webflow staging/preview
+];
+
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (EXACT_ORIGINS.has(origin)) return true;
+  return ORIGIN_PATTERNS.some(rx => rx.test(origin));
+}
+
+function isAllowedRequest(request) {
+  const origin = request.headers.get('Origin');
+  if (origin) return isAllowedOrigin(origin);
+  // Fall back to Referer (e.g. some preflighted GETs from iframes omit Origin)
+  const referer = request.headers.get('Referer');
+  if (referer) {
+    try { return isAllowedOrigin(new URL(referer).origin); } catch { return false; }
+  }
+  return false;
+}
 
 const CAREER_CODE_RE = /^[0-9]{2}-[0-9]{4}\.[0-9]{2}$/;
 const ALLOWED_DETAIL_SLICES = new Set([
@@ -20,9 +49,11 @@ const ALLOWED_DETAIL_SLICES = new Set([
   'interests', 'work_context', 'job_zone', 'education', 'related_occupations',
 ]);
 
-function corsHeaders() {
+function corsHeaders(request) {
+  const origin = request.headers.get('Origin');
+  const allow = isAllowedOrigin(origin) ? origin : 'null';
   return {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
@@ -41,24 +72,31 @@ async function onetFetch(path, env) {
   });
 }
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(request, body, status = 200) {
   return new Response(typeof body === 'string' ? body : JSON.stringify(body), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
-      ...corsHeaders(),
+      'Cache-Control': 'private, max-age=3600',
+      ...corsHeaders(request),
     },
   });
 }
 
 export default {
   async fetch(request, env) {
+    // CORS preflight — answer based on Origin but don't gate it (browser handles).
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders() });
+      return new Response(null, { status: 204, headers: corsHeaders(request) });
     }
+
+    // Gate everything else on Origin/Referer.
+    if (!isAllowedRequest(request)) {
+      return jsonResponse(request, { error: 'Forbidden' }, 403);
+    }
+
     if (request.method !== 'GET') {
-      return jsonResponse({ error: 'Method not allowed' }, 405);
+      return jsonResponse(request, { error: 'Method not allowed' }, 405);
     }
 
     const url = new URL(request.url);
@@ -72,13 +110,13 @@ export default {
         '  GET /career/{code}\n' +
         '  GET /career/{code}/outlook\n' +
         '  GET /career/{code}/details/{slice}\n',
-        { headers: { 'Content-Type': 'text/plain', ...corsHeaders() } }
+        { headers: { 'Content-Type': 'text/plain', ...corsHeaders(request) } }
       );
     }
 
     if (parts[0] === 'search' && parts.length === 1) {
       const keyword = (url.searchParams.get('keyword') || '').trim();
-      if (!keyword) return jsonResponse({ error: 'Missing keyword' }, 400);
+      if (!keyword) return jsonResponse(request, { error: 'Missing keyword' }, 400);
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/search?keyword=${encodeURIComponent(keyword)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
@@ -91,10 +129,10 @@ export default {
       } else if (parts.length === 4 && parts[2] === 'details' && ALLOWED_DETAIL_SLICES.has(parts[3])) {
         onetPath = `/online/occupations/${code}/details/${parts[3]}`;
       } else {
-        return jsonResponse({ error: 'Not found' }, 404);
+        return jsonResponse(request, { error: 'Not found' }, 404);
       }
     } else {
-      return jsonResponse({ error: 'Not found' }, 404);
+      return jsonResponse(request, { error: 'Not found' }, 404);
     }
 
     try {
@@ -104,12 +142,12 @@ export default {
         status: res.status,
         headers: {
           'Content-Type': res.headers.get('Content-Type') || 'application/json',
-          'Cache-Control': res.ok ? 'public, max-age=3600' : 'no-store',
-          ...corsHeaders(),
+          'Cache-Control': res.ok ? 'private, max-age=3600' : 'no-store',
+          ...corsHeaders(request),
         },
       });
     } catch (err) {
-      return jsonResponse({ error: 'Upstream fetch failed', detail: err.message }, 502);
+      return jsonResponse(request, { error: 'Upstream fetch failed', detail: err.message }, 502);
     }
   },
 };
