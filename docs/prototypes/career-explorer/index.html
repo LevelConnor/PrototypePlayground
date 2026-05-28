@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0A0F2E;--blue:#2B4EFF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#F5F5F2;--mg:#E0E0DC;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px}
+:root{--navy:#0A0F2E;--blue:#0083FF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#F5F5F2;--mg:#E0E0DC;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
@@ -47,7 +47,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ps{font-size:15px;color:var(--ts);margin-bottom:28px}
 .mock-note{background:#FFFBE6;border:1.5px solid var(--yellow);border-radius:var(--rmd);padding:10px 14px;font-size:12px;color:#5a4a00;margin-bottom:24px;display:flex;gap:8px}
 .cta{background:var(--blue);color:#fff;border:none;border-radius:var(--rf);padding:13px 28px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
-.cta:hover{background:#1a3ae8}
+.cta:hover{background:#006bd6}
 .cta.ghost{background:none;border:2px solid var(--mg);color:var(--navy)}
 .cta.ghost:hover{background:var(--mg)}
 .cta.ylw{background:var(--yellow);color:var(--navy)}
@@ -283,7 +283,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <div id="bleg" style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
     <!-- RIASEC legend on results page -->
     <div id="riasec-results-legend" style="background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 24px;margin:0 auto 32px;max-width:560px">
-      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:12px">What each letter means</div>
+      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:12px">What each letter means</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px" id="riasec-legend-grid"></div>
     </div>
     <div style="text-align:center;margin-bottom:20px"><div class="pt" style="font-size:20px">Careers matching your <span>interest areas.</span></div><p style="font-size:15px;color:var(--ts);margin-top:6px;margin-bottom:20px">Based on your answers, these careers match your combination of interest areas.</p></div>
@@ -532,7 +532,7 @@ const saved = new Set(), answered = {};
 let lastResults = null;
 const activeR = new Set();
 let activeCluster = '', activeSub = '';
-const BC = {R:'#2B4EFF',I:'#F4845F',A:'#9B72CF',S:'#F9C846',E:'#A8B4D8',C:'#E8E8A0'};
+const BC = {R:'#0083FF',I:'#F4845F',A:'#9B72CF',S:'#F9C846',E:'#A8B4D8',C:'#E8E8A0'};
 const RI = {
   R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, machines, and physical tasks.',bg:'#0A0F2E'},
   I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, science, and solving complex problems.',bg:'#1D0E32'},
@@ -1009,10 +1009,10 @@ function buildLiveDetail(d, code, prefix) {
       <tbody>
         <tr style="border-bottom:1px solid var(--mg)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Low (10%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${(sal.low||0).toLocaleString()}</td></tr>
         <tr style="border-bottom:1px solid var(--mg);background:var(--off)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Median (50%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${sal.median.toLocaleString()}</td></tr>
-        <tr><td style="padding:13px 14px;font-size:15px;color:var(--navy);">High (90%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--green)">$${(sal.high||0).toLocaleString()}</td></tr>
+        <tr><td style="padding:13px 14px;font-size:15px;color:var(--navy);">High (90%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--blue)">$${(sal.high||0).toLocaleString()}</td></tr>
       </tbody>
     </table>` : '<p style="color:var(--ts);font-size:15px">Salary data not available.</p>'}
-    ${out.growth ? `<div style="background:var(--off);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth</div><div style="font-size:20px;font-weight:900;color:var(--green)">${out.growth}</div></div>` : ''}
+    ${out.growth ? `<div style="background:var(--off);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth</div><div style="font-size:20px;font-weight:900;color:var(--blue)">${out.growth}</div></div>` : ''}
     ${footer}
   </div>
 
@@ -1038,7 +1038,7 @@ function buildLiveDetail(d, code, prefix) {
     </table>` : ''}
     ${d.tags?.apprenticeship ? `
     <div style="background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.3);border-radius:var(--rmd);padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--yellow);margin-bottom:6px">🔨 Registered Apprenticeship Available</div>
+      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:6px">🔨 Registered Apprenticeship Available</div>
       <p style="font-size:12px;color:var(--navy);line-height:1.5;margin-bottom:10px">A registered apprenticeship program exists for this career — earn while you learn, no college debt required.</p>
       <a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${code}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:8px 16px;font-size:11px;font-weight:900;text-transform:uppercase;text-decoration:none">Find Apprenticeships →</a>
     </div>` : ''}
@@ -1145,10 +1145,10 @@ function buildDetail(idx, prefix) {
       <tbody>
         <tr style="border-bottom:1px solid var(--mg)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Low (10%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${slo.toLocaleString()}</td></tr>
         <tr style="border-bottom:1px solid var(--mg);background:var(--off)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Median (50%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${c.salary.toLocaleString()}</td></tr>
-        <tr><td style="padding:13px 14px;font-size:15px;color:var(--navy);">High (90%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--green)">$${shi.toLocaleString()}</td></tr>
+        <tr><td style="padding:13px 14px;font-size:15px;color:var(--navy);">High (90%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--blue)">$${shi.toLocaleString()}</td></tr>
       </tbody>
     </table>
-    <div style="background:var(--off);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth Rate</div><div style="font-size:20px;font-weight:900;color:var(--green)">${c.growth} <span style="font-size:15px;font-weight:400;color:var(--ts)">${c.outlook}</span></div></div>
+    <div style="background:var(--off);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth Rate</div><div style="font-size:20px;font-weight:900;color:var(--blue)">${c.growth} <span style="font-size:15px;font-weight:400;color:var(--ts)">${c.outlook}</span></div></div>
     ${h.ind.length?`<div class="csh">Top Hiring Industries</div><div class="ctgs" style="margin-bottom:14px">${h.ind.map(i=>`<span class="ctg">${i}</span>`).join('')}</div>`:''}
     ${h.states.length?`<div class="csh">Top Hiring States</div><div class="ctgs">${h.states.map(s=>`<span class="ctg">${s}</span>`).join('')}</div>`:''}
     ${footer}
@@ -1178,7 +1178,7 @@ function buildDetail(idx, prefix) {
   <div class="cdp" id="wp-${pid}">
     <div class="csh" style="margin-top:0">How to prepare for a career as a ${c.t}</div>
     <p style="font-size:15px;color:var(--navy);margin-bottom:16px;line-height:1.6">You can start building toward this career right now — in high school.</p>
-    ${pr.map(s=>`<div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:12px;border-left:3px solid var(--green)"><div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:10px">${s.type}</div><ul style="list-style:none;display:flex;flex-direction:column;gap:7px">${(s.items||[]).map(item=>`<li style="display:flex;gap:10px;font-size:15px;color:var(--navy);line-height:1.5"><span style="color:var(--yellow);flex-shrink:0">✓</span>${item}</li>`).join('')}</ul></div>`).join('')}
+    ${pr.map(s=>`<div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:12px;border-left:3px solid var(--blue)"><div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:10px">${s.type}</div><ul style="list-style:none;display:flex;flex-direction:column;gap:7px">${(s.items||[]).map(item=>`<li style="display:flex;gap:10px;font-size:15px;color:var(--navy);line-height:1.5"><span style="color:var(--blue);flex-shrink:0">✓</span>${item}</li>`).join('')}</ul></div>`).join('')}
     ${footer}
   </div>
   <div class="cdp" id="rc-${pid}">
@@ -1190,8 +1190,8 @@ function buildDetail(idx, prefix) {
         return `<div data-rel-idx="${ri}" data-prefix="${prefix}" style="background:var(--off);border:1px solid var(--mg);border-radius:var(--rmd);padding:14px;cursor:pointer;transition:background .15s;display:flex;flex-direction:column;gap:8px">
           <div style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--navy);line-height:1.3">${rc.t}</div>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div style="font-size:15px;color:var(--yellow);font-weight:900">$${rc.salary.toLocaleString()}</div>
-            <div style="font-size:11px;color:var(--green);font-weight:700">${rc.growth} growth</div>
+            <div style="font-size:15px;color:var(--blue);font-weight:900">$${rc.salary.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--blue);font-weight:700">${rc.growth} growth</div>
           </div>
           ${(rc.pathways&&rc.pathways[0])?`<div style="font-size:11px;color:var(--ts);border-top:1px solid var(--mg);padding-top:8px;line-height:1.4">${rc.pathways[0].deg}</div>`:''}
         </div>`;
@@ -1306,15 +1306,15 @@ const CLUSTERS = [
   {name:'Agriculture',icon:'🌾',img:'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=80',desc:'Work with plants, animals, and the environment to grow food.',accent:'#68F4B8',r:'R',subs:['Agribusiness','Agricultural Technology & Automation','Animal Systems','Food Science & Processing','Plant Systems','Water Systems']},
   {name:'Arts, Entertainment & Design',icon:'🎨',img:'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400&q=80',desc:'Express ideas through art, performance, and digital creation.',accent:'#AD6BFF',r:'A',subs:['Design & Digital Arts','Fashion & Interiors','Fine Arts','Lighting & Sound Technology','Media Production & Broadcasting','Performing Arts']},
   {name:'Construction',icon:'🏗️',img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',desc:'Design and build homes, buildings, roads, and other structures.',accent:'#FFA94D',r:'R',subs:['Architecture & Civil Engineering','Construction Planning & Development','Equipment Operation & Maintenance','Skilled Trades']},
-  {name:'Digital Technology',icon:'💻',img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',desc:'Use computers, code, and smart systems to solve problems.',accent:'#2B4EFF',r:'I',subs:['Data Science & AI','Network Systems & Cybersecurity','IT Support & Services','Software Solutions','Unmanned Vehicle Technology','Web & Cloud']},
+  {name:'Digital Technology',icon:'💻',img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',desc:'Use computers, code, and smart systems to solve problems.',accent:'#0083FF',r:'I',subs:['Data Science & AI','Network Systems & Cybersecurity','IT Support & Services','Software Solutions','Unmanned Vehicle Technology','Web & Cloud']},
   {name:'Education',icon:'📚',img:'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&q=80',desc:'Help others to learn, grow, and reach their goals.',accent:'#F49FFB',r:'S',subs:['Early Childhood Development','Education Administration & Leadership','Learner Support & Community Engagement','Teaching, Training & Facilitation']},
   {name:'Energy & Natural Resources',icon:'⚡',img:'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&q=80',desc:'Power and protect the planet through energy and natural systems.',accent:'#68F4B8',r:'R',subs:['Clean & Alternative Energy','Conservation & Land Management','Ecological Research & Development','Environmental Protection','Resource Extraction','Utilities']},
   {name:'Financial Services',icon:'💰',img:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',desc:'Help people and businesses make smart money decisions.',accent:'#FFD810',r:'C',subs:['Accounting','Banking & Credit','Financial Strategy & Investments','Insurance','Real Estate']},
   {name:'Healthcare & Human Services',icon:'🏥',img:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&q=80',desc:"Take care of people's physical and emotional health.",accent:'#68F4B8',r:'S',subs:['Behavioral & Mental Health','Biotechnology Research & Development','Community & Social Services','Health Data & Administration','Personal Care Services','Physical Health']},
   {name:'Hospitality, Events & Tourism',icon:'🍽️',img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80',desc:'Help people enjoy travel, dining, and other experiences.',accent:'#FFD810',r:'E',subs:['Accommodations','Conferences & Events','Culinary & Food Services','Travel & Leisure']},
-  {name:'Management & Entrepreneurship',icon:'🚀',img:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80',desc:'Lead people, start businesses, and bring new ideas to life.',accent:'#2B4EFF',r:'E',subs:['Business Information Management','Entrepreneurship & Small Business','Leadership & Operations','Project Management','Regulation']},
+  {name:'Management & Entrepreneurship',icon:'🚀',img:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=80',desc:'Lead people, start businesses, and bring new ideas to life.',accent:'#0083FF',r:'E',subs:['Business Information Management','Entrepreneurship & Small Business','Leadership & Operations','Project Management','Regulation']},
   {name:'Marketing & Sales',icon:'📣',img:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80',desc:'Communicate ideas and help people find products they love.',accent:'#AD6BFF',r:'E',subs:['Marketing & Advertising','Market Research, Analytics & Ethics','Retail & Customer Experience','Strategic Sales']},
-  {name:'Public Service & Safety',icon:'🛡️',img:'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&q=80',desc:'Protect people and help communities stay safe and supported.',accent:'#2B4EFF',r:'S',subs:['Emergency Response','Judicial Systems','Local, State & Federal Services','Military & National Security','Public Safety']},
+  {name:'Public Service & Safety',icon:'🛡️',img:'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&q=80',desc:'Protect people and help communities stay safe and supported.',accent:'#0083FF',r:'S',subs:['Emergency Response','Judicial Systems','Local, State & Federal Services','Military & National Security','Public Safety']},
   {name:'Supply Chain & Transportation',icon:'🚚',img:'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&q=80',desc:'Move people, goods, and information safely and efficiently.',accent:'#FFA94D',r:'R',subs:['Air & Space Transportation','Ground & Rail Transportation','Maintenance & Repair','Marine Transportation','Planning & Logistics','Purchasing & Warehousing']}
 ];
 
@@ -1578,7 +1578,7 @@ function handleZipSearch(pid, careerTitle, onetCode) {
     const regionLabel = region === 'default' ? `zip code ${zip}` : region;
 
     resultsEl.innerHTML = `
-      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:10px">
+      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:10px">
         ${results.length} programs found near ${regionLabel}
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
@@ -1597,7 +1597,7 @@ function handleZipSearch(pid, careerTitle, onetCode) {
             <div style="font-size:11px;color:var(--ts);margin-bottom:6px">${p.address}</div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
               ${degrees.map(d=>`<span style="background:rgba(255,215,16,.12);border:1px solid rgba(255,215,16,.3);border-radius:var(--rf);padding:2px 8px;font-size:11px;color:rgba(255,215,16,.9)">${d}</span>`).join('')}
-              <span style="background:rgba(104,244,184,.1);border:1px solid rgba(104,244,184,.25);border-radius:var(--rf);padding:2px 8px;font-size:11px;color:var(--green)">${accred}</span>
+              <span style="background:rgba(0,131,255,.1);border:1px solid rgba(0,131,255,.25);border-radius:var(--rf);padding:2px 8px;font-size:11px;color:var(--blue)">${accred}</span>
             </div>
           </div>`;
         }).join('')}
