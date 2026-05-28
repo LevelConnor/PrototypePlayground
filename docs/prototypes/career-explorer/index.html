@@ -944,6 +944,26 @@ async function _execLiveSearch(q) {
 }
 
 // Render a list of live O*NET results (title + code, no salary yet)
+// Build the badge row HTML for a live (O*NET) career card.
+// Dedup rule: when a career is Bright Outlook, the ☀️ pill subsumes the 📈
+// growth pill (both would say "Bright"). For Average / Below average careers,
+// the 📈 pill shows. Salary always shows when available.
+function buildCardBadges(career, detail) {
+  const tags = (detail && detail.tags) || career.tags || {};
+  const sal = detail && detail.salary && detail.salary.median;
+  const growth = detail && detail.outlook && detail.outlook.growth;
+  const cluster = detail && detail.cluster;
+  const brightOutlook = !!tags.brightOutlook;
+  return [
+    brightOutlook ? `<span class="mb g">☀️ Bright Outlook</span>` : '',
+    tags.apprenticeship ? `<span class="mb">🔨 Apprenticeship</span>` : '',
+    tags.stem ? `<span class="mb">🔬 STEM</span>` : '',
+    sal ? `<span class="mb g">💰 $${sal.toLocaleString()}/yr</span>` : '',
+    (growth && !brightOutlook) ? `<span class="mb">📈 ${growth}</span>` : '',
+    cluster ? `<span class="mb">${cluster}</span>` : ''
+  ].filter(Boolean).join('');
+}
+
 function renderLiveList(list, listId, prefix) {
   const el = document.getElementById(listId);
   if (!el) return;
@@ -955,17 +975,7 @@ function renderLiveList(list, listId, prefix) {
     const idx = c.code; // use code as key for live results
     const isSaved = saved.has('live-'+idx);
     const cached = detailCache[idx];
-    const salary = cached ? '$' + cached.salary.median.toLocaleString() + '/yr' : '—';
-    const growth = cached ? cached.outlook.growth : '—';
-    const cluster = cached ? cached.cluster : '';
-    const badges = [
-      c.tags?.brightOutlook ? `<span class="mb g">☀️ Bright Outlook</span>` : '',
-      c.tags?.apprenticeship ? `<span class="mb">🔨 Apprenticeship</span>` : '',
-      c.tags?.stem ? `<span class="mb">🔬 STEM</span>` : '',
-      salary !== '—' ? `<span class="mb g">💰 ${salary}</span>` : '',
-      growth !== '—' ? `<span class="mb">📈 ${growth}</span>` : '',
-      cluster ? `<span class="mb">${cluster}</span>` : ''
-    ].filter(Boolean).join('');
+    const badges = buildCardBadges(c, cached);
 
     return `<div class="crow" data-live-code="${idx}" data-prefix="${prefix}" id="crow-${prefix}-live-${idx.replace(/\./g,'_')}">
       <div class="crl">
@@ -979,6 +989,56 @@ function renderLiveList(list, listId, prefix) {
     </div>
     <div class="cdw" id="cdw-${prefix}-${idx.replace(/\./g,'_')}"></div>`;
   }).join('');
+
+  // Kick off background fetch of salary + outlook for any not-yet-cached
+  // careers, then patch their badges in place. This makes salary appear on
+  // collapsed cards without requiring the user to expand each one first.
+  prefetchSummaries(list, prefix);
+}
+
+// In-flight tracker so we don't fire duplicate requests for the same career
+// across multiple renders.
+const summaryInFlight = new Set();
+function prefetchSummaries(list, prefix) {
+  list.forEach(c => {
+    if (detailCache[c.code]) return;          // full detail already loaded
+    if (summaryInFlight.has(c.code)) return;  // already being fetched
+    summaryInFlight.add(c.code);
+    onetGet(`/career/${c.code}/outlook`).then(out => {
+      const wage = (out && out.salary) || {};
+      const outlookCat = out && out.outlook && out.outlook.category;
+      // Store a lightweight summary in the cache. If the user later expands the
+      // card, openLiveDetail does a more complete fetch (description, related,
+      // etc.) and overwrites this with full detail.
+      detailCache[c.code] = detailCache[c.code] || {
+        code: c.code,
+        title: c.title,
+        description: '',
+        sampleTitles: [],
+        tags: { ...(c.tags || {}) },
+        salary: {
+          median: wage.annual_median || 0,
+          low: wage.annual_10th_percentile || 0,
+          high: wage.annual_90th_percentile || 0,
+        },
+        outlook: { growth: outlookCat || '', openings: '' },
+        education: [],
+        cluster: '',
+        riasec: [],
+        related: [],
+      };
+      // Patch the card's badge row in place
+      const safe = c.code.replace(/\./g, '_');
+      const crow = document.getElementById('crow-' + prefix + '-live-' + safe);
+      if (!crow) return;
+      const bm = crow.querySelector('.crm');
+      if (bm) bm.innerHTML = buildCardBadges(c, detailCache[c.code]);
+    }).catch(() => {
+      // Silent — card just stays without salary
+    }).finally(() => {
+      summaryInFlight.delete(c.code);
+    });
+  });
 }
 
 // Fetch detail for a live result, cache it, then build the drawer
@@ -1072,15 +1132,7 @@ async function openLiveDetail(code, prefix) {
     const crow2 = document.getElementById('crow-'+prefix+'-live-'+safe);
     if (crow2) {
       const bm = crow2.querySelector('.crm');
-      if (bm) {
-        const sal = detail.salary?.median ? `<span class="mb g">💰 $${detail.salary.median.toLocaleString()}/yr</span>` : '';
-        const gr  = detail.outlook?.growth ? `<span class="mb">📈 ${detail.outlook.growth}</span>` : '';
-        const cl  = detail.cluster ? `<span class="mb">${detail.cluster}</span>` : '';
-        const bo  = detail.tags?.brightOutlook ? `<span class="mb g">☀️ Bright Outlook</span>` : '';
-        const ap  = detail.tags?.apprenticeship ? `<span class="mb">🔨 Apprenticeship</span>` : '';
-        const st  = detail.tags?.stem ? `<span class="mb">🔬 STEM</span>` : '';
-        bm.innerHTML = [bo, ap, st, sal, gr, cl].filter(Boolean).join('');
-      }
+      if (bm) bm.innerHTML = buildCardBadges({ code, title: detail.title, tags: detail.tags }, detail);
     }
 
     wrap.innerHTML = buildLiveDetail(detail, code, prefix);
