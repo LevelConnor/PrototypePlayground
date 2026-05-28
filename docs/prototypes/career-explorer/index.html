@@ -677,7 +677,7 @@ function drawBubbles(sorted) {
     ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
     ctx.fillStyle=BC[b.k]; ctx.globalAlpha=.88; ctx.fill(); ctx.globalAlpha=1;
     ctx.fillStyle='#1a1a2e';
-    ctx.font=`bold ${Math.max(11,Math.round(b.r*.52))}px Arial Black,sans-serif`;
+    ctx.font=`900 ${Math.max(11,Math.round(b.r*.52))}px Inter,system-ui,sans-serif`;
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(b.k,b.x,b.y);
   });
