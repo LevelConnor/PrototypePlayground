@@ -1,0 +1,7 @@
+name = "onet-proxy"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Secrets (set via `wrangler secret put`):
+#   ONET_USERNAME
+#   ONET_PASSWORD

@@ -291,7 +291,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 <div class="panel" id="panel-search">
   <div class="pt" style="color:var(--blue)">Search Careers</div>
   <p class="ps" style="margin-bottom:18px">Search by keyword, or narrow results using the filters below.</p>
-  <div class="mock-note"><span>🔧</span><div><strong>Dev note:</strong> Search uses mock career data. O*NET live integration ready — requires proxy setup on your backend.</div></div>
   <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
   <div class="qcta">
     <div class="qcl"><div class="qci">😊✨</div><div class="qct"><h4>Not sure where to start?</h4><p>Get careers matched to your interests with our Career Assessment.</p></div></div>
@@ -322,6 +321,13 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 </div>
 
 </main>
+
+<footer style="text-align:center;padding:20px 16px 28px;font-size:11px;color:#888;font-family:'Inter',sans-serif">
+  Career data provided by
+  <a href="https://services.onetcenter.org/" target="_blank" rel="noopener" style="color:#666;text-decoration:underline">O*NET Web Services</a>.
+  This service uses O*NET-SOC data, which is available under the
+  <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:#666;text-decoration:underline">CC BY 4.0</a> license.
+</footer>
 
 <!-- TRAY -->
 <div class="tov" id="tov"></div>
@@ -439,6 +445,19 @@ document.addEventListener('click', function(e) {
   // CAREER ROWS
   const crow = t.closest('.crow');
   if (crow && crow.id && crow.id.startsWith('crow-')) {
+    // Live O*NET result row
+    if (crow.dataset.liveCode) {
+      const bm = t.closest('.bmbtn');
+      if (bm) {
+        e.stopPropagation();
+        // Save not yet implemented for live results
+        toast('Save coming soon for search results');
+        return;
+      }
+      openLiveDetail(crow.dataset.liveCode, crow.dataset.prefix || 'sd');
+      return;
+    }
+    // Curated CAREERS row (index-based id)
     const bm = t.closest('.bmbtn');
     if (bm) {
       e.stopPropagation();
@@ -465,6 +484,10 @@ document.addEventListener('click', function(e) {
   const relCard = t.closest('[data-rel-idx]');
   if (relCard) { const prefix = relCard.dataset.prefix; openDetail(parseInt(relCard.dataset.relIdx), prefix); return; }
 
+  // RELATED career click inside live (O*NET) drawer
+  const liveRel = t.closest('[data-live-rel]');
+  if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, liveRel.dataset.prefix || 'sd'); return; }
+
 
 });
 
@@ -475,6 +498,18 @@ document.addEventListener('input', function(e) {
 document.addEventListener('change', function(e) {
   if (e.target.id === 'fsal' || e.target.id === 'fedu') doSearch();
 });
+
+/* ══ O*NET PROXY (Cloudflare Worker) ══ */
+const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
+async function onetGet(path) {
+  const res = await fetch(`${ONET_PROXY}${path}`, { headers: { 'Accept': 'application/json' } });
+  if (!res.ok) throw new Error(`O*NET ${res.status}: ${path}`);
+  return res.json();
+}
+// Debounce wrapper for keystroke searches
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
 
 /* ══ STATE ══ */
 const saved = new Set(), answered = {};
@@ -709,9 +744,16 @@ function toggleR(btn) {
 // Debounce timer for search input
 const detailCache = {};
 
-function doSearch() { _execSearch(); }
+// Debounced live search — fires after 300ms of input pause
+const debouncedLiveSearch = debounce(_execLiveSearch, 300);
 
-async function _execSearch() {
+function doSearch() {
+  const q = document.getElementById('sinput').value.trim();
+  if (q.length >= 2) { debouncedLiveSearch(q); return; }
+  _execLocalSearch();
+}
+
+function _execLocalSearch() {
   const q = document.getElementById('sinput').value.trim();
   const minSal = parseInt(document.getElementById('fsal').value) || 0;
   const edu = document.getElementById('fedu').value;
@@ -726,6 +768,32 @@ async function _execSearch() {
   });
   document.getElementById('rcount').textContent = results.length + ' career' + (results.length!==1?'s':'') + ' found';
   renderList(results, 'slist', 'sd');
+}
+
+async function _execLiveSearch(q) {
+  const rcount = document.getElementById('rcount');
+  rcount.textContent = 'Searching O*NET…';
+  try {
+    const data = await onetGet(`/search?keyword=${encodeURIComponent(q)}&end=25`);
+    const occs = (data.occupation || []).map(o => ({
+      code: o.code,
+      title: o.title,
+      tags: {
+        brightOutlook: !!(o.tags && o.tags.bright_outlook),
+        apprenticeship: !!(o.tags && o.tags.apprenticeship),
+        stem: !!(o.tags && o.tags.stem),
+        green: !!(o.tags && o.tags.green),
+      },
+    }));
+    const total = data.total || occs.length;
+    rcount.textContent = total + ' career' + (total !== 1 ? 's' : '') + ' found' +
+      (total > occs.length ? ` (showing ${occs.length})` : '') + ' · via O*NET';
+    renderLiveList(occs, 'slist', 'sd');
+  } catch (err) {
+    console.error('Live search failed:', err);
+    rcount.textContent = "O*NET unreachable — showing local results.";
+    _execLocalSearch();
+  }
 }
 
 // Render a list of live O*NET results (title + code, no salary yet)
@@ -752,25 +820,26 @@ function renderLiveList(list, listId, prefix) {
       cluster ? `<span class="mb">${cluster}</span>` : ''
     ].filter(Boolean).join('');
 
-    return `<div class="crow" id="crow-${prefix}-${idx}">
+    return `<div class="crow" data-live-code="${idx}" data-prefix="${prefix}" id="crow-${prefix}-live-${idx.replace(/\./g,'_')}">
       <div class="crl">
         <h3>${c.title}</h3>
         <div class="crm">${badges || '<span class="mb">Loading details…</span>'}</div>
       </div>
       <div class="crr">
-        <button class="bmbtn${isSaved?' saved':''}">${isSaved?'♥':'♡'}</button>
-        <span class="arr" id="arr-${prefix}-${idx}">›</span>
+        <button class="bmbtn${isSaved?' saved':''}" data-live-code="${idx}">${isSaved?'♥':'♡'}</button>
+        <span class="arr" id="arr-${prefix}-${idx.replace(/\./g,'_')}">›</span>
       </div>
     </div>
-    <div class="cdw" id="cdw-${prefix}-${idx}"></div>`;
+    <div class="cdw" id="cdw-${prefix}-${idx.replace(/\./g,'_')}"></div>`;
   }).join('');
 }
 
 // Fetch detail for a live result, cache it, then build the drawer
 async function openLiveDetail(code, prefix) {
-  const wrap = document.getElementById('cdw-'+prefix+'-'+code);
-  const crow = document.getElementById('crow-'+prefix+'-'+code);
-  const arr  = document.getElementById('arr-'+prefix+'-'+code);
+  const safe = code.replace(/\./g, '_');
+  const wrap = document.getElementById('cdw-'+prefix+'-'+safe);
+  const crow = document.getElementById('crow-'+prefix+'-live-'+safe);
+  const arr  = document.getElementById('arr-'+prefix+'-'+safe);
   if (!wrap || !crow) return;
 
   const isOpen = wrap.classList.contains('open');
@@ -779,7 +848,7 @@ async function openLiveDetail(code, prefix) {
   document.querySelectorAll('[id^="cdw-'+prefix+'-"].open').forEach(el => {
     el.classList.remove('open');
     const ci = el.id.replace('cdw-'+prefix+'-','');
-    const cr = document.getElementById('crow-'+prefix+'-'+ci);
+    const cr = document.getElementById('crow-'+prefix+'-live-'+ci);
     const ar = document.getElementById('arr-'+prefix+'-'+ci);
     if (cr) cr.classList.remove('open');
     if (ar) ar.classList.remove('open');
@@ -806,26 +875,54 @@ async function openLiveDetail(code, prefix) {
   setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
 
   try {
-      // Look up in mock CAREERS data by code
-    const mockCareer = CAREERS.find(c => c.code === code);
-    if (!mockCareer) throw new Error('Career not found in mock data');
+    // Fetch live data from O*NET in parallel (basic info + outlook/wages + related)
+    const [info, outlook, related] = await Promise.all([
+      onetGet(`/career/${code}`).catch(() => null),
+      onetGet(`/career/${code}/outlook`).catch(() => null),
+      onetGet(`/career/${code}/details/related_occupations`).catch(() => null),
+    ]);
+    if (!info && !outlook) throw new Error('O*NET returned no data');
+
+    const wage = (outlook && outlook.salary) || {};
+    const sampleTitles = ((info && info.also_called) || []).map(x => x.title).filter(Boolean);
+    const tags = (info && info.tags) || {};
+    const outlookCat = outlook && outlook.outlook && outlook.outlook.category;
+    const relatedList = ((related && related.occupation) || []).slice(0, 8).map(r => ({
+      code: r.code, title: r.title,
+    }));
+
+    // Fallback to curated CAREERS for any fields O*NET doesn't expose (e.g. cluster, education breakdown)
+    const local = CAREERS.find(c => c.code === code) || {};
+
     const detail = {
       code,
-      title:        mockCareer.t,
-      description:  mockCareer.desc,
-      sampleTitles: [],
-      tags: { brightOutlook: false, apprenticeship: false, stem: false, green: false },
-      salary:  { median: mockCareer.salary, low: mockCareer.salaryLow, high: mockCareer.salaryHigh },
-      outlook: { growth: mockCareer.growth, openings: mockCareer.hiring ? mockCareer.hiring.openings : '' },
-      education: (mockCareer.eduBreakdown || []).map(e => ({ level: e.level, pct: e.pct })),
-      cluster:  mockCareer.cluster,
-      riasec:   [mockCareer.r],
-      related:  []
+      title:        (info && info.title) || local.t || code,
+      description:  (info && info.what_they_do) || local.desc || '',
+      sampleTitles,
+      tags: {
+        brightOutlook:  !!tags.bright_outlook,
+        apprenticeship: !!tags.apprenticeship,
+        stem:           !!tags.stem,
+        green:          !!tags.green,
+      },
+      salary: {
+        median: wage.annual_median        || local.salary     || 0,
+        low:    wage.annual_10th_percentile || local.salaryLow  || 0,
+        high:   wage.annual_90th_percentile || local.salaryHigh || 0,
+      },
+      outlook: {
+        growth:   outlookCat || local.growth || '',
+        openings: '',
+      },
+      education: (local.eduBreakdown || []).map(e => ({ level: e.level, pct: e.pct })),
+      cluster:   local.cluster || '',
+      riasec:    local.r ? [local.r] : [],
+      related:   relatedList,
     };
     detailCache[code] = detail;
 
     // Update the card badges now that we have real data
-    const crow2 = document.getElementById('crow-'+prefix+'-'+code);
+    const crow2 = document.getElementById('crow-'+prefix+'-live-'+safe);
     if (crow2) {
       const bm = crow2.querySelector('.crm');
       if (bm) {
