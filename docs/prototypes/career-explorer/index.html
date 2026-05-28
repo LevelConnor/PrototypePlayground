@@ -98,6 +98,15 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
 .fg select{background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rsm);padding:8px 12px;font-size:15px;color:var(--navy);outline:none;min-width:160px}
 .rdiv{border:none;border-top:1px dashed var(--mg);margin:4px 0 16px}
+/* Related-careers horizontal scroll row inside the live drawer */
+.rcrow{display:flex;gap:12px;overflow-x:auto;padding:4px 4px 14px;margin:0 -4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.rcrow::-webkit-scrollbar{height:6px}
+.rcrow::-webkit-scrollbar-thumb{background:var(--mg);border-radius:3px}
+.rcard{flex:0 0 220px;background:var(--white);border:1px solid var(--mg);border-radius:var(--rmd);padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.rcard:hover{border-color:var(--blue)}
+.rcard-t{font-size:13px;font-weight:900;text-transform:uppercase;color:var(--navy);line-height:1.3;letter-spacing:.02em;flex:1;min-height:34px}
+.rcard-m{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-height:18px}
+.rcard-m .mb{font-size:11px}
 #search-empty-state{display:none}
 #search-empty-state.show{display:block}
 .rc2{font-size:12px;color:var(--ts);margin-bottom:16px}
@@ -1041,6 +1050,62 @@ function prefetchSummaries(list, prefix) {
   });
 }
 
+// Render the inner pills of a single related-career card (.rcard-m).
+// Honors the Bright Outlook redundancy rule: show the ☀️ pill OR the 📈
+// growth pill, never both.
+function paintRelatedCard(code, detail) {
+  if (!detail) return;
+  const sal    = detail.salary  && detail.salary.median;
+  const growth = detail.outlook && detail.outlook.growth;
+  const bright = !!(detail.tags && detail.tags.brightOutlook);
+  const html = [
+    bright            ? `<span class="mb">☀️ Bright Outlook</span>`           : '',
+    (growth && !bright) ? `<span class="mb">📈 ${growth}</span>`              : '',
+    sal               ? `<span class="mb">💰 $${sal.toLocaleString()}/yr</span>` : '',
+  ].filter(Boolean).join('');
+  document.querySelectorAll(`.rcard[data-live-rel="${code}"] .rcard-m`)
+    .forEach(el => { el.innerHTML = html; });
+}
+
+// Background-fetch outlook for every related career and paint each card as
+// its data resolves. Reuses detailCache + summaryInFlight so we never fire
+// duplicate requests across drawer opens.
+function enrichRelatedCards(relatedList) {
+  (relatedList || []).forEach(r => {
+    // Already cached? Paint immediately.
+    if (detailCache[r.code]) { paintRelatedCard(r.code, detailCache[r.code]); return; }
+    if (summaryInFlight.has(r.code)) {
+      // Another path is already fetching. Poll once cache lands.
+      const tick = setInterval(() => {
+        if (detailCache[r.code]) { paintRelatedCard(r.code, detailCache[r.code]); clearInterval(tick); }
+      }, 150);
+      setTimeout(() => clearInterval(tick), 8000);
+      return;
+    }
+    summaryInFlight.add(r.code);
+    onetGet(`/career/${r.code}/outlook`).then(out => {
+      const wage = (out && out.salary) || {};
+      const outlookCat = out && out.outlook && out.outlook.category;
+      const isBright = !!(out && out.outlook && (out.outlook.category === 'Bright' || out.outlook.bright_outlook));
+      detailCache[r.code] = detailCache[r.code] || {
+        code: r.code, title: r.title,
+        description: '', sampleTitles: [],
+        tags: { brightOutlook: isBright, apprenticeship: false, stem: false, green: false },
+        salary: {
+          median: wage.annual_median        || 0,
+          low:    wage.annual_10th_percentile || 0,
+          high:   wage.annual_90th_percentile || 0,
+        },
+        outlook: { growth: outlookCat || '', openings: '' },
+        education: [], cluster: '', riasec: [], related: [],
+      };
+      paintRelatedCard(r.code, detailCache[r.code]);
+    }).catch(() => {}).finally(() => {
+      summaryInFlight.delete(r.code);
+    });
+  });
+}
+
 // Fetch detail for a live result, cache it, then build the drawer
 async function openLiveDetail(code, prefix) {
   const safe = code.replace(/\./g, '_');
@@ -1137,6 +1202,10 @@ async function openLiveDetail(code, prefix) {
 
     wrap.innerHTML = buildLiveDetail(detail, code, prefix);
 
+    // Background-enrich related-career cards with salary + outlook so each
+    // card in the horizontal scroll row shows useful info, not just a title.
+    enrichRelatedCards(relatedList);
+
   } catch (err) {
     console.error('Detail error:', err);
     wrap.innerHTML = `<div class="cdb"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
@@ -1230,12 +1299,12 @@ function buildLiveDetail(d, code, prefix) {
 
   <div class="cdp" id="rc-${pid}">
     <div class="csh" style="margin-top:0">Related Careers</div>
-    <p style="font-size:15px;color:var(--navy);margin-bottom:16px;line-height:1.6">These careers share similar skills, interests, or education pathways.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+    <p style="font-size:15px;color:var(--navy);margin-bottom:16px;line-height:1.6">These careers share similar skills, interests, or education pathways. Scroll to see more.</p>
+    <div class="rcrow">
       ${(d.related||[]).map(r=>`
-        <div data-live-rel="${r.code}" data-prefix="${prefix}" style="background:var(--off);border:1px solid var(--mg);border-radius:var(--rmd);padding:14px;cursor:pointer;transition:background .15s">
-          <div style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--navy);line-height:1.3;margin-bottom:6px">${r.title}</div>
-          <div style="font-size:11px;color:var(--ts);">${r.code}</div>
+        <div class="rcard" data-live-rel="${r.code}" data-prefix="${prefix}">
+          <div class="rcard-t">${r.title}</div>
+          <div class="rcard-m"></div>
         </div>`).join('')}
     </div>
     ${footer}
