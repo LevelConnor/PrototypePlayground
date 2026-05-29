@@ -560,6 +560,13 @@ document.addEventListener('click', function(e) {
   const relCard = t.closest('[data-rel-idx]');
   if (relCard) { const prefix = relCard.dataset.prefix; openDetail(parseInt(relCard.dataset.relIdx), prefix); return; }
 
+  // Assessment match card → navigate to Search Careers + open that career
+  const matchCard = t.closest('[data-match-code]');
+  if (matchCard && matchCard.dataset.matchCode) {
+    goToSearchAndOpenByCode(matchCard.dataset.matchCode);
+    return;
+  }
+
   // RELATED career click inside live (O*NET) drawer
   const liveRel = t.closest('[data-live-rel]');
   if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, liveRel.dataset.prefix || 'sd'); return; }
@@ -639,6 +646,23 @@ function goToSearch() {
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
+// Assessment-results card → switch to Search, render the matched careers as
+// the live list, then open the picked career's unified drawer.
+function goToSearchAndOpenByCode(code) {
+  switchTab('search');
+  hideEmptyState();
+  const matches = window._lastAssessmentMatches || [];
+  const liveShape = matches.map(c => ({
+    code: c.code, title: c.title,
+    tags: { ...(c.tags || {brightOutlook:false,apprenticeship:false,stem:false,green:false}) },
+  }));
+  if (liveShape.length) {
+    renderLiveList(liveShape, 'slist', 'sd');
+    document.getElementById('rcount').textContent = 'From your assessment matches';
+  }
+  setTimeout(() => openLiveDetail(code, 'sd'), 80);
+}
+
 function goToSearchAndOpen(idx) {
   switchTab('search');
   hideEmptyState();
@@ -700,24 +724,79 @@ function renderResults(avgs) {
   }
 
   const top3 = sorted.slice(0,3).map(([k])=>k);
-  const matched = CAREERS.filter(c => top3.includes(c.r)).slice(0,5);
-  document.getElementById('mcards').innerHTML = matched.map((c,i) => {
-    const idx = CAREERS.indexOf(c);
-    return `<div style="background:var(--white);border-radius:var(--rlg);border:${i===matched.length-1?'2px solid var(--blue)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer;" id="mcard-${idx}">
-      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px">${c.t}</div>
-      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">💲</div><span style="font-size:15px;font-weight:700">$${c.salary.toLocaleString()}</span></div>
-        <div style="display:flex;align-items:center;gap:8px"><div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">🎓</div><span style="font-size:15px;font-weight:700">${(c.pathways&&c.pathways[0])?c.pathways[0].deg:'Varies'}</span></div>
+  document.getElementById('afw').style.display = 'none';
+  document.getElementById('rw').style.display = 'block';
+  // Fire async match render. Doesn't block the rest of the results panel.
+  renderAssessmentMatches(top3);
+}
+
+// Fetch O*NET careers matching the user's top-3 Holland code. Falls back to
+// top-2 then top-1 if the 3-letter combo is too rare. Renders 5 match cards
+// (title + lazy-loaded salary + primary education level).
+async function renderAssessmentMatches(top3) {
+  const mcards = document.getElementById('mcards');
+  mcards.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:18px 0">Finding careers that match your interests…</div>';
+
+  const ladders = [top3.slice(0,3).join(''), top3.slice(0,2).join(''), top3[0]];
+  let careers = [];
+  let usedCode = '';
+  for (const code of ladders) {
+    if (!code) continue;
+    try {
+      const data = await onetGet(`/holland/${code}?end=5`);
+      const occ = (data && data.occupation) || [];
+      if (occ.length >= 3) { careers = occ.slice(0,5); usedCode = code; break; }
+      if (!careers.length) { careers = occ.slice(0,5); usedCode = code; }
+    } catch (e) { /* try next ladder */ }
+  }
+
+  if (!careers.length) {
+    mcards.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:18px 0">No matches available from O*NET right now. Try Search Careers above.</div>';
+    return;
+  }
+
+  // Render the cards with title + placeholders. Click navigates to the
+  // Search Careers tab and opens that career in the unified drawer.
+  mcards.innerHTML = careers.map((c, i) => {
+    const safe = c.code.replace(/\./g,'_');
+    const isLast = i === careers.length - 1;
+    return `<div data-match-code="${c.code}" data-match-title="${c.title.replace(/"/g,'&quot;')}"
+        style="background:var(--white);border-radius:var(--rlg);border:${isLast?'2px solid var(--blue)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer">
+      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px">${c.title}</div>
+      <div class="match-card-meta" id="mm-${safe}" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:12px;color:var(--ts)">Loading details…</span>
       </div>
     </div>`;
   }).join('');
-  matched.forEach(c => {
-    const idx = CAREERS.indexOf(c);
-    const el = document.getElementById('mcard-'+idx);
-    if (el) el.addEventListener('click', () => goToSearchAndOpen(idx));
+
+  // Stash the matched list so the Search tab can re-render it on click.
+  window._lastAssessmentMatches = careers;
+
+  // Enrich each card with median salary + primary education level in parallel.
+  careers.forEach(async c => {
+    try {
+      const [outlook, edu] = await Promise.all([
+        onetGet(`/career/${c.code}/outlook`).catch(() => null),
+        onetGet(`/career/${c.code}/details/education`).catch(() => null),
+      ]);
+      const median = outlook && outlook.salary && outlook.salary.annual_median;
+      const eduList = (edu && edu.response) || [];
+      const primaryEdu = eduList.length
+        ? eduList.reduce((a,b) => (b.percentage_of_respondents > a.percentage_of_respondents ? b : a)).title
+        : 'Varies';
+      const meta = document.getElementById('mm-' + c.code.replace(/\./g,'_'));
+      if (!meta) return;
+      meta.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">💲</div>
+          <span style="font-size:15px;font-weight:700">${median ? '$' + median.toLocaleString() : '—'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">🎓</div>
+          <span style="font-size:15px;font-weight:700">${primaryEdu}</span>
+        </div>`;
+    } catch (e) { /* card just stays without enrichment */ }
   });
-  document.getElementById('afw').style.display = 'none';
-  document.getElementById('rw').style.display = 'block';
 }
 
 function drawBubbles(sorted) {

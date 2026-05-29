@@ -14,6 +14,8 @@
 //        category ∈ { grow, openings, emerging }
 //   GET /career_cluster/{code}?start=1&end=20   -> /mnm/career_clusters/{code}
 //        code is a 6-digit O*NET career-cluster code (e.g. 010100)
+//   GET /holland/{code}?start=1&end=20          -> /online/onet_data/interests/{code}
+//        code is a 1-3 letter Holland code (e.g. S, SI, SIR)
 
 const ONET_BASE = 'https://api-v2.onetcenter.org';
 
@@ -54,6 +56,7 @@ const ALLOWED_DETAIL_SLICES = new Set([
 ]);
 const ALLOWED_BRIGHT_OUTLOOK_CATEGORIES = new Set(['grow', 'openings', 'emerging']);
 const CLUSTER_CODE_RE = /^[0-9]{6}$/;
+const HOLLAND_CODE_RE = /^[RIASEC]{1,3}$/;
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin');
@@ -126,6 +129,10 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/search?keyword=${encodeURIComponent(keyword)}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === 'holland' && parts.length === 2 && HOLLAND_CODE_RE.test(parts[1])) {
+      const start = url.searchParams.get('start') || '1';
+      const end = url.searchParams.get('end') || '20';
+      onetPath = `/online/onet_data/interests/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
