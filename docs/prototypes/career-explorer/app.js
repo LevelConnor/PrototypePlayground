@@ -57,6 +57,9 @@ document.addEventListener('click', function(e) {
   const fmt = t.closest('.fmtab');
   if (fmt && fmt.dataset.mode) { setFilterMode(fmt.dataset.mode); return; }
 
+  // Interest profile expand/collapse (top 3 ↔ all 6)
+  if (t.closest('#ip-toggle')) { toggleInterestProfile(); return; }
+
   // Work-style (RIASEC) chip. Toggle membership in activeR.
   const rc = t.closest('.rc[data-r]');
   if (rc && rc.dataset.r) {
@@ -244,12 +247,15 @@ function syncProfileUI() {
 // the old top-3 ribbon + bubble chart + colour key + description grid.
 // Each row carries letter avatar + name + descriptor + bar + numeric score,
 // sorted high → low, with the top 3 emphasized and the remaining muted.
+// Tracks whether the user has expanded the interest profile to show all 6
+// rows. Defaults to collapsed (top 3 only) on first render.
+let interestProfileExpanded = false;
+
 function renderInterestProfile(sorted) {
   const el = document.getElementById('interest-profile');
   if (!el) return;
-  // Render each row. Bar width is the absolute share of the 5-point scale
-  // (so a 4.6 reads as 92% — meaningful even when the user's "lowest" score
-  // is still high in absolute terms).
+  // Bar width is the absolute share of the 5-point scale (so a 4.6 reads as
+  // 92%) — meaningful even when the user's "lowest" score is still high.
   const rowFor = ([k, v], i) => {
     const pct = Math.max(4, Math.min(100, Math.round((v / 5) * 100)));
     const isRest = i >= 3;
@@ -265,13 +271,25 @@ function renderInterestProfile(sorted) {
   };
   const top3 = sorted.slice(0,3).map(rowFor).join('');
   const rest = sorted.slice(3).map((entry, i) => rowFor(entry, i + 3)).join('');
+  const expanded = interestProfileExpanded;
   el.innerHTML = `
     <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
     <div class="ip-rows">
       ${top3}
-      ${rest ? `<div class="ip-divider">The rest, for context</div>${rest}` : ''}
+      ${rest ? `<div class="ip-more-wrap" id="ip-more-wrap"${expanded?' data-expanded':''}>${rest}</div>` : ''}
     </div>
+    ${rest ? `<div class="ip-toggle-wrap">
+      <button class="ip-toggle" id="ip-toggle" aria-expanded="${expanded}">
+        <span class="ip-toggle-text">${expanded ? 'Show top 3 only' : 'Show all 6 work styles'}</span>
+        <span class="ip-toggle-chevron" aria-hidden="true">${expanded ? '▴' : '▾'}</span>
+      </button>
+    </div>` : ''}
     <p class="ip-footnote">Your interests and career goals can change over time. Retake the assessment anytime.</p>`;
+}
+
+function toggleInterestProfile() {
+  interestProfileExpanded = !interestProfileExpanded;
+  syncProfileUI();
 }
 
 // Fetch O*NET careers matching the user's top-3 Holland code. Falls back to
