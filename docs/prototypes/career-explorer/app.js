@@ -613,32 +613,36 @@ function renderLiveList(list, listId, prefix) {
 const summaryInFlight = new Set();
 function prefetchSummaries(list, prefix) {
   list.forEach(c => {
-    if (detailCache[c.code]) return;          // full detail already loaded
-    if (summaryInFlight.has(c.code)) return;  // already being fetched
+    // Full (non-partial) detail already in cache — nothing to do.
+    if (detailCache[c.code] && !detailCache[c.code]._partial) return;
+    if (summaryInFlight.has(c.code)) return;
     summaryInFlight.add(c.code);
     onetGet(`/career/${c.code}/outlook`).then(out => {
       const wage = (out && out.salary) || {};
       const outlookCat = out && out.outlook && out.outlook.category;
-      // Store a lightweight summary in the cache. If the user later expands the
-      // card, openLiveDetail does a more complete fetch (description, related,
-      // etc.) and overwrites this with full detail.
-      detailCache[c.code] = detailCache[c.code] || {
-        code: c.code,
-        title: c.title,
-        description: '',
-        sampleTitles: [],
-        tags: { ...(c.tags || {}) },
-        salary: {
-          median: wage.annual_median || 0,
-          low: wage.annual_10th_percentile || 0,
-          high: wage.annual_90th_percentile || 0,
-        },
-        outlook: { growth: outlookCat || '', openings: '' },
-        education: [],
-        cluster: '',
-        riasec: [],
-        related: [],
-      };
+      // Store a lightweight (partial) summary. The _partial flag tells
+      // openLiveDetail it must still fetch the full detail (description,
+      // tasks, education breakdown, related occupations) on card expand.
+      if (!detailCache[c.code]) {
+        detailCache[c.code] = {
+          code: c.code,
+          title: c.title,
+          description: '',
+          sampleTitles: [],
+          tags: { ...(c.tags || {}) },
+          salary: {
+            median: wage.annual_median || 0,
+            low: wage.annual_10th_percentile || 0,
+            high: wage.annual_90th_percentile || 0,
+          },
+          outlook: { growth: outlookCat || '', descriptor: '' },
+          tasks: [],
+          eduBreakdown: [],
+          pathways: [], prepare: [], hiring: {},
+          cluster: '', riasec: [], related: [],
+          _partial: true,
+        };
+      }
       // Patch the card's badge row in place
       const safe = c.code.replace(/\./g, '_');
       const crow = document.getElementById('crow-' + prefix + '-live-' + safe);
@@ -690,18 +694,27 @@ function enrichRelatedCards(relatedList) {
       const wage = (out && out.salary) || {};
       const outlookCat = out && out.outlook && out.outlook.category;
       const isBright = !!(out && out.outlook && (out.outlook.category === 'Bright' || out.outlook.bright_outlook));
-      detailCache[r.code] = detailCache[r.code] || {
-        code: r.code, title: r.title,
-        description: '', sampleTitles: [],
-        tags: { brightOutlook: isBright, apprenticeship: false, stem: false, green: false },
-        salary: {
-          median: wage.annual_median        || 0,
-          low:    wage.annual_10th_percentile || 0,
-          high:   wage.annual_90th_percentile || 0,
-        },
-        outlook: { growth: outlookCat || '', openings: '' },
-        education: [], cluster: '', riasec: [], related: [],
-      };
+      // Lightweight partial entry — same _partial discipline as
+      // prefetchSummaries so that opening the drawer still triggers
+      // the full data fetch.
+      if (!detailCache[r.code]) {
+        detailCache[r.code] = {
+          code: r.code, title: r.title,
+          description: '', sampleTitles: [],
+          tags: { brightOutlook: isBright, apprenticeship: false, stem: false, green: false },
+          salary: {
+            median: wage.annual_median        || 0,
+            low:    wage.annual_10th_percentile || 0,
+            high:   wage.annual_90th_percentile || 0,
+          },
+          outlook: { growth: outlookCat || '', descriptor: '' },
+          tasks: [],
+          eduBreakdown: [],
+          pathways: [], prepare: [], hiring: {},
+          cluster: '', riasec: [], related: [],
+          _partial: true,
+        };
+      }
       paintRelatedCard(r.code, detailCache[r.code]);
     }).catch(() => {}).finally(() => {
       summaryInFlight.delete(r.code);
@@ -735,8 +748,10 @@ async function openLiveDetail(code, prefix) {
   arr.classList.add('open');
   wrap.classList.add('open');
 
-  // If already cached, render immediately
-  if (detailCache[code]) {
+  // If a full (non-partial) detail is already cached, render immediately.
+  // Partial entries (written by prefetchSummaries / enrichRelatedCards) hold
+  // only salary + outlook; we still need to fetch the rest.
+  if (detailCache[code] && !detailCache[code]._partial) {
     wrap.innerHTML = buildLiveDetail(detailCache[code], code, prefix);
     setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
     return;
