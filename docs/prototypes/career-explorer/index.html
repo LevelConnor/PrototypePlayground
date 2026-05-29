@@ -80,7 +80,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Replaces 4 redundant elements (top-3 ribbon, bubble chart,
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
-.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px 28px 24px;max-width:680px;margin:0 auto 32px}
+.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px 28px 24px;margin:0 0 24px}
 .ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin-bottom:20px}
 .ip-rows{display:flex;flex-direction:column}
 .ip-row{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--mg);transition:opacity .2s}
@@ -107,7 +107,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .sav h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:3px}
 .sav p{font-size:12px;color:var(--ts)}
 .sav-btns{display:flex;gap:10px;flex-wrap:wrap}
-.sbx-w{position:relative;margin-bottom:18px}
+.sbx-w{position:relative;margin:24px 0 18px}
 .sbx{width:100%;background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:14px 52px 14px 22px;font-size:15px;color:var(--navy);outline:none;transition:border-color .15s}
 .sbx:focus{border-color:var(--blue)}
 .sbx::placeholder{color:#aaa}
@@ -119,6 +119,17 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .qct p{font-size:15px;color:var(--ts)}
 .fl{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px}
 .fcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+
+/* Filter-mode tabs (above the chip groups). One row of pill tabs that swap
+   which chip group is visible — keeps the page from showing 26 chips at once. */
+.fmtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.fmtab{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:8px 16px;font-size:13px;font-weight:700;color:var(--ts);cursor:pointer;transition:all .15s}
+.fmtab:hover{border-color:var(--blue);color:var(--blue)}
+.fmtab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.fc-group[hidden]{display:none}
+
+/* 6px gap between career rows in the results list. */
+#slist{display:flex;flex-direction:column;gap:6px}
 .fc{background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:8px 18px;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .12s}
 .fc:hover{border-color:var(--blue)}
 .fc.active{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -339,11 +350,18 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
 
-  <!-- Work-style (RIASEC) toggle chips. After the assessment runs, the user's
-       top-3 are pre-selected. Toggling re-runs the Holland match.
-       Keyword/area search takes precedence — these become visual context. -->
-  <div class="fl">Match by work style</div>
-  <div class="fcs" id="riasec-chips">
+  <!-- Filter-mode picker. One row of tabs swaps between the three chip
+       groups so we don't show 26 chips at once. The dispatcher
+       (updateSearch in app.js) decides which group's chips actually
+       drive the result list — the tabs are pure view state. -->
+  <div class="fl">Find careers by</div>
+  <div class="fmtabs">
+    <button class="fmtab active" data-mode="riasec">🌐 Work style</button>
+    <button class="fmtab" data-mode="area">📂 Area</button>
+    <button class="fmtab" data-mode="cluster">📚 Cluster</button>
+  </div>
+  <!-- Chip groups (one visible at a time, swapped by the tabs above) -->
+  <div class="fcs fc-group" id="riasec-chips" data-mode-pane="riasec">
     <button class="fc rc" data-r="R">Realistic</button>
     <button class="fc rc" data-r="I">Investigative</button>
     <button class="fc rc" data-r="A">Artistic</button>
@@ -351,9 +369,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <button class="fc rc" data-r="E">Enterprising</button>
     <button class="fc rc" data-r="C">Conventional</button>
   </div>
-
-  <div class="fl">Browse by area</div>
-  <div class="fcs">
+  <div class="fcs fc-group" id="area-chips" data-mode-pane="area" hidden>
     <button class="fc schip" data-q="healthcare">🏥 Healthcare</button>
     <button class="fc schip" data-q="technology">💻 Technology</button>
     <button class="fc schip" data-q="electrician">🔧 Skilled trades</button>
@@ -361,11 +377,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <button class="fc schip" data-q="firefighter">🛡️ Public service</button>
     <button class="fc schip" data-q="manager">🚀 Business</button>
   </div>
-
-  <!-- Career cluster chips. 14 total, populated by JS from CLUSTERS so emoji
-       + name stay in sync. Click toggles a single-active cluster filter. -->
-  <div class="fl">Filter by cluster</div>
-  <div class="fcs" id="cluster-chips"></div>
+  <div class="fcs fc-group" id="cluster-chips" data-mode-pane="cluster" hidden></div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
   <div id="slist-more"></div>

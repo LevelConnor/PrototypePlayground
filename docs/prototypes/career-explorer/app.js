@@ -52,14 +52,17 @@ document.addEventListener('click', function(e) {
     return;
   }
 
+  // Filter-mode tabs (Work style / Area / Cluster) — pure view state,
+  // swaps which chip group is visible. Doesn't change any filter.
+  const fmt = t.closest('.fmtab');
+  if (fmt && fmt.dataset.mode) { setFilterMode(fmt.dataset.mode); return; }
+
   // Work-style (RIASEC) chip. Toggle membership in activeR.
   const rc = t.closest('.rc[data-r]');
   if (rc && rc.dataset.r) {
     const letter = rc.dataset.r;
     if (activeR.has(letter)) activeR.delete(letter);
     else activeR.add(letter);
-    // Selecting a RIASEC chip switches to interest-driven matching: clear any
-    // keyword/area/cluster selection so the mode dispatch lands on 'riasec'.
     if (activeR.size > 0) {
       document.getElementById('sinput').value = '';
       activeCluster = '';
@@ -73,15 +76,12 @@ document.addEventListener('click', function(e) {
   if (cc && cc.dataset.cluster) {
     const name = cc.dataset.cluster;
     activeCluster = (activeCluster === name) ? '' : name;
-    if (activeCluster) {
-      // Cluster mode wins over RIASEC/keyword
-      document.getElementById('sinput').value = '';
-    }
+    if (activeCluster) document.getElementById('sinput').value = '';
     updateSearch();
     return;
   }
 
-  // Area chips. Each acts as a single-active keyword shortcut.
+  // Area chips — single-active keyword shortcut.
   const schip = t.closest('.schip');
   if (schip && schip.dataset.q) {
     const input = document.getElementById('sinput');
@@ -92,7 +92,6 @@ document.addEventListener('click', function(e) {
     } else {
       schip.classList.add('active');
       input.value = schip.dataset.q;
-      // Keyword mode wins over cluster/RIASEC
       activeCluster = '';
     }
     updateSearch();
@@ -201,15 +200,18 @@ function submitAssessment() {
   Object.keys(tot).forEach(k => avgs[k] = cnt[k] ? +(tot[k]/cnt[k]).toFixed(2) : 0);
   lastResults = avgs;
   // Switch to the combined Find My Career tab, populate the interest profile,
-  // auto-select the user's top-3 work-style chips, and run the live match.
+  // auto-select the user's top-3 work-style chips, switch the filter view to
+  // the Work style tab, and run the live match.
   switchTab('search');
   syncProfileUI();
   const sorted = Object.entries(avgs).sort((a,b) => b[1]-a[1]);
   activeR.clear();
   sorted.slice(0,3).forEach(([k]) => activeR.add(k));
   syncRiasecChipsUI();
+  setFilterMode('riasec');
   // Clear any existing keyword search so RIASEC mode is the entry point.
   document.getElementById('sinput').value = '';
+  activeCluster = '';
   updateSearch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -507,6 +509,23 @@ function syncClusterChipsUI() {
   document.querySelectorAll('.cluster-chip').forEach(c => {
     c.classList.toggle('active', c.dataset.cluster === activeCluster);
   });
+}
+
+// Filter-mode tabs: switch which chip group is visible. Pure view state —
+// doesn't reset any active filter. Modes: 'riasec' | 'area' | 'cluster'.
+function setFilterMode(mode) {
+  document.querySelectorAll('.fmtab').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.querySelectorAll('.fc-group[data-mode-pane]').forEach(g => {
+    g.hidden = (g.dataset.modePane !== mode);
+  });
+}
+
+// Pick the right initial tab based on session state.
+function pickInitialFilterMode() {
+  if (lastResults) return 'riasec';
+  return 'area';
 }
 
 // ─── RIASEC (Holland-code) mode ───────────────────────────────────────────
@@ -1446,6 +1465,7 @@ document.addEventListener('DOMContentLoaded', function() {
   restoreFromURL();
   renderClusterChips();
   syncProfileUI();
+  setFilterMode(pickInitialFilterMode());
   updateSearch();
 });
 
