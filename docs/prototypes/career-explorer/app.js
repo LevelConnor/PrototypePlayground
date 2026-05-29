@@ -43,12 +43,6 @@ document.addEventListener('click', function(e) {
   if (t.id === 'btn-tray-link') { copyTrayLink(); return; }
   if (t.id === 'btn-tray-print') { window.print(); return; }
 
-  // SEARCH filters
-  const fc = t.closest('.fc[data-filter]');
-  if (fc) { toggleF(fc.dataset.filter, fc); return; }
-  const fr = t.closest('.fc[data-r]');
-  if (fr && fr.closest('#filter-interest')) { toggleR(fr); return; }
-
   // Bright Outlook "Show more" pagination button
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
@@ -74,11 +68,6 @@ document.addEventListener('click', function(e) {
     doSearch();
     return;
   }
-  const fsal = t.closest('#fsal');
-  if (fsal) { doSearch(); return; }
-  const fedu = t.closest('#fedu');
-  if (fedu) { doSearch(); return; }
-
   // CAREER ROWS (always live now)
   const crow = t.closest('.crow');
   if (crow && crow.dataset.liveCode) {
@@ -118,10 +107,6 @@ document.addEventListener('click', function(e) {
 document.addEventListener('input', function(e) {
   if (e.target.id === 'sinput') doSearch();
 });
-document.addEventListener('change', function(e) {
-  if (e.target.id === 'fsal' || e.target.id === 'fedu') doSearch();
-});
-
 /* ══ O*NET PROXY (Cloudflare Worker) ══ */
 const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
 async function onetGet(path) {
@@ -137,7 +122,6 @@ function debounce(fn, ms) {
 /* ══ STATE ══ */
 const saved = new Set(), answered = {};
 let lastResults = null;
-const activeR = new Set();
 let activeCluster = '', activeSub = '';
 const BC = {R:'#0083FF',I:'#F4845F',A:'#9B72CF',S:'#F9C846',E:'#A8B4D8',C:'#E8E8A0'};
 const RI = {
@@ -167,23 +151,6 @@ function switchTab(id, btn) {
 function goToAssessment() { switchTab('assessment'); window.scrollTo({top:0,behavior:'smooth'}); }
 function goToSearch() {
   switchTab('search');
-  if (lastResults) {
-    const top3 = Object.entries(lastResults).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
-    top3.forEach(code => {
-      if (!activeR.has(code)) {
-        activeR.add(code);
-        const b = document.querySelector('.fc[data-r="'+code+'"]');
-        if (b) b.classList.add('active');
-      }
-    });
-    const fd = document.getElementById('filter-interest');
-    if (!fd.classList.contains('open')) {
-      fd.classList.add('open');
-      const chip = document.querySelector('.fc[data-filter="interest"]');
-      if (chip) chip.classList.add('active');
-    }
-    doSearch();
-  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 // Assessment-results card → switch to Search, render the matched careers as
@@ -424,31 +391,16 @@ function copyTrayLink() {
 }
 
 /* ══ SEARCH ══ */
-function toggleF(key, btn) {
-  btn.classList.toggle('active');
-  document.getElementById('filter-'+key).classList.toggle('open', btn.classList.contains('active'));
-}
-function toggleR(btn) {
-  const code = btn.dataset.r;
-  if (activeR.has(code)) { activeR.delete(code); btn.classList.remove('active'); }
-  else { activeR.add(code); btn.classList.add('active'); }
-  doSearch();
-}
-
 // Debounce timer for search input
 const detailCache = {};
 
 // Debounced live search — fires after 300ms of input pause
 const debouncedLiveSearch = debounce(_execLiveSearch, 300);
 
-// Show/hide the default empty state (starter chips + Bright Outlook).
-// Empty state is shown when: query is empty AND no filters active AND no
-// interest tags selected.
+// Show/hide the default empty state (Bright Outlook list).
+// Empty state is shown when the search input is empty.
 function isSearchEmpty() {
-  const q = document.getElementById('sinput').value.trim();
-  const minSal = parseInt(document.getElementById('fsal').value) || 0;
-  const edu = document.getElementById('fedu').value;
-  return !q && !minSal && !edu && activeR.size === 0;
+  return !document.getElementById('sinput').value.trim();
 }
 function showEmptyState() {
   document.getElementById('search-empty-state').classList.add('show');

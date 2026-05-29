@@ -93,10 +93,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fc{background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:8px 18px;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .12s}
 .fc:hover{border-color:var(--blue)}
 .fc.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.fd{display:none;background:var(--white);border:2px solid var(--mg);border-radius:var(--rlg);padding:18px 20px;margin-bottom:18px;gap:16px;flex-wrap:wrap}
-.fd.open{display:flex}
-.fg label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts);margin-bottom:5px}
-.fg select{background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rsm);padding:8px 12px;font-size:15px;color:var(--navy);outline:none;min-width:160px}
 .rdiv{border:none;border-top:1px dashed var(--mg);margin:4px 0 16px}
 /* Related-careers horizontal scroll row inside the live drawer */
 .rcrow{display:flex;gap:12px;overflow-x:auto;padding:4px 4px 14px;margin:0 -4px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
@@ -329,11 +325,8 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <div class="qcl"><div class="qct"><h4>Not sure where to start?</h4><p>Get careers matched to your interests with our Career Assessment.</p></div></div>
     <button class="cta" id="btn-go-assess">Take the Assessment</button>
   </div>
-  <div class="fl">Narrow your search</div>
+  <div class="fl">Browse by area</div>
   <div class="fcs">
-    <button class="fc" data-filter="income">Income</button>
-    <button class="fc" data-filter="edu">Education</button>
-    <button class="fc" data-filter="interest">Interest Areas</button>
     <button class="fc schip" data-q="healthcare">🏥 Healthcare</button>
     <button class="fc schip" data-q="technology">💻 Technology</button>
     <button class="fc schip" data-q="electrician">🔧 Skilled trades</button>
@@ -341,11 +334,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <button class="fc schip" data-q="firefighter">🛡️ Public service</button>
     <button class="fc schip" data-q="manager">🚀 Business</button>
   </div>
-  <div class="fd" id="filter-income"><div class="fg"><label>Minimum Salary</label><select id="fsal"><option value="0">Any</option><option value="40000">$40,000+</option><option value="60000">$60,000+</option><option value="80000">$80,000+</option><option value="100000">$100,000+</option></select></div></div>
-  <div class="fd" id="filter-edu"><div class="fg"><label>Education Level</label><select id="fedu"><option value="">Any</option><option>No Degree / Self-Taught</option><option>No Degree / Apprenticeship</option><option>Certificate</option><option>Associate's Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctoral Degree</option></select></div></div>
-  <div class="fd" id="filter-interest"><div class="fg" style="width:100%"><label>Interest Areas — select one or more</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
-    <button class="fc" data-r="R">Realistic</button><button class="fc" data-r="I">Investigative</button><button class="fc" data-r="A">Artistic</button><button class="fc" data-r="S">Social</button><button class="fc" data-r="E">Enterprising</button><button class="fc" data-r="C">Conventional</button>
-  </div></div></div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
 
