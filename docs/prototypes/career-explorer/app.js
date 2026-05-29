@@ -89,13 +89,6 @@ document.addEventListener('click', function(e) {
   const cdbm = t.closest('.cdbm');
   if (cdbm && cdbm.dataset.liveCode) { toggleLiveSave(cdbm.dataset.liveCode); return; }
 
-  // Assessment match card → navigate to Search Careers + open that career
-  const matchCard = t.closest('[data-match-code]');
-  if (matchCard && matchCard.dataset.matchCode) {
-    goToSearchAndOpenByCode(matchCard.dataset.matchCode);
-    return;
-  }
-
   // RELATED career click inside live (O*NET) drawer
   const liveRel = t.closest('[data-live-rel]');
   if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, liveRel.dataset.prefix || 'sd'); return; }
@@ -153,23 +146,6 @@ function goToSearch() {
   switchTab('search');
   window.scrollTo({top:0,behavior:'smooth'});
 }
-// Assessment-results card → switch to Search, render the matched careers as
-// the live list, then open the picked career's unified drawer.
-function goToSearchAndOpenByCode(code) {
-  switchTab('search');
-  hideEmptyState();
-  const matches = window._lastAssessmentMatches || [];
-  const liveShape = matches.map(c => ({
-    code: c.code, title: c.title,
-    tags: { ...(c.tags || {brightOutlook:false,apprenticeship:false,stem:false,green:false}) },
-  }));
-  if (liveShape.length) {
-    renderLiveList(liveShape, 'slist', 'sd');
-    document.getElementById('rcount').textContent = 'From your assessment matches';
-  }
-  setTimeout(() => openLiveDetail(code, 'sd'), 80);
-}
-
 /* ══ ASSESSMENT ══ */
 function rate(btn) {
   const row = btn.closest('.qr');
@@ -223,22 +199,22 @@ function renderResults(avgs) {
 }
 
 // Fetch O*NET careers matching the user's top-3 Holland code. Falls back to
-// top-2 then top-1 if the 3-letter combo is too rare. Renders 5 match cards
-// (title + lazy-loaded salary + primary education level).
+// top-2 then top-1 if the 3-letter combo is too rare. Renders the matches
+// using the same renderLiveList card component as Search / Clusters / Bright
+// Outlook so the look + behavior (inline drawer on click) is consistent.
 async function renderAssessmentMatches(top3) {
   const mcards = document.getElementById('mcards');
   mcards.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:18px 0">Finding careers that match your interests…</div>';
 
   const ladders = [top3.slice(0,3).join(''), top3.slice(0,2).join(''), top3[0]];
   let careers = [];
-  let usedCode = '';
   for (const code of ladders) {
     if (!code) continue;
     try {
       const data = await onetGet(`/holland/${code}?end=5`);
       const occ = (data && data.occupation) || [];
-      if (occ.length >= 3) { careers = occ.slice(0,5); usedCode = code; break; }
-      if (!careers.length) { careers = occ.slice(0,5); usedCode = code; }
+      if (occ.length >= 3) { careers = occ.slice(0,5); break; }
+      if (!careers.length) careers = occ.slice(0,5);
     } catch (e) { /* try next ladder */ }
   }
 
@@ -247,48 +223,18 @@ async function renderAssessmentMatches(top3) {
     return;
   }
 
-  // Render the cards with title + placeholders. Click navigates to the
-  // Search Careers tab and opens that career in the unified drawer.
-  mcards.innerHTML = careers.map((c, i) => {
-    const safe = c.code.replace(/\./g,'_');
-    const isLast = i === careers.length - 1;
-    return `<div data-match-code="${c.code}" data-match-title="${c.title.replace(/"/g,'&quot;')}"
-        style="background:var(--white);border-radius:var(--rlg);border:${isLast?'2px solid var(--blue)':'1.5px solid var(--mg)'};padding:20px 22px;cursor:pointer">
-      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px">${c.title}</div>
-      <div class="match-card-meta" id="mm-${safe}" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:12px;color:var(--ts)">Loading details…</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Stash the matched list so the Search tab can re-render it on click.
-  window._lastAssessmentMatches = careers;
-
-  // Enrich each card with median salary + primary education level in parallel.
-  careers.forEach(async c => {
-    try {
-      const [outlook, edu] = await Promise.all([
-        onetGet(`/career/${c.code}/outlook`).catch(() => null),
-        onetGet(`/career/${c.code}/details/education`).catch(() => null),
-      ]);
-      const median = outlook && outlook.salary && outlook.salary.annual_median;
-      const eduList = (edu && edu.response) || [];
-      const primaryEdu = eduList.length
-        ? eduList.reduce((a,b) => (b.percentage_of_respondents > a.percentage_of_respondents ? b : a)).title
-        : 'Varies';
-      const meta = document.getElementById('mm-' + c.code.replace(/\./g,'_'));
-      if (!meta) return;
-      meta.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">💲</div>
-          <span style="font-size:15px;font-weight:700">${median ? '$' + median.toLocaleString() : '—'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:36px;height:36px;border:2px solid var(--blue);border-radius:var(--rsm);display:flex;align-items:center;justify-content:center">🎓</div>
-          <span style="font-size:15px;font-weight:700">${primaryEdu}</span>
-        </div>`;
-    } catch (e) { /* card just stays without enrichment */ }
-  });
+  // Map the Holland response to the shape renderLiveList expects.
+  const list = careers.map(c => ({
+    code: c.code,
+    title: c.title,
+    tags: {
+      brightOutlook:  !!(c.tags && c.tags.bright_outlook),
+      apprenticeship: !!(c.tags && c.tags.apprenticeship),
+      stem:           !!(c.tags && c.tags.stem),
+      green:          !!(c.tags && c.tags.green),
+    },
+  }));
+  renderLiveList(list, 'mcards', 'mc');
 }
 
 function drawBubbles(sorted) {
