@@ -116,7 +116,11 @@ function debounce(fn, ms) {
 const saved = new Set(), answered = {};
 let lastResults = null;
 let activeCluster = '', activeSub = '';
-const BC = {R:'#0083FF',I:'#F4845F',A:'#9B72CF',S:'#F9C846',E:'#A8B4D8',C:'#E8E8A0'};
+// RIASEC palette. Updated for the new light-mode page: E and C used to be
+// pale steel-blue and pale yellow (designed against a dark background) and
+// were illegible on white. Replaced with deeper, well-saturated tones that
+// keep the same semantic associations.
+const BC = {R:'#0083FF',I:'#F4845F',A:'#9B72CF',S:'#E5A800',E:'#4F6F8A',C:'#9B8E2E'};
 const RI = {
   R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, machines, and physical tasks.',bg:'#0A0F2E'},
   I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, science, and solving complex problems.',bg:'#1D0E32'},
@@ -171,31 +175,46 @@ function submitAssessment() {
 
 function renderResults(avgs) {
   const sorted = Object.entries(avgs).sort((a,b) => b[1]-a[1]);
-  document.getElementById('r3').innerHTML = sorted.slice(0,3).map(([k],i) =>
-    `<span style="font-weight:${i===0?700:400}">${i+1}. <strong>${RI[k].short}</strong></span>`).join('');
-  drawBubbles(sorted);
-  document.getElementById('bleg').innerHTML = sorted.map(([k]) =>
-    `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--navy)"><span style="width:14px;height:14px;border-radius:50%;background:${BC[k]};flex-shrink:0"></span><strong>${k}</strong>: ${RI[k].short}</span>`).join('');
-
-  // Render RIASEC explanations on results page, ordered by score
-  const grid = document.getElementById('riasec-legend-grid');
-  if (grid) {
-    grid.innerHTML = sorted.map(([k]) =>
-      `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0">
-        <span style="width:24px;height:24px;border-radius:50%;background:${BC[k]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#1a1a2e;flex-shrink:0">${k}</span>
-        <div>
-          <div style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--navy);letter-spacing:.03em">${RI[k].short}</div>
-          <div style="font-size:11px;color:var(--ts);line-height:1.4;margin-top:1px">${RI[k].desc}</div>
-        </div>
-      </div>`
-    ).join('');
-  }
-
+  renderInterestProfile(sorted);
   const top3 = sorted.slice(0,3).map(([k])=>k);
   document.getElementById('afw').style.display = 'none';
   document.getElementById('rw').style.display = 'block';
   // Fire async match render. Doesn't block the rest of the results panel.
   renderAssessmentMatches(top3);
+}
+
+// Single unified visualization for the assessment results header — replaces
+// the old top-3 ribbon + bubble chart + colour key + description grid.
+// Each row carries letter avatar + name + descriptor + bar + numeric score,
+// sorted high → low, with the top 3 emphasized and the remaining muted.
+function renderInterestProfile(sorted) {
+  const el = document.getElementById('interest-profile');
+  if (!el) return;
+  // Render each row. Bar width is the absolute share of the 5-point scale
+  // (so a 4.6 reads as 92% — meaningful even when the user's "lowest" score
+  // is still high in absolute terms).
+  const rowFor = ([k, v], i) => {
+    const pct = Math.max(4, Math.min(100, Math.round((v / 5) * 100)));
+    const isRest = i >= 3;
+    return `<div class="ip-row${isRest?' is-rest':''}">
+      <div class="ip-avatar" style="background:${BC[k]}">${k}</div>
+      <div class="ip-body">
+        <div class="ip-name">${RI[k].short}<span class="ip-tag">${RI[k].name.split('—')[1].trim()}</span></div>
+        <div class="ip-desc">${RI[k].desc}</div>
+        <div class="ip-bar"><div class="ip-fill" style="width:${pct}%;background:${BC[k]}"></div></div>
+      </div>
+      <div class="ip-score">${v.toFixed(1)}<small>of 5</small></div>
+    </div>`;
+  };
+  const top3 = sorted.slice(0,3).map(rowFor).join('');
+  const rest = sorted.slice(3).map((entry, i) => rowFor(entry, i + 3)).join('');
+  el.innerHTML = `
+    <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
+    <div class="ip-rows">
+      ${top3}
+      ${rest ? `<div class="ip-divider">The rest, for context</div>${rest}` : ''}
+    </div>
+    <p class="ip-footnote">Your interests and career goals can change over time. Retake the assessment anytime.</p>`;
 }
 
 // Fetch O*NET careers matching the user's top-3 Holland code. Falls back to
@@ -235,38 +254,6 @@ async function renderAssessmentMatches(top3) {
     },
   }));
   renderLiveList(list, 'mcards', 'mc');
-}
-
-function drawBubbles(sorted) {
-  const cv = document.getElementById('bc'), ctx = cv.getContext('2d');
-  const W=420, H=300;
-  ctx.clearRect(0,0,W,H);
-  const mx = sorted[0][1] || 5;
-  const bubbles = sorted.map(([k,v]) => ({k,v,r:Math.max(16,Math.round((v/mx)*72)),x:0,y:0}));
-  const placed = [];
-  bubbles.forEach((b,i) => {
-    if (i===0) { b.x=W/2; b.y=H/2; placed.push(b); return; }
-    let ok = false;
-    for (let a=0; a<400&&!ok; a++) {
-      const ref = placed[Math.floor(Math.random()*placed.length)];
-      const angle = Math.random()*Math.PI*2;
-      const dist = ref.r+b.r+4+Math.random()*8;
-      const tx = ref.x+Math.cos(angle)*dist, ty = ref.y+Math.sin(angle)*dist;
-      if (tx-b.r<4||tx+b.r>W-4||ty-b.r<4||ty+b.r>H-4) continue;
-      if (placed.every(p => Math.hypot(tx-p.x,ty-p.y) >= p.r+b.r+3)) {
-        b.x=tx; b.y=ty; placed.push(b); ok=true;
-      }
-    }
-    if (!ok) { b.x=Math.min(W-b.r-4,Math.max(b.r+4,W/2+(i%3-1)*90)); b.y=Math.min(H-b.r-4,Math.max(b.r+4,H/2+Math.floor(i/3)*80-40)); placed.push(b); }
-  });
-  bubbles.forEach(b => {
-    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-    ctx.fillStyle=BC[b.k]; ctx.globalAlpha=.88; ctx.fill(); ctx.globalAlpha=1;
-    ctx.fillStyle='#1a1a2e';
-    ctx.font=`900 ${Math.max(11,Math.round(b.r*.52))}px Inter,system-ui,sans-serif`;
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(b.k,b.x,b.y);
-  });
 }
 
 function resetAssessment() {

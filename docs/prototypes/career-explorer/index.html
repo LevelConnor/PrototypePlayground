@@ -74,6 +74,35 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .qn{font-size:12px;color:var(--ts);}
 .rw{display:none}
 .rbc{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:18px;font-size:15px;color:var(--navy)}
+
+/* ─────────────────────────────────────────────────────────────
+   INTEREST PROFILE — single ranked-bar visualization.
+   Replaces 4 redundant elements (top-3 ribbon, bubble chart,
+   colour key, description grid) on the assessment results page.
+   ───────────────────────────────────────────────────────────── */
+.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px 28px 24px;max-width:680px;margin:0 auto 32px}
+.ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin-bottom:20px}
+.ip-rows{display:flex;flex-direction:column}
+.ip-row{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--mg);transition:opacity .2s}
+.ip-row:last-child{border-bottom:none}
+.ip-row.is-rest{opacity:.55}
+.ip-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:900;letter-spacing:.02em;flex-shrink:0}
+.ip-body{min-width:0}
+.ip-name{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);line-height:1.2}
+.ip-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts);margin-left:6px}
+.ip-desc{font-size:12px;color:var(--ts);line-height:1.45;margin:3px 0 8px}
+.ip-bar{height:6px;background:var(--off);border-radius:var(--rf);overflow:hidden}
+.ip-fill{height:100%;border-radius:var(--rf);transition:width .6s ease}
+.ip-score{font-size:20px;font-weight:900;color:var(--navy);min-width:54px;text-align:right;line-height:1}
+.ip-score small{display:block;font-size:11px;font-weight:700;color:var(--ts);margin-top:3px;letter-spacing:.05em}
+.ip-divider{display:flex;align-items:center;gap:10px;padding:14px 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts)}
+.ip-divider::before,.ip-divider::after{content:'';flex:1;height:1px;background:var(--mg)}
+.ip-footnote{font-size:12px;color:var(--ts);text-align:center;margin-top:18px;line-height:1.5}
+@media (max-width:520px){
+  .ip-card{padding:20px}
+  .ip-row{grid-template-columns:36px 1fr auto;gap:10px}
+  .ip-avatar{width:36px;height:36px;font-size:13px}
+}
 .sav{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 22px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
 .sav h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:3px}
 .sav p{font-size:12px;color:var(--ts)}
@@ -289,16 +318,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <div class="rw" id="rw">
     <div id="print-header"><div style="font-size:20px;font-weight:900;text-transform:uppercase">Level All — Career Assessment Results</div><div style="font-size:15px;color:#555;margin-top:4px" id="print-date"></div></div>
-    <div style="text-align:center;max-width:640px;margin:0 auto 28px"><p style="font-size:15px;font-weight:700;line-height:1.6">Based on the assessment, this chart shows your interest areas.<br><span style="font-weight:400">Remember, your interests and career goals can change.</span></p></div>
-    <div class="rbc" id="r3"></div>
-    <p style="text-align:center;font-size:15px;color:var(--ts);margin-bottom:16px">Your top interest areas are represented by larger bubbles.</p>
-    <div style="display:flex;justify-content:center;margin-bottom:10px"><canvas id="bc" width="420" height="300" style="max-width:100%"></canvas></div>
-    <div id="bleg" style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
-    <!-- RIASEC legend on results page -->
-    <div id="riasec-results-legend" style="background:var(--off);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 24px;margin:0 auto 32px;max-width:560px">
-      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:12px">What each letter means</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px" id="riasec-legend-grid"></div>
-    </div>
+    <!-- Unified Interest Profile: ranked bars with inline legend + descriptions.
+         Replaces the old #r3 top-3 ribbon, #bc bubble canvas, #bleg colour key,
+         and #riasec-results-legend description grid (all redundant). -->
+    <div id="interest-profile" class="ip-card"></div>
     <div style="text-align:center;margin-bottom:20px"><div class="pt" style="font-size:20px">Careers matching your <span>interest areas.</span></div><p style="font-size:15px;color:var(--ts);margin-top:6px;margin-bottom:20px">Based on your answers, these careers match your combination of interest areas.</p></div>
     <div id="mcards" style="max-width:680px;margin:0 auto 24px"></div>
     <div style="text-align:center;margin-bottom:24px"><button class="cta ghost" id="btn-explore-matches">Explore Your Career Assessment Matches</button></div>
