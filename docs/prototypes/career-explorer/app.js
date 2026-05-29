@@ -84,22 +84,6 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // Area chips — single-active keyword shortcut.
-  const schip = t.closest('.schip');
-  if (schip && schip.dataset.q) {
-    const input = document.getElementById('sinput');
-    const wasActive = schip.classList.contains('active');
-    document.querySelectorAll('.schip').forEach(c => c.classList.remove('active'));
-    if (wasActive) {
-      input.value = '';
-    } else {
-      schip.classList.add('active');
-      input.value = schip.dataset.q;
-      activeCluster = '';
-    }
-    updateSearch();
-    return;
-  }
   // CAREER ROWS (always live now)
   const crow = t.closest('.crow');
   if (crow && crow.dataset.liveCode) {
@@ -476,7 +460,6 @@ async function renderBrightOutlook() {
 // so the user still sees their interest context.
 function updateSearch() {
   const q = document.getElementById('sinput').value.trim();
-  syncAreaChipsUI(q);
   syncRiasecChipsUI();
   syncClusterChipsUI();
 
@@ -510,13 +493,6 @@ function updateSearch() {
 // Backwards-compat shim for any remaining callers that say doSearch().
 function doSearch() { updateSearch(); }
 
-function syncAreaChipsUI(qLower) {
-  const v = (qLower || '').toLowerCase();
-  document.querySelectorAll('.schip').forEach(c => {
-    c.classList.toggle('active', (c.dataset.q || '').toLowerCase() === v);
-  });
-}
-
 function syncRiasecChipsUI() {
   document.querySelectorAll('.rc').forEach(c => {
     c.classList.toggle('active', activeR.has(c.dataset.r));
@@ -540,11 +516,9 @@ function setFilterMode(mode) {
   });
 }
 
-// Pick the right initial tab based on session state.
-function pickInitialFilterMode() {
-  if (lastResults) return 'riasec';
-  return 'area';
-}
+// Only two real filter modes now (Area was dropped — it was just keyword
+// sugar). Default to Work style; user can switch to Cluster.
+function pickInitialFilterMode() { return 'riasec'; }
 
 // ─── RIASEC (Holland-code) mode ───────────────────────────────────────────
 async function renderRiasecIntoSlist() {
