@@ -22,6 +22,7 @@ document.addEventListener('click', function(e) {
   // ASSESSMENT submit / reset
   if (t.id === 'btn-submit') { submitAssessment(); return; }
   if (t.id === 'btn-reset') { resetAssessment(); return; }
+  if (t.id === 'btn-autofill') { autofillAssessment(); return; }
   if (t.id === 'btn-retake') { resetAssessment(); return; }
   if (t.id === 'btn-explore-matches') { goToSearch(); return; }
   if (t.id === 'btn-go-assess') { goToAssessment(); return; }
@@ -414,6 +415,20 @@ function resetAssessment() {
   document.getElementById('afw').style.display = 'block';
   document.getElementById('rw').style.display = 'none';
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Dev shortcut: random-fills every question 1–5 then submits. Wired to
+// the floating 🎲 button at the bottom-right of the Assessment panel
+// so we can spin through the assessment → results flow quickly.
+function autofillAssessment() {
+  document.querySelectorAll('.qr').forEach(row => {
+    const val = 1 + Math.floor(Math.random() * 5);
+    const btn = row.querySelector(`.sb[data-v="${val}"]`);
+    if (btn) rate(btn);
+  });
+  // Tiny delay so the UI shows the answers being filled before the submit
+  // tears down the assessment panel.
+  setTimeout(submitAssessment, 120);
 }
 
 /* ══ SAVE / EMAIL / PRINT ══ */
