@@ -49,6 +49,28 @@ document.addEventListener('click', function(e) {
   // Interest profile expand/collapse (top 3 ↔ all 6)
   if (t.closest('#ip-toggle')) { toggleInterestProfile(); return; }
 
+  // Filter-bar dropdown toggle (Work style / Education / Salary buttons)
+  const fbBtn = t.closest('.fb-btn');
+  if (fbBtn) { toggleFb(fbBtn.parentElement); return; }
+
+  // Education option chip
+  const eduOpt = t.closest('.edu-opt[data-edu]');
+  if (eduOpt) {
+    eduZoneMin = parseInt(eduOpt.dataset.edu) || 0;
+    updateFbValueLabels();
+    applyClientFilters();
+    return;
+  }
+
+  // Salary option chip
+  const salOpt = t.closest('.sal-opt[data-sal]');
+  if (salOpt) {
+    minSalary = parseInt(salOpt.dataset.sal) || 0;
+    updateFbValueLabels();
+    applyClientFilters();
+    return;
+  }
+
   // Work-style (RIASEC) chip. Toggle membership in activeR.
   const rc = t.closest('.rc[data-r]');
   if (rc && rc.dataset.r) {
@@ -56,9 +78,13 @@ document.addEventListener('click', function(e) {
     if (activeR.has(letter)) activeR.delete(letter);
     else activeR.add(letter);
     if (activeR.size > 0) document.getElementById('sinput').value = '';
+    updateFbValueLabels();
     updateSearch();
     return;
   }
+
+  // Click outside any filter-bar panel → close all open ones.
+  if (!t.closest('.fb')) closeAllFbs();
 
   // Career cluster card — opens detail section
   const ccard = t.closest('.cluster-card[data-cluster]');
@@ -134,6 +160,8 @@ const saved = new Set(), answered = {};
 let lastResults = null;
 const activeR = new Set();      // active RIASEC chips (work-style filter)
 let activeCluster = '';         // active cluster filter (one at a time)
+let minSalary = 0;              // 0 = Any. Filters cards client-side by detailCache median.
+let eduZoneMin = 0;             // 0 = Any. Filters cards client-side by O*NET job_zone (1-5).
 // RIASEC palette. Updated for the new light-mode page: E and C used to be
 // pale steel-blue and pale yellow (designed against a dark background) and
 // were illegible on white. Replaced with deeper, well-saturated tones that
@@ -196,6 +224,7 @@ function submitAssessment() {
   activeR.clear();
   sorted.slice(0,3).forEach(([k]) => activeR.add(k));
   syncRiasecChipsUI();
+  updateFbValueLabels();
   // Clear any existing keyword search so RIASEC mode is the entry point.
   document.getElementById('sinput').value = '';
   updateSearch();
@@ -488,6 +517,73 @@ function syncRiasecChipsUI() {
   });
 }
 
+// ─── Filter bar dropdown helpers ─────────────────────────────────────────
+function toggleFb(fb) {
+  const wasOpen = fb.classList.contains('open');
+  closeAllFbs();
+  if (!wasOpen) {
+    fb.classList.add('open');
+    fb.querySelector('.fb-panel').hidden = false;
+  }
+}
+function closeAllFbs() {
+  document.querySelectorAll('.fb.open').forEach(f => {
+    f.classList.remove('open');
+    const p = f.querySelector('.fb-panel');
+    if (p) p.hidden = true;
+  });
+}
+
+// Sync the small text on each filter button and selected-option chip styles.
+function updateFbValueLabels() {
+  // Work style: count of active RIASEC letters
+  const wsLabel = activeR.size > 0 ? `${activeR.size} selected` : '';
+  setFbValue('workstyle', wsLabel, activeR.size > 0);
+
+  // Education
+  const eduMap = {0:'', 2:"No degree", 3:"Some college", 4:"Bachelor's+", 5:"Master's+"};
+  setFbValue('education', eduMap[eduZoneMin] || '', eduZoneMin > 0);
+  document.querySelectorAll('.edu-opt').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.edu) === eduZoneMin);
+  });
+
+  // Salary
+  const salLabel = minSalary > 0 ? '$' + (minSalary/1000) + 'k+' : '';
+  setFbValue('salary', salLabel, minSalary > 0);
+  document.querySelectorAll('.sal-opt').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.sal) === minSalary);
+  });
+}
+function setFbValue(name, text, hasValue) {
+  const v = document.getElementById('fb-value-' + name);
+  if (v) v.textContent = text;
+  const fb = document.querySelector(`.fb[data-fb="${name}"]`);
+  if (fb) fb.classList.toggle('has-value', !!hasValue);
+}
+
+// Apply Education + Salary filters to the rendered career list by hiding
+// rows whose cached values don't match. Cards without cached data stay
+// visible (we never penalize a card for missing data).
+function applyClientFilters() {
+  document.querySelectorAll('#slist .crow[data-live-code], #cluster-list .crow[data-live-code]').forEach(row => {
+    const code = row.dataset.liveCode;
+    const cached = detailCache[code] || {};
+    let hide = false;
+    if (minSalary > 0) {
+      const sal = cached.salary && cached.salary.median;
+      if (sal && sal < minSalary) hide = true;
+    }
+    if (eduZoneMin > 0) {
+      const z = cached.jobZone;
+      if (z && z < eduZoneMin) hide = true;
+    }
+    row.style.display = hide ? 'none' : '';
+    // Also hide the inline drawer if present
+    const cdw = document.getElementById(row.id.replace('crow-', 'cdw-'));
+    if (cdw) cdw.style.display = hide ? 'none' : '';
+  });
+}
+
 // ─── RIASEC (Holland-code) mode ───────────────────────────────────────────
 async function renderRiasecIntoSlist() {
   const rcount = document.getElementById('rcount');
@@ -536,8 +632,17 @@ async function renderRiasecIntoSlist() {
       green:          !!(c.tags && c.tags.green),
     },
   }));
+  // Holland responses inline a job_zone object per career. Stash it now so
+  // the Education filter has data without a per-card extra fetch.
+  careers.forEach(c => {
+    if (c.job_zone && c.job_zone.code) {
+      detailCache[c.code] = detailCache[c.code] || { _partial: true };
+      detailCache[c.code].jobZone = c.job_zone.code;
+    }
+  });
   renderLiveList(list, 'slist', 'sd');
   rcount.innerHTML = `<strong>${careers.length}</strong> career${careers.length!==1?'s':''} matching <strong>${usedCode}</strong> (your top work styles)`;
+  applyClientFilters();
 }
 
 // ─── Cluster careers loader (used by the Career Clusters page) ──────────
@@ -759,6 +864,8 @@ function prefetchSummaries(list, prefix) {
       if (!crow) return;
       const bm = crow.querySelector('.crm');
       if (bm) bm.innerHTML = buildCardBadges(c, detailCache[c.code]);
+      // Re-apply Salary/Education filters now that this card has data.
+      applyClientFilters();
     }).catch(() => {
       // Silent — card just stays without salary
     }).finally(() => {
@@ -1470,5 +1577,6 @@ document.addEventListener('DOMContentLoaded', function() {
   restoreFromURL();
   renderClusterGrid();
   syncProfileUI();
+  updateFbValueLabels();
   updateSearch();
 });

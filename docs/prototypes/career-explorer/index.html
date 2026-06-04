@@ -128,6 +128,23 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fl{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px}
 .fcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
 
+/* ─── Filter bar: uniform dropdown buttons ────────────────────────────── */
+.fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.fb{position:relative}
+.fb-btn{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:9px 16px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .15s}
+.fb-btn:hover{border-color:var(--blue)}
+.fb.has-value .fb-btn{border-color:var(--blue);background:var(--off)}
+.fb-btn .fb-label{color:var(--navy)}
+.fb.has-value .fb-btn .fb-label{color:var(--blue)}
+.fb-btn .fb-value{color:var(--blue);font-weight:900}
+.fb-btn .fb-value:not(:empty)::before{content:'·';color:var(--mg);font-weight:400;margin:0 2px 0 0}
+.fb-btn .fb-caret{font-size:10px;color:var(--ts);transition:transform .15s;margin-left:2px}
+.fb.open .fb-btn .fb-caret{transform:rotate(180deg)}
+.fb-panel{position:absolute;top:calc(100% + 6px);left:0;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rmd);padding:14px;box-shadow:0 8px 24px rgba(10,15,46,.10);z-index:30;min-width:260px}
+.fb-panel[hidden]{display:none}
+.fb-row{display:flex;flex-wrap:wrap;gap:6px}
+.fb-panel .fc{font-size:13px;padding:6px 14px}
+
 /* ─── Career Clusters editorial grid ──────────────────────────────────── */
 .cluster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .cluster-card{position:relative;border-radius:var(--rlg);overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:var(--navy);transition:transform .2s ease, box-shadow .2s ease}
@@ -367,17 +384,48 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
 
-  <!-- Work-style (RIASEC) chips. After the assessment runs, the user's
-       top-3 are pre-selected. Toggling re-runs the Holland match. The
-       Cluster filter mode lives on its own dedicated tab now. -->
-  <div class="fl">Match by work style</div>
-  <div class="fcs" id="riasec-chips">
-    <button class="fc rc" data-r="R">Realistic</button>
-    <button class="fc rc" data-r="I">Investigative</button>
-    <button class="fc rc" data-r="A">Artistic</button>
-    <button class="fc rc" data-r="S">Social</button>
-    <button class="fc rc" data-r="E">Enterprising</button>
-    <button class="fc rc" data-r="C">Conventional</button>
+  <!-- Filter bar: 3 uniform dropdown buttons. Work style is multi-select;
+       Education and Salary are single-select. Each panel anchors below its
+       button and overlays content (doesn't push the list down). -->
+  <div class="fl">Filters</div>
+  <div class="fbar">
+    <div class="fb" data-fb="workstyle">
+      <button class="fb-btn"><span class="fb-label">Work style</span><span class="fb-value" id="fb-value-workstyle"></span><span class="fb-caret">▾</span></button>
+      <div class="fb-panel" hidden>
+        <div class="fb-row">
+          <button class="fc rc" data-r="R">Realistic</button>
+          <button class="fc rc" data-r="I">Investigative</button>
+          <button class="fc rc" data-r="A">Artistic</button>
+          <button class="fc rc" data-r="S">Social</button>
+          <button class="fc rc" data-r="E">Enterprising</button>
+          <button class="fc rc" data-r="C">Conventional</button>
+        </div>
+      </div>
+    </div>
+    <div class="fb" data-fb="education">
+      <button class="fb-btn"><span class="fb-label">Education</span><span class="fb-value" id="fb-value-education"></span><span class="fb-caret">▾</span></button>
+      <div class="fb-panel" hidden>
+        <div class="fb-row">
+          <button class="fc edu-opt" data-edu="0">Any</button>
+          <button class="fc edu-opt" data-edu="2">No degree required</button>
+          <button class="fc edu-opt" data-edu="3">Some college / certificate</button>
+          <button class="fc edu-opt" data-edu="4">Bachelor's typically</button>
+          <button class="fc edu-opt" data-edu="5">Master's or higher</button>
+        </div>
+      </div>
+    </div>
+    <div class="fb" data-fb="salary">
+      <button class="fb-btn"><span class="fb-label">Salary</span><span class="fb-value" id="fb-value-salary"></span><span class="fb-caret">▾</span></button>
+      <div class="fb-panel" hidden>
+        <div class="fb-row">
+          <button class="fc sal-opt" data-sal="0">Any</button>
+          <button class="fc sal-opt" data-sal="40000">$40,000+</button>
+          <button class="fc sal-opt" data-sal="60000">$60,000+</button>
+          <button class="fc sal-opt" data-sal="80000">$80,000+</button>
+          <button class="fc sal-opt" data-sal="100000">$100,000+</button>
+        </div>
+      </div>
+    </div>
   </div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
