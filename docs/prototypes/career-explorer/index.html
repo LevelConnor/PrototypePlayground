@@ -364,9 +364,18 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .cmodal-pane[hidden]{display:none}
 .cmodal-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
 .cmodal-stat{background:#7FE7B8;border-radius:18px;padding:22px 24px;color:var(--ink)}
+.cmodal-stat--white{background:var(--white);color:var(--navy)}
 .cmodal-stat-label{font-size:14px;font-weight:700;margin-bottom:6px;opacity:.92}
 .cmodal-stat-value{font-size:28px;font-weight:900;line-height:1.1;margin-bottom:4px}
 .cmodal-stat-foot{font-size:13px;line-height:1.4;opacity:.85}
+/* Row variant: label left, value right, single line. Used by the
+   Income & Outlook tab's Low/Median/High percentile cards. */
+.cmodal-stats--row{grid-template-columns:1fr;gap:10px}
+.cmodal-stats--row .cmodal-stat{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;gap:12px}
+.cmodal-stats--row .cmodal-stat-label{font-size:16px;font-weight:600;margin-bottom:0;opacity:1}
+.cmodal-stats--row .cmodal-stat-value{font-size:22px;margin-bottom:0;line-height:1}
+.cmodal-stats--row .cmodal-stat--white .cmodal-stat-label{color:var(--ts)}
+.cmodal-stats--row .cmodal-stat-foot{display:none}
 .cmodal-section{margin-top:24px}
 .cmodal-section-title{font-size:16px;font-weight:700;color:var(--ts);margin-bottom:12px}
 .cmodal-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}

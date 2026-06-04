@@ -1193,10 +1193,10 @@ function buildModalDetail(d, code) {
       ${sal.median ? `
         <div class="cmodal-section-title" style="margin-bottom:14px">How much do ${d.title}s earn yearly?</div>
         <p style="font-size:15px;color:var(--navy);margin:0 0 18px;line-height:1.55">Ten percent earned less than $${slo.toLocaleString()} and ten percent earned more than $${shi.toLocaleString()}.</p>
-        <div class="cmodal-stats" style="margin-bottom:18px;grid-template-columns:1fr">
-          <div class="cmodal-stat" style="background:var(--white);color:var(--navy)"><div class="cmodal-stat-label">Low (10%)</div><div class="cmodal-stat-value">$${slo.toLocaleString()}</div></div>
+        <div class="cmodal-stats cmodal-stats--row" style="margin-bottom:18px">
+          <div class="cmodal-stat cmodal-stat--white"><div class="cmodal-stat-label">Low (10%)</div><div class="cmodal-stat-value">$${slo.toLocaleString()}</div></div>
           <div class="cmodal-stat"><div class="cmodal-stat-label">Median (50%)</div><div class="cmodal-stat-value">$${sal.median.toLocaleString()}</div></div>
-          <div class="cmodal-stat" style="background:var(--white);color:var(--navy)"><div class="cmodal-stat-label">High (90%)</div><div class="cmodal-stat-value">$${shi.toLocaleString()}</div></div>
+          <div class="cmodal-stat cmodal-stat--white"><div class="cmodal-stat-label">High (90%)</div><div class="cmodal-stat-value">$${shi.toLocaleString()}</div></div>
         </div>
       ` : '<p style="color:var(--ts);font-size:15px">Salary data not available.</p>'}
       ${out.growth ? `<div class="cmodal-section">
