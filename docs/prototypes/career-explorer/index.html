@@ -118,7 +118,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px 28px 24px;margin:0 0 24px}
 .ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin-bottom:20px}
 .ip-rows{display:flex;flex-direction:column}
-.ip-row{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--mg);transition:opacity .2s}
+.ip-row{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--mg);transition:opacity .2s}
 .ip-row:last-child{border-bottom:none}
 .ip-row.is-rest{opacity:.55}
 .ip-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:900;letter-spacing:.02em;flex-shrink:0}
@@ -128,8 +128,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-desc{font-size:12px;color:var(--ts);line-height:1.45;margin:3px 0 8px}
 .ip-bar{height:6px;background:var(--off);border-radius:var(--rf);overflow:hidden}
 .ip-fill{height:100%;border-radius:var(--rf);transition:width .6s ease}
-.ip-score{font-size:20px;font-weight:900;color:var(--navy);min-width:54px;text-align:right;line-height:1}
-.ip-score small{display:block;font-size:11px;font-weight:700;color:var(--ts);margin-top:3px;letter-spacing:.05em}
 .ip-divider{display:flex;align-items:center;gap:10px;padding:14px 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts)}
 .ip-divider::before,.ip-divider::after{content:'';flex:1;height:1px;background:var(--mg)}
 /* Expand/collapse for rows 4-6. Hidden by default; shown when data-expanded
@@ -143,7 +141,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-footnote{font-size:12px;color:var(--ts);text-align:center;margin-top:18px;line-height:1.5}
 @media (max-width:520px){
   .ip-card{padding:20px}
-  .ip-row{grid-template-columns:36px 1fr auto;gap:10px}
+  .ip-row{grid-template-columns:36px 1fr;gap:10px}
   .ip-avatar{width:36px;height:36px;font-size:13px}
 }
 .sav{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 22px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}

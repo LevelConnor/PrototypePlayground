@@ -295,7 +295,6 @@ function renderInterestProfile(sorted) {
         <div class="ip-desc">${RI[k].desc}</div>
         <div class="ip-bar"><div class="ip-fill" style="width:${pct}%;background:${BC[k]}"></div></div>
       </div>
-      <div class="ip-score">${v.toFixed(1)}<small>of 5</small></div>
     </div>`;
   };
   const top3 = sorted.slice(0,3).map(rowFor).join('');
