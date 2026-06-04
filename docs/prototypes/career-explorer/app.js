@@ -352,11 +352,16 @@ function applyIpHeights() {
   const rows = document.querySelectorAll('#ip-stack .ip-row');
   if (!rows.length) return;
 
+  const setH = (r, px) => {
+    // Drive via custom property so the :hover rule in CSS can grow it.
+    r.style.removeProperty('height');
+    r.style.setProperty('--ipH', px + 'px');
+  };
   if (!ipShowTop3) {
     // All-6 mode: top card needs extra room for the always-visible
-    // description; other cards stay compact.
+    // description; other cards stay compact (CSS :hover grows them).
     rows.forEach((r, i) => {
-      r.style.height = (i === 0 ? '128px' : '92px');
+      setH(r, i === 0 ? 128 : 92);
       r.classList.remove('ip-row--hidden');
     });
     return;
@@ -370,10 +375,10 @@ function applyIpHeights() {
       const share = (topScores[i] / sum) * totalPx;
       // Top card minimum 140px so its description has room.
       const min = (i === 0) ? 140 : 84;
-      r.style.height = Math.max(min, Math.round(share)) + 'px';
+      setH(r, Math.max(min, Math.round(share)));
       r.classList.remove('ip-row--hidden');
     } else {
-      r.style.height = '0px';
+      setH(r, 0);
       r.classList.add('ip-row--hidden');
     }
   });

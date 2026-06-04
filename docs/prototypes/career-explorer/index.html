@@ -123,8 +123,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 /* Right column: stack of coloured cards */
 .ip-stack{display:flex;flex-direction:column;gap:10px}
-.ip-row{position:relative;border-radius:18px;padding:16px 22px 22px;color:var(--ink);overflow:hidden;cursor:default;height:104px;
+.ip-row{position:relative;border-radius:18px;padding:16px 22px 22px;color:var(--ink);overflow:hidden;cursor:default;
+  height:var(--ipH,104px);
   transition:height .45s cubic-bezier(.4,0,.2,1), opacity .25s ease, padding .3s ease}
+.ip-row:not([data-pos="0"]):hover{height:calc(var(--ipH,104px) + 56px)}
 .ip-row--hidden{opacity:0;padding-top:0;padding-bottom:0}
 .ip-row-top{display:flex;align-items:flex-start;gap:12px}
 .ip-row-avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;margin-top:2px}
