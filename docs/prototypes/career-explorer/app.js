@@ -639,6 +639,9 @@ async function renderRiasecIntoSlist() {
 
   const list = careers.map(c => ({
     code: c.code, title: c.title,
+    // Everything returned by /holland/{code} matches the user's interests
+    // by definition — mark them all as Great Match.
+    isMatch: true,
     tags: {
       brightOutlook:  !!(c.tags && c.tags.bright_outlook),
       apprenticeship: !!(c.tags && c.tags.apprenticeship),
@@ -811,14 +814,14 @@ function buildCardBadges(career, detail) {
 
 // Markup for a single career grid card. Title + bottom-aligned salary +
 // Bright Outlook pills, top-right ♡, optional Great Match badge top-left.
-function buildLiveCard(c, cached, code, prefix, isSaved, isGreatMatch) {
+function buildLiveCard(c, cached, code, prefix, isSaved) {
   const tags = (cached && cached.tags) || c.tags || {};
   const sal = cached && cached.salary && cached.salary.median;
   const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
   const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
   const brightCls = tags.brightOutlook ? ' bright' : '';
   return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
-    ${isGreatMatch ? `<div class="ccard-match">👤 Great Match</div>` : ''}
+    ${c.isMatch ? `<div class="ccard-match">👤 Great Match</div>` : ''}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${isSaved?'♥':'♡'}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
@@ -836,13 +839,11 @@ function renderLiveList(list, listId, prefix) {
     el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ts);font-size:15px">No careers found. Try a different keyword.</div>`;
     return;
   }
-  el.innerHTML = list.map((c, i) => {
+  el.innerHTML = list.map(c => {
     const code = c.code;
     const isSaved = saved.has('live-'+code);
     const cached = detailCache[code] || {};
-    // Mark the top card of an assessment-match list as Great Match.
-    const isGreatMatch = (i === 0 && lastResults && !!(c.tags && c.tags.brightOutlook));
-    return buildLiveCard(c, cached, code, prefix, isSaved, isGreatMatch);
+    return buildLiveCard(c, cached, code, prefix, isSaved);
   }).join('');
 
   prefetchSummaries(list, prefix);
@@ -860,29 +861,37 @@ function prefetchSummaries(list, prefix) {
     onetGet(`/career/${c.code}/outlook`).then(out => {
       const wage = (out && out.salary) || {};
       const outlookCat = out && out.outlook && out.outlook.category;
-      // Store a lightweight (partial) summary. The _partial flag tells
-      // openLiveDetail it must still fetch the full detail (description,
-      // tasks, education breakdown, related occupations) on card expand.
-      if (!detailCache[c.code]) {
-        detailCache[c.code] = {
-          code: c.code,
-          title: c.title,
-          description: '',
-          sampleTitles: [],
-          tags: { ...(c.tags || {}) },
-          salary: {
-            median: wage.annual_median || 0,
-            low: wage.annual_10th_percentile || 0,
-            high: wage.annual_90th_percentile || 0,
-          },
-          outlook: { growth: outlookCat || '', descriptor: '' },
-          tasks: [],
-          eduBreakdown: [],
-          pathways: [], prepare: [], hiring: {},
-          cluster: '', riasec: [], related: [],
-          _partial: true,
-        };
-      }
+      // Merge fresh data into whatever's already in the cache (may already
+      // hold a jobZone from a Holland list response). Without this merge,
+      // pre-seeded partial entries blocked salary + tags from ever landing
+      // and the card pills never updated until full detail was fetched.
+      const cur = detailCache[c.code] || {};
+      detailCache[c.code] = {
+        code: c.code,
+        title: c.title,
+        description: cur.description || '',
+        sampleTitles: cur.sampleTitles || [],
+        tags: { ...(c.tags || {}), ...(cur.tags || {}) },
+        salary: {
+          median: wage.annual_median        || (cur.salary && cur.salary.median) || 0,
+          low:    wage.annual_10th_percentile || (cur.salary && cur.salary.low)    || 0,
+          high:   wage.annual_90th_percentile || (cur.salary && cur.salary.high)   || 0,
+        },
+        outlook: {
+          growth:     outlookCat || (cur.outlook && cur.outlook.growth)     || '',
+          descriptor: (cur.outlook && cur.outlook.descriptor) || '',
+        },
+        tasks:        cur.tasks        || [],
+        eduBreakdown: cur.eduBreakdown || [],
+        pathways:     cur.pathways     || [],
+        prepare:      cur.prepare      || [],
+        hiring:       cur.hiring       || {},
+        cluster:      cur.cluster      || '',
+        riasec:       cur.riasec       || [],
+        related:      cur.related      || [],
+        jobZone:      cur.jobZone,
+        _partial:     true,
+      };
       // Patch the card's pills row in place — find all matching cards by
       // data attribute (the same career may render in multiple lists).
       document.querySelectorAll(`.ccard[data-live-code="${c.code}"]`).forEach(card => {
