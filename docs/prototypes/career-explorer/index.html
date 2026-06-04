@@ -8,7 +8,26 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0A0F2E;--blue:#0083FF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#EFF6FF;--mg:#BFDBFE;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px}
+:root{--navy:#0A0F2E;--blue:#0083FF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#EFF6FF;--mg:#BFDBFE;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px;
+/* Always-dark surface (header + toast + image placeholders) — stays
+   dark in both themes regardless of how --navy gets swapped. */
+--header-bg:#0A0F2E;
+/* Always-dark text color for use on light/colored accent backgrounds
+   (yellow CTAs, saved-state pills). Stays dark in both themes. */
+--ink:#0A0F2E}
+
+/* Dark mode — toggled by adding `.dark` to <body>. Swaps surface
+   tokens and inverts the primary text color (--navy). Accent colors
+   (blue, yellow, etc.) stay constant. */
+body.dark{
+  --off:#0A0F2E;
+  --white:#131A36;
+  --mg:#1F2A4D;
+  --lg:#1F2A4D;
+  --ts:#8B9BB8;
+  --navy:#E5EBF8;
+  --header-bg:#070B22;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
@@ -25,7 +44,7 @@ body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-appl
 .t-eyebrow{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0}
 .t-body{font-size:15px;font-weight:400;line-height:1.6;text-transform:none;letter-spacing:0}
 .t-caption{font-size:12px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:0}
-header{background:var(--navy);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200}
+header{background:var(--header-bg);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200}
 .logo{display:flex;align-items:center;gap:10px}
 .hdr-right{display:flex;align-items:center;gap:14px}
 .hdr-sub{color:var(--green);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
@@ -47,7 +66,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .cta:hover{background:#006bd6}
 .cta.ghost{background:none;border:2px solid var(--mg);color:var(--navy)}
 .cta.ghost:hover{background:var(--mg)}
-.cta.ylw{background:var(--yellow);color:var(--navy)}
+.cta.ylw{background:var(--yellow);color:var(--ink)}
 .ai{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px;margin-bottom:28px}
 .ai h2{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:8px}
 .ai p{font-size:15px;color:var(--ts);margin-bottom:14px}
@@ -154,14 +173,14 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 /* ─── Career Clusters editorial grid ──────────────────────────────────── */
 .cluster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.cluster-card{position:relative;border-radius:var(--rlg);overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:var(--navy);transition:transform .2s ease, box-shadow .2s ease}
+.cluster-card{position:relative;border-radius:var(--rlg);overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:var(--header-bg);transition:transform .2s ease, box-shadow .2s ease}
 .cluster-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,15,46,.12)}
 .cluster-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cluster-card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 0%,rgba(10,15,46,.45) 50%,rgba(10,15,46,.92) 100%)}
 .cluster-card-body{position:absolute;left:18px;right:18px;bottom:16px;color:#fff}
 .cluster-card-title{font-size:18px;font-weight:900;line-height:1.2;margin:0 0 6px;letter-spacing:.01em}
 .cluster-card-desc{font-size:13px;font-weight:400;color:rgba(255,255,255,.82);line-height:1.45}
-.cluster-card-cta{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:var(--white);color:var(--navy);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:10px 22px;border-radius:var(--rf);opacity:0;transition:all .2s ease;pointer-events:none}
+.cluster-card-cta{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:#fff;color:var(--ink);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:10px 22px;border-radius:var(--rf);opacity:0;transition:all .2s ease;pointer-events:none}
 .cluster-card:hover .cluster-card-cta{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
 /* Selected-cluster detail section: header row + sub-cluster chips + list */
@@ -229,7 +248,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .cdf{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--mg)}
 .cdbm{background:none;border:1.5px solid var(--mg);border-radius:var(--rf);padding:9px 18px;color:var(--navy);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
 .cdbm:hover{border-color:var(--blue);background:var(--off)}
-.cdbm.saved{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+.cdbm.saved{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
 .opill{display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:8px 16px;font-size:11px;font-weight:900;text-transform:uppercase;cursor:pointer;text-decoration:none}
 .clc{background:var(--white);border-radius:var(--rlg);border:2px solid var(--mg);overflow:hidden;cursor:pointer;transition:all .18s;position:relative}
 .clc:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
@@ -257,7 +276,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ti h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
 .tft{padding:16px 20px;border-top:1.5px solid var(--mg);display:flex;flex-direction:column;gap:10px}
 .tfn{font-size:11px;color:var(--ts);text-align:center;line-height:1.5}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;border-radius:var(--rf);padding:12px 22px;font-size:15px;font-weight:700;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--header-bg);color:#fff;border-radius:var(--rf);padding:12px 22px;font-size:15px;font-weight:700;opacity:0;transition:all .3s;z-index:500;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,15,46,.7);z-index:600;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
@@ -292,6 +311,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   </svg></div>
   <div class="hdr-right">
     <span class="hdr-sub">Career Explorer</span>
+    <button class="tray-btn" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
     <button class="tray-btn" id="open-tray-btn">♡ Saved <span class="tc" id="tc">0</span></button>
   </div>
 </header>

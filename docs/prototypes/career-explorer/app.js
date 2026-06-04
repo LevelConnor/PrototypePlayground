@@ -38,6 +38,7 @@ document.addEventListener('click', function(e) {
 
   // TRAY
   if (t.id === 'open-tray-btn' || t.closest('#open-tray-btn')) { openTray(); return; }
+  if (t.id === 'btn-theme') { toggleTheme(); return; }
   if (t.id === 'btn-close-tray') { closeTray(); return; }
   if (t.id === 'tov') { closeTray(); return; }
   if (t.id === 'btn-tray-link') { copyTrayLink(); return; }
@@ -1572,8 +1573,30 @@ function handleZipSearch(pid, careerTitle, onetCode) {
   }, 800);
 }
 
+/* ══ THEME ══ */
+function applyTheme(mode) {
+  const dark = mode === 'dark';
+  document.body.classList.toggle('dark', dark);
+  const btn = document.getElementById('btn-theme');
+  if (btn) {
+    btn.textContent = dark ? '☀️' : '🌙';
+    btn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+}
+function toggleTheme() {
+  const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+  try { localStorage.setItem('theme', next); } catch (e) { /* private mode */ }
+  applyTheme(next);
+}
+
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', function() {
+  // Theme — restore saved choice, otherwise honor the user's OS preference.
+  let saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+
   restoreFromURL();
   renderClusterGrid();
   syncProfileUI();
