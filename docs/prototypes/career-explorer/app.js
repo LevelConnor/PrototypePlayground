@@ -640,7 +640,7 @@ async function renderRiasecIntoSlist() {
     return;
   }
 
-  // Great Match = O*NET 'Best Fit': career's own 3-letter Holland code
+  // Best Fit = O*NET 'Best Fit': career's own 3-letter Holland code
   // contains all of the user's top interest letters (order-independent).
   // Mirrors how O*NET's My Next Move surfaces Best Fit careers.
   const userLetterSet = new Set(letters.slice(0, 3));
@@ -823,7 +823,7 @@ function buildCardBadges(career, detail) {
 // the primary-blue gradient.
 
 // Markup for a single career grid card. Title + bottom-aligned salary +
-// Bright Outlook pills, top-right ♡, optional Great Match badge top-left.
+// Bright Outlook pills, top-right ♡, optional Best Fit badge top-left.
 function buildLiveCard(c, cached, code, prefix, isSaved) {
   const tags = (cached && cached.tags) || c.tags || {};
   const sal = cached && cached.salary && cached.salary.median;
@@ -831,7 +831,7 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
   const brightCls = tags.brightOutlook ? ' bright' : '';
   return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
-    ${c.isMatch ? `<div class="ccard-match">👤 Great Match</div>` : ''}
+    ${c.isMatch ? `<div class="ccard-match">👤 Best Fit</div>` : ''}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${isSaved?'♥':'♡'}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
@@ -1148,7 +1148,7 @@ function buildModalDetail(d, code) {
   return `<div class="cmodal-head${brightCls}">
     <div class="cmodal-head-overlay"></div>
     <div class="cmodal-head-top">
-      ${isGreatMatch ? `<div class="cmodal-match">👤 Great Match</div>` : '<div></div>'}
+      ${isGreatMatch ? `<div class="cmodal-match">👤 Best Fit</div>` : '<div></div>'}
       <div class="cmodal-actions">
         <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${isSaved?'♥':'♡'}</button>
         <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
@@ -1219,14 +1219,16 @@ function buildModalDetail(d, code) {
     <div class="cmodal-pane" data-mpane="ed" hidden>
       ${eb.length ? `
         <div class="cmodal-section-title" style="margin-bottom:14px">What education level do ${d.title}s have?</div>
-        <div class="cmodal-chips" style="grid-template-columns:1fr">
-          ${eb.map(e=>`<div class="cmodal-chip" style="display:flex;align-items:center;justify-content:space-between;gap:14px">
-            <span>${e.level}</span>
-            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-              <div style="width:120px;height:6px;background:var(--lg);border-radius:3px;overflow:hidden"><div style="width:${Math.min(e.pct||0,100)}%;height:100%;background:var(--blue);border-radius:3px"></div></div>
-              <span style="font-size:13px;font-weight:900;min-width:48px;text-align:right">${(e.pct||0).toFixed(1)}%</span>
-            </div>
-          </div>`).join('')}
+        <div class="cmodal-stats cmodal-stats--row" style="margin-bottom:18px">
+          ${(() => {
+            // Highlight the most common education level in green (mirrors
+            // how the Median salary card pops on the Income tab).
+            const topIdx = eb.reduce((best, e, i) => (e.pct||0) > (eb[best].pct||0) ? i : best, 0);
+            return eb.map((e, i) => `<div class="cmodal-stat${i===topIdx?'':' cmodal-stat--white'}">
+              <div class="cmodal-stat-label">${e.level}</div>
+              <div class="cmodal-stat-value">${(e.pct||0).toFixed(1)}%</div>
+            </div>`).join('');
+          })()}
         </div>
       ` : '<p style="color:var(--ts);font-size:15px">Education data not available.</p>'}
       ${d.tags?.apprenticeship ? `<div class="cmodal-section">
