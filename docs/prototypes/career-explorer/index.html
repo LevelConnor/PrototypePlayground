@@ -115,46 +115,50 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Replaces 4 redundant elements (top-3 ribbon, bubble chart,
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
-.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:32px;margin:0 0 24px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
-.ip-layout{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch}
-.ip-header{display:flex;flex-direction:column;padding:0}
-.ip-title{font-size:32px;font-weight:900;color:var(--navy);margin:0 0 14px;line-height:1.05;letter-spacing:-.01em}
-.ip-intro{font-size:16px;color:var(--ts);line-height:1.55;margin:0;max-width:360px}
+.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:32px;margin:0 0 18px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
+.ip-layout{display:flex;flex-direction:column;gap:26px}
+.ip-header{display:flex;flex-direction:column;gap:8px}
+.ip-title{font-size:32px;font-weight:900;color:var(--navy);margin:0;line-height:1.05;letter-spacing:-.01em}
+.ip-intro{font-size:16px;color:var(--ts);line-height:1.55;margin:0;max-width:680px}
 
-/* Right column: stack of coloured cards */
-.ip-stack{display:flex;flex-direction:column;gap:10px}
-.ip-row{position:relative;border-radius:18px;padding:18px;color:var(--ink);overflow:hidden;cursor:default;
-  height:var(--ipH,132px);
-  transition:height .45s cubic-bezier(.4,0,.2,1), opacity .25s ease, padding .3s ease}
-.ip-row--hidden{opacity:0;padding-top:0;padding-bottom:0}
-.ip-row-top{display:flex;align-items:flex-start;gap:12px}
-.ip-row-avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;margin-top:2px}
+/* Stack of result rows. Each row is two stacked rows:
+   top  = colored avatar + name/desc
+   bot  = bar (fills remaining width) + score on the right
+   Toggling "show all" off collapses rows 4-6 with a max-height transition. */
+.ip-stack{display:flex;flex-direction:column;gap:22px}
+.ip-row{display:flex;flex-direction:column;gap:12px;overflow:hidden;cursor:default;
+  max-height:200px;opacity:1;
+  transition:max-height .35s ease, opacity .25s ease, margin .25s ease}
+.ip-row--hidden{max-height:0;opacity:0;margin-top:-22px}
+.ip-row-top{display:flex;align-items:center;gap:16px}
+.ip-row-avatar{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--ink);flex-shrink:0}
 .ip-row-body{flex:1;min-width:0}
-.ip-row-name{font-size:19px;font-weight:900;color:var(--ink);line-height:1.2}
-.ip-row-desc{font-size:14px;font-weight:500;color:var(--ink);line-height:1.4;margin-top:4px}
-.ip-row-score{font-size:24px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0}
-/* Progress bar at the bottom of each card */
-.ip-row-bar{position:absolute;left:18px;right:18px;bottom:18px;height:6px;background:rgba(10,15,46,.18);border-radius:100px;overflow:hidden}
-.ip-row-bar-fill{height:100%;background:var(--ink);border-radius:100px;transition:width .6s ease}
+.ip-row-name{font-size:20px;font-weight:900;color:var(--navy);line-height:1.2}
+.ip-row-desc{font-size:14px;font-weight:500;color:var(--ts);line-height:1.4;margin-top:2px}
+.ip-row-bottom{display:flex;align-items:center;gap:14px;padding-left:72px}
+.ip-row-bar{flex:1;height:8px;background:var(--mg);border-radius:100px;overflow:hidden}
+.ip-row-bar-fill{height:100%;border-radius:100px;transition:width .6s ease}
+.ip-row-score{font-size:22px;font-weight:900;color:var(--navy);line-height:1;flex-shrink:0;min-width:36px;text-align:right}
 
-/* Left column actions: toggle + save buttons pinned to the bottom */
-.ip-actions{margin-top:auto;padding-top:28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ip-toggle-pill{display:inline-flex;align-items:center;gap:10px;background:var(--off);border:1.5px solid var(--mg);border-radius:100px;padding:6px 8px 6px 16px;font-size:14px;font-weight:600;color:var(--navy)}
+/* Footer row that sits outside the white card on the page background.
+   Show-all toggle on the left, action icons + Retake pill on the right. */
+.ip-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 28px;padding:0 4px}
+.ip-foot-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ip-toggle-pill{display:inline-flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--mg);border-radius:100px;padding:6px 8px 6px 16px;font-size:14px;font-weight:600;color:var(--navy)}
 .ip-switch{position:relative;width:38px;height:22px;border-radius:100px;border:none;background:var(--mg);cursor:pointer;padding:0;transition:background .2s ease;flex-shrink:0}
 .ip-switch-dot{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(10,15,46,.18);transition:transform .2s ease}
 .ip-switch[aria-pressed="true"]{background:var(--blue)}
 .ip-switch[aria-pressed="true"] .ip-switch-dot{transform:translateX(16px)}
-.ip-action-btn{width:36px;height:36px;border-radius:50%;background:var(--off);border:1.5px solid var(--mg);color:var(--blue);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s, border-color .15s}
-.ip-action-btn:hover{background:var(--mg);border-color:var(--blue)}
+.ip-action-btn{width:38px;height:38px;border-radius:50%;background:var(--white);border:1.5px solid var(--mg);color:var(--navy);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s, border-color .15s, color .15s}
+.ip-action-btn:hover{background:var(--off);border-color:var(--blue);color:var(--blue)}
 .ip-action-btn svg{width:16px;height:16px}
-.ip-action-pill{display:inline-flex;align-items:center;gap:6px;background:var(--off);border:1.5px solid var(--mg);border-radius:100px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--blue);cursor:pointer;transition:background .15s, border-color .15s}
-.ip-action-pill:hover{background:var(--mg);border-color:var(--blue)}
+.ip-action-pill{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--mg);border-radius:100px;padding:8px 18px;font-size:14px;font-weight:700;color:var(--navy);cursor:pointer;transition:background .15s, border-color .15s, color .15s}
+.ip-action-pill:hover{background:var(--off);border-color:var(--blue);color:var(--blue)}
 .ip-action-pill svg{width:14px;height:14px}
 
 @media (max-width:720px){
   .ip-card{padding:22px}
-  .ip-layout{grid-template-columns:1fr;gap:24px}
-  .ip-actions{padding-top:18px}
+  .ip-row-bottom{padding-left:0}
 }
 /* Dev shortcut button — random-fills the assessment + submits. Lives at
    the bottom-right of the viewport. Only visible while the Assessment
@@ -515,7 +519,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <!-- Interest Profile (populated after the user takes the assessment).
        Cold-start: shows the "Take the Assessment" CTA inside the same card. -->
-  <div id="interest-profile" class="ip-card"></div>
+  <div id="interest-profile"></div>
 
   <!-- Save-your-profile row, only shown once an assessment has been taken. -->
   <div class="sav" id="profile-save" style="display:none">

@@ -49,7 +49,7 @@ document.addEventListener('click', function(e) {
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
   // Interest profile expand/collapse (top 3 ↔ all 6)
-  if (t.closest('#ip-switch')) { toggleIpShowTop3(); return; }
+  if (t.closest('#ip-switch')) { toggleIpShowAll(); return; }
 
   // Filter-bar dropdown toggle (Work style / Education / Salary buttons)
   const fbBtn = t.closest('.fb-btn');
@@ -295,7 +295,7 @@ function syncProfileUI() {
 // Tracks whether the user has expanded the interest profile to show all 6
 // Toggle state: false = show all 6 (default), true = show top 3 with
 // heights proportional to the user's RIASEC scores.
-let ipShowTop3 = false;
+let ipShowAll = true;
 // Stash the sorted scores so the toggle handler can recompute heights
 // without re-fetching anything.
 let ipSorted = null;
@@ -305,106 +305,80 @@ function renderInterestProfile(sorted) {
   if (!el) return;
   ipSorted = sorted;
 
-  // Max possible RIASEC average is 5 (each question rated 1-5). Bar fill
-  // is score / 5, so a 4.5 reads as 90% — meaningful even on cards that
-  // aren't the highest score.
+  // Single row: colored avatar + name/desc on top, bar + score below.
+  // The bar fill picks up the same RIASEC color as the avatar.
   const rowFor = ([k, v], i) => {
-    // Prefer the precomputed O*NET 0-40 score; fall back to a rescale of
-    // the avg if scores weren't stashed (e.g. restored from older state).
     const score = (lastOnetScores && lastOnetScores[k] != null)
       ? lastOnetScores[k]
       : Math.round(((v - 1) / 4) * 40);
-    const pct = Math.max(6, Math.min(100, Math.round((score / 40) * 100)));
-    return `<div class="ip-row" data-pos="${i}" style="background:${BC[k]}">
+    const pct = Math.max(4, Math.min(100, Math.round((score / 40) * 100)));
+    return `<div class="ip-row" data-pos="${i}">
       <div class="ip-row-top">
-        <div class="ip-row-avatar" style="color:${BC[k]}">${k}</div>
+        <div class="ip-row-avatar" style="background:${BC[k]}">${k}</div>
         <div class="ip-row-body">
           <div class="ip-row-name">${RI[k].short}</div>
           <div class="ip-row-desc">${RI[k].desc}</div>
         </div>
+      </div>
+      <div class="ip-row-bottom">
+        <div class="ip-row-bar"><div class="ip-row-bar-fill" style="width:${pct}%;background:${BC[k]}"></div></div>
         <span class="ip-row-score">${score}</span>
       </div>
-      <div class="ip-row-bar"><div class="ip-row-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   };
 
-  // Inline SVG icons for the action buttons (link / email / download /
-  // retake). 24-box, currentColor strokes — pick up button colour.
+  // Inline SVG icons for the action buttons.
   const iconLink   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
   const iconMail   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>`;
   const iconDown   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>`;
   const iconRetake = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>`;
 
   el.innerHTML = `
-    <div class="ip-layout">
-      <div class="ip-header">
-        <h2 class="ip-title">Your Results</h2>
-        <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
-        <div class="ip-actions">
-          <div class="ip-toggle-pill">
-            <span>Show top 3</span>
-            <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowTop3}">
-              <span class="ip-switch-dot"></span>
-            </button>
-          </div>
-          <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
-          <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
-          <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
-          <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
+    <div class="ip-card">
+      <div class="ip-layout">
+        <div class="ip-header">
+          <h2 class="ip-title">Your Results</h2>
+          <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
+        </div>
+        <div class="ip-stack" id="ip-stack">
+          ${sorted.map(rowFor).join('')}
         </div>
       </div>
-      <div class="ip-stack" id="ip-stack">
-        ${sorted.map(rowFor).join('')}
+    </div>
+    <div class="ip-foot">
+      <div class="ip-toggle-pill">
+        <span>Show All</span>
+        <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowAll}">
+          <span class="ip-switch-dot"></span>
+        </button>
+      </div>
+      <div class="ip-foot-r">
+        <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
+        <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
+        <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
+        <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
       </div>
     </div>`;
 
-  applyIpHeights();
+  applyIpVisibility();
 }
 
-// Compute + apply heights to each .ip-row based on the current toggle state.
-// Default: all 6 cards at the same compact height. Top-3 mode: cards 1-3
-// scale to their relative scores; cards 4-6 collapse to height:0.
-function applyIpHeights() {
+// Show all 6 rows or just the top 3, with a max-height collapse on rows 4-6.
+function applyIpVisibility() {
   if (!ipSorted) return;
   const rows = document.querySelectorAll('#ip-stack .ip-row');
   if (!rows.length) return;
-
-  const setH = (r, px) => {
-    // Drive via custom property so the :hover rule in CSS can grow it.
-    r.style.removeProperty('height');
-    r.style.setProperty('--ipH', px + 'px');
-  };
-  if (!ipShowTop3) {
-    // All-6 mode: every card shows its description, so every card needs
-    // the same room (avatar + name + 2-line desc + bar).
-    rows.forEach((r) => {
-      setH(r, 132);
-      r.classList.remove('ip-row--hidden');
-    });
-    return;
-  }
-  // Top-3 mode: proportional heights, hide 4-6. Every visible card still
-  // needs ~132px so its description doesn't collide with the bar.
-  const topScores = ipSorted.slice(0, 3).map(([, v]) => Math.max(v, 0.5));
-  const sum = topScores.reduce((a, b) => a + b, 0) || 1;
-  const totalPx = 520;
   rows.forEach((r, i) => {
-    if (i < 3) {
-      const share = (topScores[i] / sum) * totalPx;
-      setH(r, Math.max(132, Math.round(share)));
-      r.classList.remove('ip-row--hidden');
-    } else {
-      setH(r, 0);
-      r.classList.add('ip-row--hidden');
-    }
+    if (ipShowAll || i < 3) r.classList.remove('ip-row--hidden');
+    else r.classList.add('ip-row--hidden');
   });
 }
 
-function toggleIpShowTop3() {
-  ipShowTop3 = !ipShowTop3;
+function toggleIpShowAll() {
+  ipShowAll = !ipShowAll;
   const sw = document.getElementById('ip-switch');
-  if (sw) sw.setAttribute('aria-pressed', String(ipShowTop3));
-  applyIpHeights();
+  if (sw) sw.setAttribute('aria-pressed', String(ipShowAll));
+  applyIpVisibility();
 }
 
 // Fetch O*NET careers matching the user's top-3 Holland code. Falls back to
