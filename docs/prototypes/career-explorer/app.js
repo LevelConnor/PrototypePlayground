@@ -334,8 +334,8 @@ function renderInterestProfile(sorted) {
           <div class="ip-row-name">${RI[k].short}</div>
           <div class="ip-row-desc">${RI[k].desc}</div>
         </div>
+        <span class="ip-row-score">${score}</span>
       </div>
-      <span class="ip-row-score">${score}</span>
     </div>`;
   };
 
