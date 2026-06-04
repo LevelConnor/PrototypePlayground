@@ -299,7 +299,7 @@ function syncProfileUI() {
 // Tracks whether the user has expanded the interest profile to show all 6
 // Toggle state: false = show all 6 (default), true = show top 3 with
 // heights proportional to the user's RIASEC scores.
-let ipShowAll = true;
+let ipShowAll = false;
 // Stash the sorted scores so the toggle handler can recompute heights
 // without re-fetching anything.
 let ipSorted = null;
@@ -361,7 +361,7 @@ function renderInterestProfile(sorted) {
     </div>
     <div class="ip-foot">
       <div class="ip-toggle-pill">
-        <span>Show All</span>
+        <span>Show Full Results</span>
         <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowAll}">
           <span class="ip-switch-dot"></span>
         </button>
