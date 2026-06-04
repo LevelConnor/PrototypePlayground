@@ -59,17 +59,21 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .sdiv{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
 .sdl{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.12em;color:var(--blue);white-space:nowrap}
 .sdln{flex:1;height:1px;background:var(--mg)}
-.qr{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--mg)}
-.qr:last-child{border-bottom:none}
-.qt{flex:1;font-size:15px;color:var(--navy)}
-.qs{display:flex;gap:6px;flex-shrink:0}
-.sb{width:34px;height:34px;border-radius:50%;border:2px solid var(--mg);background:var(--white);cursor:pointer;font-size:11px;font-weight:700;color:var(--ts);display:flex;align-items:center;justify-content:center;transition:all .12s}
-.sb:hover{border-color:var(--blue);color:var(--blue)}
-.sb.s1{background:#FF6B6B;border-color:#FF6B6B;color:#fff}
-.sb.s2{background:#FFA94D;border-color:#FFA94D;color:#fff}
-.sb.s3{background:#FFE566;border-color:#FFE566;color:var(--navy)}
-.sb.s4{background:#69DB7C;border-color:#69DB7C;color:#fff}
-.sb.s5{background:var(--blue);border-color:var(--blue);color:#fff}
+/* Assessment question row: card style with emoji rating scale */
+.qr{display:flex;align-items:center;gap:14px;padding:18px 22px;background:var(--white);border:1.5px solid var(--mg);border-radius:18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(10,15,46,.04);transition:border-color .15s, box-shadow .15s}
+.qr:hover{border-color:var(--blue)}
+.qr:last-child{margin-bottom:0}
+.qt{flex:1;font-size:17px;font-weight:500;color:var(--navy);line-height:1.4}
+.qs{display:flex;gap:8px;flex-shrink:0}
+.sb{width:44px;height:44px;border-radius:50%;border:none;background:var(--off);cursor:pointer;color:transparent;font-size:0;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0;position:relative}
+.sb::before{font-size:22px;line-height:1;color:initial;display:block}
+.sb[data-v="1"]::before{content:'😖'}
+.sb[data-v="2"]::before{content:'🙁'}
+.sb[data-v="3"]::before{content:'😑'}
+.sb[data-v="4"]::before{content:'🙂'}
+.sb[data-v="5"]::before{content:'😁'}
+.sb:hover{background:#DBEAFE;transform:scale(1.06)}
+.sb.s1,.sb.s2,.sb.s3,.sb.s4,.sb.s5{background:var(--blue);box-shadow:0 0 0 3px rgba(0,131,255,.22)}
 .sr{margin-top:28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .qn{font-size:12px;color:var(--ts);}
 .rw{display:none}
