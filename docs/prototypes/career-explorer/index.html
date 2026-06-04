@@ -141,7 +141,13 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-row-avatar{width:48px;height:48px;border-radius:50%;background:var(--ink);color:var(--rc,#fff);display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0}
 .ip-row-body{flex:1;min-width:0;color:var(--ink)}
 .ip-row-name{font-size:18px;font-weight:900;line-height:1.2;color:var(--ink)}
-.ip-row-desc{font-size:13px;font-weight:500;line-height:1.35;margin-top:1px;color:var(--ink);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Hidden until the row is hovered. The pill's height is anchored by the
+   avatar (48px circle + padding), so the body has slack vertically. When
+   the desc fades in below the title, the flex's align-items:center
+   re-centers the body, which visually slides the title upward — exactly
+   the requested animation. */
+.ip-row-desc{font-size:13px;font-weight:500;line-height:1.35;color:var(--ink);opacity:0;max-height:0;margin-top:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .25s ease, max-height .3s cubic-bezier(.4,0,.2,1), margin-top .3s ease}
+.ip-row-pill:hover .ip-row-desc{opacity:.85;max-height:20px;margin-top:2px}
 .ip-row-score{font-size:22px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0;margin-left:auto;padding-left:12px}
 
 /* Footer row that sits outside the white card on the page background.

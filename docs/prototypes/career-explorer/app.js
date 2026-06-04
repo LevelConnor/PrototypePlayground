@@ -910,6 +910,14 @@ function buildCardBadges(career, detail) {
 // Bright Outlook careers get the sunrise gradient; everyone else gets
 // the primary-blue gradient.
 
+// Heart icon used by every save button (grid cards, modal, tray empty
+// state). Matches the SVG used in the top-nav Saved button so the visual
+// language is consistent. `filled=true` paints the heart solid; otherwise
+// it renders as a stroked outline.
+function heartIcon(filled, size = 18) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+}
+
 // Markup for a single career grid card. Title + bottom-aligned salary +
 // Bright Outlook pills, top-right ♡, optional Best Fit badge top-left.
 function buildLiveCard(c, cached, code, prefix, isSaved) {
@@ -920,7 +928,7 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   const brightCls = tags.brightOutlook ? ' bright' : '';
   return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
     ${c.isMatch ? `<div class="ccard-match">👤 Best Fit</div>` : ''}
-    <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${isSaved?'♥':'♡'}</button>
+    <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
       <div class="ccard-pills">${salPill}${boPill}</div>
@@ -1184,7 +1192,7 @@ function buildModalDetail(d, code) {
     <div class="cmodal-head-top">
       ${isGreatMatch ? `<div class="cmodal-match">👤 Best Fit</div>` : '<div></div>'}
       <div class="cmodal-actions">
-        <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${isSaved?'♥':'♡'}</button>
+        <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
         <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
       </div>
     </div>
@@ -1331,11 +1339,11 @@ function toggleLiveSave(code) {
   // Sync all UI for this code: grid card heart + modal save button.
   document.querySelectorAll(`.ccard-bm[data-live-code="${code}"]`).forEach(b => {
     b.classList.toggle('saved', saved.has(key));
-    b.textContent = saved.has(key) ? '♥' : '♡';
+    b.innerHTML = heartIcon(saved.has(key));
   });
   document.querySelectorAll(`.cmodal-save[data-live-code="${code}"]`).forEach(b => {
     b.classList.toggle('saved', saved.has(key));
-    b.textContent = saved.has(key) ? '♥' : '♡';
+    b.innerHTML = heartIcon(saved.has(key));
   });
 }
 
@@ -1367,7 +1375,7 @@ function closeTray() { document.getElementById('tov').classList.remove('open'); 
 function renderTray() {
   const b = document.getElementById('tbody');
   if (!saved.size) {
-    b.innerHTML = `<div class="tempty"><div style="font-size:20px;margin-bottom:12px">♡</div><p>No saved careers yet.<br>Hit ♡ on any career to save it here.</p></div>`;
+    b.innerHTML = `<div class="tempty"><div style="margin-bottom:12px;color:var(--ts)">${heartIcon(false, 28)}</div><p>No saved careers yet.<br>Tap the heart on any career to save it here.</p></div>`;
     return;
   }
   const codes = [...saved]
