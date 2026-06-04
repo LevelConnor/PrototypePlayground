@@ -1280,7 +1280,7 @@ function toggleLiveSave(code) {
     });
     toast('♥ Career saved!');
   }
-  document.getElementById('tc').textContent = saved.size;
+  document.getElementById('tc').textContent = saved.size > 0 ? saved.size : '';
   if (document.getElementById('tpn').classList.contains('open')) renderTray();
   // Sync all UI for this code: grid card heart + modal save button.
   document.querySelectorAll(`.ccard-bm[data-live-code="${code}"]`).forEach(b => {
@@ -1364,7 +1364,7 @@ function restoreFromURL() {
         if (typeof k === 'string' && k.startsWith('live-')) saved.add(k);
       });
     }
-    document.getElementById('tc').textContent = saved.size;
+    document.getElementById('tc').textContent = saved.size > 0 ? saved.size : '';
     if (d.results) { lastResults = d.results; renderResults(d.results); }
     if (saved.size) ensureSavedMeta();
     toast('✓ Your saved results have been restored!');

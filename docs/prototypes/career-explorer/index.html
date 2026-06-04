@@ -47,17 +47,25 @@ body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-appl
 .t-eyebrow{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0}
 .t-body{font-size:15px;font-weight:400;line-height:1.6;text-transform:none;letter-spacing:0}
 .t-caption{font-size:12px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:0}
-header{background:var(--header-bg);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:200}
-.logo{display:flex;align-items:center;gap:10px}
-.hdr-right{display:flex;align-items:center;gap:14px}
-.tray-btn{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--rf);padding:6px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
-.tray-btn:hover{background:rgba(255,255,255,.18)}
-.tc{background:var(--yellow);color:var(--navy);border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;}
-nav{background:var(--white);border-bottom:2px solid var(--mg);padding:0 24px;display:flex;overflow-x:auto}
-nav::-webkit-scrollbar{display:none}
-.nt{background:none;border:none;padding:15px 20px;font-size:14px;font-weight:700;letter-spacing:0;color:var(--ts);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:color .15s}
-.nt:hover{color:var(--navy)}
-.nt.active{color:var(--navy);border-bottom-color:var(--blue)}
+header{background:var(--header-bg);padding:0 20px;display:flex;align-items:center;gap:20px;height:68px;position:sticky;top:0;z-index:200}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0;color:#fff;font-size:18px;font-weight:900}
+.hdr-nav{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;overflow-x:auto;scrollbar-width:none}
+.hdr-nav::-webkit-scrollbar{display:none}
+.nt{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:none;padding:9px 18px;border-radius:var(--rf);font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;white-space:nowrap;letter-spacing:0}
+.nt svg{flex-shrink:0;opacity:.85}
+.nt:hover{background:rgba(255,255,255,.14)}
+.nt.active{background:var(--blue);color:#fff}
+.nt.active svg{opacity:1}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hdr-icon-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .15s;position:relative}
+.hdr-icon-btn:hover{background:rgba(255,255,255,.14)}
+.tc{position:absolute;top:-2px;right:-2px;background:var(--yellow);color:var(--ink);border-radius:50%;min-width:18px;height:18px;padding:0 4px;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--header-bg)}
+.tc:empty,.tc[data-count="0"]{display:none}
+@media (max-width:760px){
+  header{height:auto;padding:10px 16px;flex-wrap:wrap;gap:10px}
+  .hdr-nav{order:3;flex-basis:100%;justify-content:flex-start}
+  .nt{font-size:13px;padding:8px 14px}
+}
 main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .panel{display:none}.panel.active{display:block}
 .pt{font-weight:900;font-size:clamp(28px,5vw,42px);color:var(--navy);line-height:1.1;margin-bottom:6px;letter-spacing:-.01em}
@@ -383,17 +391,28 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <path d="M99.0809 18.6369H101.747V4.50299H99.0809V18.6369Z" fill="#FAFAFA"/>
     <path d="M104.271 18.6369H106.937V4.50299H104.271V18.6369Z" fill="#FAFAFA"/>
   </svg></div>
+  <nav class="hdr-nav">
+    <button class="nt active" data-tab="assessment">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>
+      Get Matched With Careers
+    </button>
+    <button class="nt" data-tab="search">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
+      Search Careers
+    </button>
+    <button class="nt" data-tab="clusters">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4 4-2z" fill="currentColor" stroke="none"/></svg>
+      Explore Career Clusters
+    </button>
+  </nav>
   <div class="hdr-right">
-    <button class="tray-btn" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
-    <button class="tray-btn" id="open-tray-btn">♡ Saved <span class="tc" id="tc">0</span></button>
+    <button class="hdr-icon-btn" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+    <button class="hdr-icon-btn" id="open-tray-btn" aria-label="Saved careers">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span class="tc" id="tc"></span>
+    </button>
   </div>
 </header>
-
-<nav>
-  <button class="nt active" data-tab="assessment">Get Matched With Careers</button>
-  <button class="nt" data-tab="search">Search Careers</button>
-  <button class="nt" data-tab="clusters">Explore Career Clusters</button>
-</nav>
 
 <main>
 
