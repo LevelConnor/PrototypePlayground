@@ -310,15 +310,23 @@ function renderInterestProfile(sorted) {
   ipSorted = sorted;
 
   // Each row is a single colored pill whose width is proportional to the
-  // O*NET 0-40 score. The score number sits OUTSIDE the pill on the right.
-  // The pill has a CSS min-width that keeps the description visible even
-  // when the score is very low. Max pct is capped < 100 so there's room
-  // for the score number next to a maxed-out pill.
+  // O*NET 0-40 score, scaled so the TOP result is always full pill width.
+  // Pills below the top scale down by (score / topScore). The score number
+  // sits OUTSIDE the pill on the right. The pill has a CSS min-width that
+  // keeps the description visible even when the score is very low.
+  const MAX_PCT = 92; // leaves room for the score number next to a full pill
+  const topScore = sorted.length
+    ? ((lastOnetScores && lastOnetScores[sorted[0][0]] != null)
+        ? lastOnetScores[sorted[0][0]]
+        : Math.round(((sorted[0][1] - 1) / 4) * 40))
+    : 0;
   const rowFor = ([k, v], i) => {
     const score = (lastOnetScores && lastOnetScores[k] != null)
       ? lastOnetScores[k]
       : Math.round(((v - 1) / 4) * 40);
-    const pct = Math.max(8, Math.min(92, Math.round((score / 40) * 92)));
+    // Top pill = MAX_PCT; everything else scales relative to it.
+    const ratio = topScore > 0 ? (score / topScore) : 0;
+    const pct = Math.max(8, Math.min(MAX_PCT, Math.round(ratio * MAX_PCT)));
     return `<div class="ip-row" data-pos="${i}">
       <div class="ip-row-pill" style="--rc:${BC[k]};--pw:${pct}%">
         <div class="ip-row-avatar">${k}</div>
