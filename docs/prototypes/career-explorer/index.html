@@ -251,7 +251,8 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .rcgrid .ccard{flex:0 0 240px}
 #search-empty-state{display:none}
 #search-empty-state.show{display:block}
-.rc2{font-size:12px;color:var(--ts);margin-bottom:16px}
+.rc2{font-size:24px;font-weight:900;color:var(--navy);line-height:1.25;margin:0 0 16px;letter-spacing:-.01em}
+.rc2:empty{margin:0}
 .crow{background:var(--white);border-radius:var(--rmd);border:1.5px solid var(--mg);padding:16px 18px;margin-bottom:4px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .crow:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(10,15,46,.08)}
 .crow.open{border-color:var(--blue);border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:none}
@@ -550,6 +551,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     </div>
   </div>
 
+  <!-- Match summary headline. Lives above the search/filter row so the
+       count framing sits before the controls. -->
+  <div class="rc2" id="rcount"></div>
+
   <!-- Search input + filter dropdowns on a single row. Work style is
        multi-select; Education and Salary are single-select. Each panel
        anchors below its button and overlays content. -->
@@ -595,7 +600,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     </div>
   </div>
   </div>
-  <div class="rc2" id="rcount"></div>
   <div class="bo-explainer">
     <span class="bo-badge">☀ Bright Outlook</span>
     <p>Bright Outlook careers are expected to grow fast, have many job openings, or are emerging careers.</p>

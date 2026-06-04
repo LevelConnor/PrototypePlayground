@@ -757,7 +757,7 @@ async function renderRiasecIntoSlist() {
     }
   });
   renderLiveList(list, 'slist', 'sd');
-  rcount.innerHTML = `<strong>${careers.length}</strong> career${careers.length!==1?'s':''} matching <strong>${usedCode}</strong> (your top work styles)`;
+  rcount.textContent = `Scroll down to see the ${careers.length} career${careers.length!==1?'s':''} matching your top work styles`;
   applyClientFilters();
 }
 
