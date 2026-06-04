@@ -356,6 +356,7 @@ function renderInterestProfile(sorted) {
         <div class="ip-stack" id="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
+        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.</p>
       </div>
     </div>
     <div class="ip-foot">
