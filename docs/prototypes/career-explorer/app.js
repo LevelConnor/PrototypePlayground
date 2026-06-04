@@ -640,19 +640,25 @@ async function renderRiasecIntoSlist() {
     return;
   }
 
-  const list = careers.map((c, i) => ({
-    code: c.code, title: c.title,
-    // Only the top 3 best-fit Holland matches get the Great Match badge.
-    // Holland returns careers in ranked order, so positions 0-2 are the
-    // closest to the user's interest profile.
-    isMatch: i < 3,
-    tags: {
-      brightOutlook:  !!(c.tags && c.tags.bright_outlook),
-      apprenticeship: !!(c.tags && c.tags.apprenticeship),
-      stem:           !!(c.tags && c.tags.stem),
-      green:          !!(c.tags && c.tags.green),
-    },
-  }));
+  // Great Match = O*NET 'Best Fit': career's own 3-letter Holland code
+  // contains all of the user's top interest letters (order-independent).
+  // Mirrors how O*NET's My Next Move surfaces Best Fit careers.
+  const userLetterSet = new Set(letters.slice(0, 3));
+  const list = careers.map(c => {
+    const careerLetters = new Set((c.interest_code || '').split(''));
+    let overlap = 0;
+    userLetterSet.forEach(l => { if (careerLetters.has(l)) overlap++; });
+    return {
+      code: c.code, title: c.title,
+      isMatch: overlap === userLetterSet.size,  // all of user's top interests appear in career's code
+      tags: {
+        brightOutlook:  !!(c.tags && c.tags.bright_outlook),
+        apprenticeship: !!(c.tags && c.tags.apprenticeship),
+        stem:           !!(c.tags && c.tags.stem),
+        green:          !!(c.tags && c.tags.green),
+      },
+    };
+  });
   // Holland responses inline a job_zone object per career. Stash it now so
   // the Education filter has data without a per-card extra fetch.
   careers.forEach(c => {
