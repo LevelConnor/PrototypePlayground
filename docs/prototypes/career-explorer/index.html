@@ -116,25 +116,22 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
 .ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:32px;margin:0 0 24px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
-.ip-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:36px;align-items:stretch}
+.ip-layout{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch}
 .ip-header{display:flex;flex-direction:column;padding:0}
 .ip-title{font-size:32px;font-weight:900;color:var(--navy);margin:0 0 14px;line-height:1.05;letter-spacing:-.01em}
 .ip-intro{font-size:16px;color:var(--ts);line-height:1.55;margin:0;max-width:360px}
 
 /* Right column: stack of coloured cards */
 .ip-stack{display:flex;flex-direction:column;gap:10px}
-.ip-row{position:relative;border-radius:18px;padding:16px 22px 22px;color:var(--ink);overflow:hidden;cursor:default;
-  height:var(--ipH,104px);
+.ip-row{position:relative;border-radius:18px;padding:16px 22px 28px;color:var(--ink);overflow:hidden;cursor:default;
+  height:var(--ipH,132px);
   transition:height .45s cubic-bezier(.4,0,.2,1), opacity .25s ease, padding .3s ease}
-.ip-row:not([data-pos="0"]):hover{height:calc(var(--ipH,104px) + 56px)}
 .ip-row--hidden{opacity:0;padding-top:0;padding-bottom:0}
 .ip-row-top{display:flex;align-items:flex-start;gap:12px}
-.ip-row-avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;margin-top:2px}
+.ip-row-avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;margin-top:2px}
 .ip-row-body{flex:1;min-width:0}
 .ip-row-name{font-size:19px;font-weight:900;color:var(--ink);line-height:1.2}
-.ip-row-desc{font-size:14px;font-weight:500;color:var(--ink);line-height:1.4;margin-top:4px;opacity:0;max-height:0;overflow:hidden;transition:opacity .25s ease, max-height .25s ease}
-.ip-row[data-pos="0"] .ip-row-desc,
-.ip-row:hover .ip-row-desc{opacity:1;max-height:60px}
+.ip-row-desc{font-size:14px;font-weight:500;color:var(--ink);line-height:1.4;margin-top:4px}
 .ip-row-score{font-size:24px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0}
 /* Progress bar at the bottom of each card */
 .ip-row-bar{position:absolute;left:22px;right:22px;bottom:14px;height:6px;background:rgba(10,15,46,.18);border-radius:100px;overflow:hidden}

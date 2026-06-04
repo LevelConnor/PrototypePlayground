@@ -176,6 +176,12 @@ function debounce(fn, ms) {
 /* ══ STATE ══ */
 const saved = new Set(), answered = {};
 let lastResults = null;
+// O*NET-style 0-40 scores per RIASEC dimension, computed from the same
+// answers as lastResults. O*NET's Mini Interest Profiler convention:
+// subtract 1 from each rating (so 1-5 -> 0-4), sum across answered items
+// in that area, then normalize to 0-40. With 5 questions per area the
+// raw max is 20, scaled to 40 by ×2.
+let lastOnetScores = null;
 const activeR = new Set();      // active RIASEC chips (work-style filter)
 let activeCluster = '';         // active cluster filter (one at a time)
 let minSalary = 0;              // 0 = Any. Filters cards client-side by detailCache median.
@@ -232,9 +238,15 @@ function submitAssessment() {
   if (Object.keys(answered).length < 20) { alert('Please answer at least 20 questions.'); return; }
   const tot={R:0,I:0,A:0,S:0,E:0,C:0}, cnt={R:0,I:0,A:0,S:0,E:0,C:0};
   Object.values(answered).forEach(({type,val}) => { tot[type]+=val; cnt[type]++; });
-  const avgs = {};
-  Object.keys(tot).forEach(k => avgs[k] = cnt[k] ? +(tot[k]/cnt[k]).toFixed(2) : 0);
+  const avgs = {}, onet = {};
+  Object.keys(tot).forEach(k => {
+    avgs[k] = cnt[k] ? +(tot[k]/cnt[k]).toFixed(2) : 0;
+    // O*NET 0-40 score: mean of (rating-1) across answered items, then ×10
+    // (since each (rating-1) is 0-4, the mean is 0-4, ×10 = 0-40).
+    onet[k] = cnt[k] ? Math.round(((tot[k] - cnt[k]) / cnt[k]) * 10) : 0;
+  });
   lastResults = avgs;
+  lastOnetScores = onet;
   // Switch to the combined Find My Career tab, populate the interest profile,
   // auto-select the user's top-3 work-style chips, switch the filter view to
   // the Work style tab, and run the live match.
@@ -297,15 +309,20 @@ function renderInterestProfile(sorted) {
   // is score / 5, so a 4.5 reads as 90% — meaningful even on cards that
   // aren't the highest score.
   const rowFor = ([k, v], i) => {
-    const pct = Math.max(6, Math.min(100, Math.round((v / 5) * 100)));
+    // Prefer the precomputed O*NET 0-40 score; fall back to a rescale of
+    // the avg if scores weren't stashed (e.g. restored from older state).
+    const score = (lastOnetScores && lastOnetScores[k] != null)
+      ? lastOnetScores[k]
+      : Math.round(((v - 1) / 4) * 40);
+    const pct = Math.max(6, Math.min(100, Math.round((score / 40) * 100)));
     return `<div class="ip-row" data-pos="${i}" style="background:${BC[k]}">
       <div class="ip-row-top">
-        <div class="ip-row-avatar">${k}</div>
+        <div class="ip-row-avatar" style="color:${BC[k]}">${k}</div>
         <div class="ip-row-body">
           <div class="ip-row-name">${RI[k].short}</div>
           <div class="ip-row-desc">${RI[k].desc}</div>
         </div>
-        <span class="ip-row-score">${Math.round(v)}</span>
+        <span class="ip-row-score">${score}</span>
       </div>
       <div class="ip-row-bar"><div class="ip-row-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
@@ -358,24 +375,23 @@ function applyIpHeights() {
     r.style.setProperty('--ipH', px + 'px');
   };
   if (!ipShowTop3) {
-    // All-6 mode: top card needs extra room for the always-visible
-    // description; other cards stay compact (CSS :hover grows them).
-    rows.forEach((r, i) => {
-      setH(r, i === 0 ? 128 : 92);
+    // All-6 mode: every card shows its description, so every card needs
+    // the same room (avatar + name + 2-line desc + bar).
+    rows.forEach((r) => {
+      setH(r, 132);
       r.classList.remove('ip-row--hidden');
     });
     return;
   }
-  // Top-3 mode: proportional heights, hide 4-6.
+  // Top-3 mode: proportional heights, hide 4-6. Every visible card still
+  // needs ~132px so its description doesn't collide with the bar.
   const topScores = ipSorted.slice(0, 3).map(([, v]) => Math.max(v, 0.5));
   const sum = topScores.reduce((a, b) => a + b, 0) || 1;
-  const totalPx = 460;
+  const totalPx = 520;
   rows.forEach((r, i) => {
     if (i < 3) {
       const share = (topScores[i] / sum) * totalPx;
-      // Top card minimum 140px so its description has room.
-      const min = (i === 0) ? 140 : 84;
-      setH(r, Math.max(min, Math.round(share)));
+      setH(r, Math.max(132, Math.round(share)));
       r.classList.remove('ip-row--hidden');
     } else {
       setH(r, 0);
