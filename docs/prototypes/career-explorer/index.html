@@ -28,6 +28,9 @@ body.dark{
   --navy:#E5EBF8;
   --header-bg:#070B22;
 }
+/* H1 panel titles: pure white in dark mode (overrides the slightly cooler
+   off-white --navy used for body text — display titles want max contrast). */
+body.dark .pt{color:#fff}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
@@ -397,7 +400,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 <!-- ASSESSMENT -->
 <div class="panel active" id="panel-assessment">
   <div id="afw">
-    <div class="pt" style="color:var(--blue)">Get Matched With Careers</div>
+    <div class="pt">Get Matched With Careers</div>
     <p class="ps">Rate how much you'd enjoy each activity. There are no right or wrong answers.</p>
     <div class="pw"><div class="pf" id="pf" style="width:0%"></div></div>
     <div id="qwrap">
@@ -449,7 +452,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 <!-- FIND MY CAREER -->
 <div class="panel" id="panel-search">
-  <div class="pt" style="color:var(--blue)">Search Careers</div>
+  <div class="pt">Search Careers</div>
   <p class="ps" style="margin-bottom:18px">Match careers to your interests, browse a field, or search by keyword.</p>
 
   <!-- Interest Profile (populated after the user takes the assessment).
@@ -531,7 +534,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 <!-- CAREER CLUSTERS — editorial photo grid -->
 <div class="panel" id="panel-clusters">
-  <div class="pt" style="color:var(--blue)">Explore Career Clusters</div>
+  <div class="pt">Explore Career Clusters</div>
   <p class="ps" style="margin-bottom:24px">Browse 14 broad fields. Tap any cluster to see its sub-areas and the careers inside.</p>
   <div class="cluster-grid" id="cluster-grid"></div>
 
