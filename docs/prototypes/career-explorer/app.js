@@ -192,14 +192,18 @@ let eduZoneMin = 0;             // 0 = Any. Filters cards client-side by O*NET j
 // keep the same semantic associations.
 // Vivid RIASEC palette for the quiz-results cards (matches the design spec).
 // All chosen so dark navy text reads cleanly on them.
-const BC = {R:'#0083FF',I:'#FF7A1A',A:'#F49FFB',S:'#FFD810',E:'#A78BFA',C:'#68F4B8'};
+// Vivid pill backgrounds for each RIASEC area. Re-mapped so A=yellow,
+// S=green, C=pink to match the latest design spec.
+const BC = {R:'#0083FF',I:'#FF7A1A',A:'#FFD810',S:'#68F4B8',E:'#A78BFA',C:'#F49FFB'};
+// Short descriptions tuned to fit on a single line inside the result pill
+// at its minimum width (~440px). Don't extend these without re-tuning min.
 const RI = {
-  R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, machines, and physical tasks.',bg:'#0A0F2E'},
-  I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, science, and solving complex problems.',bg:'#1D0E32'},
-  A:{name:'Artistic — The Creator',short:'Artistic',desc:'Design, writing, performance, and creative expression.',bg:'#1a0a00'},
-  S:{name:'Social — The Helper',short:'Social',desc:'Teaching, counseling, healthcare, and supporting others.',bg:'#002E01'},
-  E:{name:'Enterprising — The Leader',short:'Enterprising',desc:'Business, sales, management, and persuading others.',bg:'#1a003a'},
-  C:{name:'Conventional — The Organizer',short:'Conventional',desc:'Data, systems, finance, and structured processes.',bg:'#1a1a0a'}
+  R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, and physical tasks.'},
+  I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, and complex problem-solving.'},
+  A:{name:'Artistic — The Creator',short:'Artistic',desc:'Design, writing, and creative expression.'},
+  S:{name:'Social — The Helper',short:'Social',desc:'Teaching, healthcare, and supporting others.'},
+  E:{name:'Enterprising — The Leader',short:'Enterprising',desc:'Business, sales, and persuading others.'},
+  C:{name:'Conventional — The Organizer',short:'Conventional',desc:'Data, finance, and structured processes.'}
 };
 
 /* ══ TOAST ══ */
@@ -305,25 +309,25 @@ function renderInterestProfile(sorted) {
   if (!el) return;
   ipSorted = sorted;
 
-  // Single row: colored avatar + name/desc on top, bar + score below.
-  // The bar fill picks up the same RIASEC color as the avatar.
+  // Each row is a single colored pill whose width is proportional to the
+  // O*NET 0-40 score. The score number sits OUTSIDE the pill on the right.
+  // The pill has a CSS min-width that keeps the description visible even
+  // when the score is very low. Max pct is capped < 100 so there's room
+  // for the score number next to a maxed-out pill.
   const rowFor = ([k, v], i) => {
     const score = (lastOnetScores && lastOnetScores[k] != null)
       ? lastOnetScores[k]
       : Math.round(((v - 1) / 4) * 40);
-    const pct = Math.max(4, Math.min(100, Math.round((score / 40) * 100)));
+    const pct = Math.max(8, Math.min(92, Math.round((score / 40) * 92)));
     return `<div class="ip-row" data-pos="${i}">
-      <div class="ip-row-top">
-        <div class="ip-row-avatar" style="background:${BC[k]}">${k}</div>
+      <div class="ip-row-pill" style="--rc:${BC[k]};--pw:${pct}%">
+        <div class="ip-row-avatar">${k}</div>
         <div class="ip-row-body">
           <div class="ip-row-name">${RI[k].short}</div>
           <div class="ip-row-desc">${RI[k].desc}</div>
         </div>
       </div>
-      <div class="ip-row-bottom">
-        <div class="ip-row-bar"><div class="ip-row-bar-fill" style="width:${pct}%;background:${BC[k]}"></div></div>
-        <span class="ip-row-score">${score}</span>
-      </div>
+      <span class="ip-row-score">${score}</span>
     </div>`;
   };
 
