@@ -53,14 +53,17 @@ header{background:var(--header-bg);padding:0 20px;display:flex;align-items:cente
 .logo{display:flex;align-items:center;gap:8px;flex-shrink:0;color:#fff;font-size:18px;font-weight:900}
 .hdr-nav{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;overflow-x:auto;scrollbar-width:none}
 .hdr-nav::-webkit-scrollbar{display:none}
-.nt{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:none;padding:9px 18px;border-radius:var(--rf);font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;white-space:nowrap;letter-spacing:0}
+/* Header buttons use the same dark-blue surface tokens as the rest of
+   the dark UI (#172554 = surface, #213168 = hover/border) so the
+   header reads as part of the same palette in both themes. */
+.nt{display:inline-flex;align-items:center;gap:8px;background:#172554;border:none;padding:9px 18px;border-radius:var(--rf);font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;white-space:nowrap;letter-spacing:0}
 .nt svg{flex-shrink:0;opacity:.85}
-.nt:hover{background:rgba(255,255,255,.14)}
+.nt:hover{background:#213168}
 .nt.active{background:var(--blue);color:#fff}
 .nt.active svg{opacity:1}
 .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.hdr-icon-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .15s;position:relative}
-.hdr-icon-btn:hover{background:rgba(255,255,255,.14)}
+.hdr-icon-btn{width:40px;height:40px;border-radius:50%;background:#172554;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .15s;position:relative}
+.hdr-icon-btn:hover{background:#213168}
 .tc{position:absolute;top:-2px;right:-2px;background:var(--yellow);color:var(--ink);border-radius:50%;min-width:18px;height:18px;padding:0 4px;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid var(--header-bg)}
 .tc:empty,.tc[data-count="0"]{display:none}
 @media (max-width:760px){
