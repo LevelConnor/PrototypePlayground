@@ -302,6 +302,14 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 #print-restore-url{font-size:11px;word-break:break-all;color:#333;margin-top:4px}
 @media(max-width:600px){main{padding:22px 14px 60px}.qs{gap:3px}.sb{width:28px;height:28px;font-size:11px}.sav-btns{flex-direction:column}.sav-btns .cta{width:100%;text-align:center}}
 
+/* ─── Bright Outlook definition banner ─────────────────────────────────
+   Lives above the career grids on Find My Career + Career Clusters detail.
+   Shows a yellow Bright Outlook badge + one-line definition so users
+   understand what the ☀ pill on individual cards means. */
+.bo-explainer{display:flex;align-items:center;gap:14px;background:transparent;border:1.5px solid var(--mg);border-radius:var(--rlg);padding:12px 18px;margin:0 0 18px;flex-wrap:wrap}
+.bo-badge{background:var(--yellow);color:var(--ink);padding:6px 14px;border-radius:var(--rf);font-size:13px;font-weight:900;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
+.bo-explainer p{font-size:14px;color:var(--ts);line-height:1.45;margin:0;flex:1;min-width:200px}
+
 /* ─── Career card grid (editorial) ──────────────────────────────────────
    Replaces the old .crow vertical list. Each card has a gradient image
    bg, a soft dark overlay so white text stays readable, title + pills
@@ -539,6 +547,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   </div>
   </div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
+  <div class="bo-explainer">
+    <span class="bo-badge">☀ Bright Outlook</span>
+    <p>Bright Outlook careers are expected to grow fast, have many job openings, or are new and emerging careers.</p>
+  </div>
   <div id="slist"></div>
   <div id="slist-more"></div>
 
@@ -573,6 +585,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <div class="fl" style="margin-top:18px">Areas in this cluster</div>
     <div class="fcs" id="cluster-subs"></div>
     <hr class="rdiv"><div class="rc2" id="cluster-rcount"></div>
+    <div class="bo-explainer">
+      <span class="bo-badge">☀ Bright Outlook</span>
+      <p>Bright Outlook careers are expected to grow fast, have many job openings, or are new and emerging careers.</p>
+    </div>
     <div id="cluster-list"></div>
     <div id="cluster-list-more"></div>
   </div>
