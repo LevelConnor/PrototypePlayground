@@ -192,9 +192,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 /* ─── Filter bar: uniform dropdown buttons ────────────────────────────── */
 .fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
-.fbar-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.fbar-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0 22px}
 .fbar-row .fl{margin-bottom:0}
 .fbar-row .fbar{margin-bottom:0}
+.fbar-row .sbx-w{margin:0;flex:1;min-width:240px}
 .fb{position:relative}
 .fb-btn{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:9px 16px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:8px;transition:border-color .15s}
 .fb-btn:hover{border-color:var(--blue)}
@@ -539,13 +540,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     </div>
   </div>
 
-  <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
-
-  <!-- Filter bar: 3 uniform dropdown buttons. Work style is multi-select;
-       Education and Salary are single-select. Each panel anchors below its
-       button and overlays content (doesn't push the list down). -->
+  <!-- Search input + filter dropdowns on a single row. Work style is
+       multi-select; Education and Salary are single-select. Each panel
+       anchors below its button and overlays content. -->
   <div class="fbar-row">
-  <div class="fl">Filters</div>
+  <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
   <div class="fbar">
     <div class="fb" data-fb="workstyle">
       <button class="fb-btn"><span class="fb-label">Work style</span><span class="fb-value" id="fb-value-workstyle"></span><span class="fb-caret">▾</span></button>
