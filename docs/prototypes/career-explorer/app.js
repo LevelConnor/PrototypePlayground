@@ -640,11 +640,12 @@ async function renderRiasecIntoSlist() {
     return;
   }
 
-  const list = careers.map(c => ({
+  const list = careers.map((c, i) => ({
     code: c.code, title: c.title,
-    // Everything returned by /holland/{code} matches the user's interests
-    // by definition — mark them all as Great Match.
-    isMatch: true,
+    // Only the top 3 best-fit Holland matches get the Great Match badge.
+    // Holland returns careers in ranked order, so positions 0-2 are the
+    // closest to the user's interest profile.
+    isMatch: i < 3,
     tags: {
       brightOutlook:  !!(c.tags && c.tags.bright_outlook),
       apprenticeship: !!(c.tags && c.tags.apprenticeship),
