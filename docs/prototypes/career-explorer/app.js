@@ -805,45 +805,9 @@ function buildCardBadges(career, detail) {
   ].filter(Boolean).join('');
 }
 
-// Six gradients used as card backgrounds — fallback if the image fails
-// to load. Picked deterministically from the O*NET code so the same career
-// always shows the same look.
-const CARD_GRADIENTS = [
-  'linear-gradient(135deg,#2A3960 0%,#5B4570 55%,#3A4A6B 100%)',
-  'linear-gradient(135deg,#3D2E5B 0%,#5C3F71 55%,#2A3960 100%)',
-  'linear-gradient(135deg,#1A2640 0%,#4B3A5F 55%,#2D3A5C 100%)',
-  'linear-gradient(135deg,#1F3D5C 0%,#4A4B7E 55%,#2C2E55 100%)',
-  'linear-gradient(135deg,#2E2C56 0%,#5F4476 55%,#3B5570 100%)',
-  'linear-gradient(135deg,#262E4E 0%,#5C3F5F 55%,#3B5A77 100%)',
-];
-
-// Photo backgrounds for career cards — same 14 Unsplash photos used by the
-// Career Clusters page, reused here so every career lands on one of them.
-// Picked deterministically from the O*NET code; subjects are general enough
-// (workplaces, fields, tools) to read as appropriate for any career.
-const CAREER_IMAGES = [
-  'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80',
-  'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80',
-  'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80',
-  'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80',
-  'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
-  'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80',
-  'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&q=80',
-  'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80',
-  'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
-  'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
-  'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80',
-  'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&q=80',
-  'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=800&q=80',
-  'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80',
-];
-function _hashCode(code) {
-  let h = 0;
-  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
-  return h;
-}
-function pickGradient(code) { return CARD_GRADIENTS[_hashCode(code) % CARD_GRADIENTS.length]; }
-function pickCareerImage(code) { return CAREER_IMAGES[_hashCode(code) % CAREER_IMAGES.length]; }
+// Card gradients are class-based now (.ccard / .ccard.bright in CSS).
+// Bright Outlook careers get the sunrise gradient; everyone else gets
+// the primary-blue gradient.
 
 // Markup for a single career grid card. Title + bottom-aligned salary +
 // Bright Outlook pills, top-right ♡, optional Great Match badge top-left.
@@ -852,9 +816,8 @@ function buildLiveCard(c, cached, code, prefix, isSaved, isGreatMatch) {
   const sal = cached && cached.salary && cached.salary.median;
   const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
   const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
-  return `<div class="ccard" data-live-code="${code}" data-prefix="${prefix||'sd'}" style="background:${pickGradient(code)}">
-    <img src="${pickCareerImage(code)}" alt="" loading="lazy" onerror="this.style.display='none'">
-    <div class="ccard-overlay"></div>
+  const brightCls = tags.brightOutlook ? ' bright' : '';
+  return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
     ${isGreatMatch ? `<div class="ccard-match">👤 Great Match</div>` : ''}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${isSaved?'♥':'♡'}</button>
     <div class="ccard-body">
@@ -1038,10 +1001,10 @@ async function openLiveDetail(code, prefix) {
     return;
   }
 
-  // Skeleton while loading
+  // Skeleton while loading. We don't yet know if it's Bright Outlook until
+  // the fetch lands, so use the default (blue) gradient here.
   modal.innerHTML = `
-    <div class="cmodal-head" style="background:${pickGradient(code)}">
-      <img src="${pickCareerImage(code)}" alt="" loading="lazy" onerror="this.style.display='none'">
+    <div class="cmodal-head">
       <div class="cmodal-head-overlay"></div>
       <div class="cmodal-head-top">
         <div></div>
@@ -1142,7 +1105,7 @@ async function openLiveDetail(code, prefix) {
   } catch (err) {
     console.error('Detail error:', err);
     if (openModalCode === code) {
-      modal.innerHTML = `<div class="cmodal-head" style="background:${pickGradient(code)}"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
+      modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
     }
   }
 }
@@ -1162,8 +1125,8 @@ function buildModalDetail(d, code) {
   const boPill  = d.tags?.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
   const isGreatMatch = lastResults && !!d.tags?.brightOutlook;
 
-  return `<div class="cmodal-head" style="background:${pickGradient(code)}">
-    <img src="${pickCareerImage(code)}" alt="" loading="lazy" onerror="this.style.display='none'">
+  const brightCls = d.tags?.brightOutlook ? ' bright' : '';
+  return `<div class="cmodal-head${brightCls}">
     <div class="cmodal-head-overlay"></div>
     <div class="cmodal-head-top">
       ${isGreatMatch ? `<div class="cmodal-match">👤 Great Match</div>` : '<div></div>'}
