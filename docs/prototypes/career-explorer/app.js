@@ -357,20 +357,20 @@ function renderInterestProfile(sorted) {
           ${sorted.map(rowFor).join('')}
         </div>
         <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.</p>
-      </div>
-    </div>
-    <div class="ip-foot">
-      <div class="ip-toggle-pill">
-        <span>Show Full Results</span>
-        <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowAll}">
-          <span class="ip-switch-dot"></span>
-        </button>
-      </div>
-      <div class="ip-foot-r">
-        <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
-        <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
-        <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
-        <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
+        <div class="ip-foot">
+          <div class="ip-toggle-pill">
+            <span>Show Full Results</span>
+            <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowAll}">
+              <span class="ip-switch-dot"></span>
+            </button>
+          </div>
+          <div class="ip-foot-r">
+            <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
+            <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
+            <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
+            <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
+          </div>
+        </div>
       </div>
     </div>`;
 
