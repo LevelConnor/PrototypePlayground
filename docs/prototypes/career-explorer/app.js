@@ -144,9 +144,8 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // Related-career card click inside the modal — open that career.
-  const liveRel = t.closest('[data-live-rel]');
-  if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, 'sd'); return; }
+  // Related-career cards now share the .ccard[data-live-code] markup —
+  // the handler above already routes their clicks. No extra wiring needed.
 });
 
 // Close modal on Esc
@@ -1012,69 +1011,15 @@ function prefetchSummaries(list, prefix) {
   });
 }
 
-// Render the inner pills of a single related-career card (.rcard-m).
-// Honors the Bright Outlook redundancy rule: show the ☀️ pill OR the 📈
-// growth pill, never both.
-function paintRelatedCard(code, detail) {
-  if (!detail) return;
-  const sal    = detail.salary  && detail.salary.median;
-  const growth = detail.outlook && detail.outlook.growth;
-  const bright = !!(detail.tags && detail.tags.brightOutlook);
-  const html = [
-    bright            ? `<span class="mb">☀️ Bright Outlook</span>`           : '',
-    (growth && !bright) ? `<span class="mb">📈 ${growth}</span>`              : '',
-    sal               ? `<span class="mb">💰 $${sal.toLocaleString()}/yr</span>` : '',
-  ].filter(Boolean).join('');
-  document.querySelectorAll(`.rcard[data-live-rel="${code}"] .rcard-m`)
-    .forEach(el => { el.innerHTML = html; });
-}
-
-// Background-fetch outlook for every related career and paint each card as
-// its data resolves. Reuses detailCache + summaryInFlight so we never fire
-// duplicate requests across drawer opens.
+// Related-tab cards now use the same .ccard markup as the search/Clusters/
+// Bright-Outlook grids. prefetchSummaries already paints any .ccard with a
+// matching data-live-code from a freshly-fetched outlook response, so we
+// just route the related list through it.
 function enrichRelatedCards(relatedList) {
-  (relatedList || []).forEach(r => {
-    // Already cached? Paint immediately.
-    if (detailCache[r.code]) { paintRelatedCard(r.code, detailCache[r.code]); return; }
-    if (summaryInFlight.has(r.code)) {
-      // Another path is already fetching. Poll once cache lands.
-      const tick = setInterval(() => {
-        if (detailCache[r.code]) { paintRelatedCard(r.code, detailCache[r.code]); clearInterval(tick); }
-      }, 150);
-      setTimeout(() => clearInterval(tick), 8000);
-      return;
-    }
-    summaryInFlight.add(r.code);
-    onetGet(`/career/${r.code}/outlook`).then(out => {
-      const wage = (out && out.salary) || {};
-      const outlookCat = out && out.outlook && out.outlook.category;
-      const isBright = !!(out && out.outlook && (out.outlook.category === 'Bright' || out.outlook.bright_outlook));
-      // Lightweight partial entry — same _partial discipline as
-      // prefetchSummaries so that opening the drawer still triggers
-      // the full data fetch.
-      if (!detailCache[r.code]) {
-        detailCache[r.code] = {
-          code: r.code, title: r.title,
-          description: '', sampleTitles: [],
-          tags: { brightOutlook: isBright, apprenticeship: false, stem: false, green: false },
-          salary: {
-            median: wage.annual_median        || 0,
-            low:    wage.annual_10th_percentile || 0,
-            high:   wage.annual_90th_percentile || 0,
-          },
-          outlook: { growth: outlookCat || '', descriptor: '' },
-          tasks: [],
-          eduBreakdown: [],
-          pathways: [], prepare: [], hiring: {},
-          cluster: '', riasec: [], related: [],
-          _partial: true,
-        };
-      }
-      paintRelatedCard(r.code, detailCache[r.code]);
-    }).catch(() => {}).finally(() => {
-      summaryInFlight.delete(r.code);
-    });
-  });
+  prefetchSummaries(
+    (relatedList || []).map(r => ({ code: r.code, title: r.title })),
+    'sd'
+  );
 }
 
 // Fetch detail for a live result, cache it, then build the drawer
@@ -1332,12 +1277,12 @@ function buildModalDetail(d, code) {
     <!-- RELATED -->
     <div class="cmodal-pane" data-mpane="rc" hidden>
       <p style="font-size:15px;color:var(--ts);margin:0 0 16px">These careers share similar skills, interests, or education pathways.</p>
-      <div class="rcrow">
-        ${(d.related||[]).map(r=>`
-          <div class="rcard" data-live-rel="${r.code}" data-prefix="sd">
-            <div class="rcard-t">${r.title}</div>
-            <div class="rcard-m"></div>
-          </div>`).join('')}
+      <div class="rcgrid">
+        ${(d.related||[]).map(r => {
+          const cached = detailCache[r.code] || {};
+          const isSaved = saved.has('live-'+r.code);
+          return buildLiveCard({ title: r.title, isMatch: false }, cached, r.code, 'sd', isSaved);
+        }).join('')}
       </div>
     </div>
 
