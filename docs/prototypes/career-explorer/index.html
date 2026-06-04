@@ -115,37 +115,47 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Replaces 4 redundant elements (top-3 ribbon, bubble chart,
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
-.ip-card{margin:0 0 24px}
-.ip-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:36px;align-items:start}
-.ip-header{padding:8px 0}
-.ip-title{font-size:24px;font-weight:900;color:var(--navy);margin:0 0 12px;line-height:1.15}
-.ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin:0;max-width:360px}
+.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:32px;margin:0 0 24px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
+.ip-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:36px;align-items:stretch}
+.ip-header{display:flex;flex-direction:column;padding:0}
+.ip-title{font-size:32px;font-weight:900;color:var(--navy);margin:0 0 14px;line-height:1.05;letter-spacing:-.01em}
+.ip-intro{font-size:16px;color:var(--ts);line-height:1.55;margin:0;max-width:360px}
 
-.ip-results{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:12px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
-.ip-stack{display:flex;flex-direction:column;gap:8px}
-.ip-row{position:relative;border-radius:18px;padding:14px 22px;color:var(--ink);overflow:hidden;cursor:default;display:flex;flex-direction:column;justify-content:space-between;height:76px;
+/* Right column: stack of coloured cards */
+.ip-stack{display:flex;flex-direction:column;gap:10px}
+.ip-row{position:relative;border-radius:18px;padding:16px 22px 22px;color:var(--ink);overflow:hidden;cursor:default;height:104px;
   transition:height .45s cubic-bezier(.4,0,.2,1), opacity .25s ease, padding .3s ease}
 .ip-row--hidden{opacity:0;padding-top:0;padding-bottom:0}
-.ip-row-top{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.ip-row-avatar{width:26px;height:26px;border-radius:50%;background:rgba(10,15,46,.88);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
-.ip-row-name{font-size:15px;font-weight:700;color:var(--ink)}
-.ip-row-score{font-size:30px;font-weight:900;margin-left:auto;line-height:1;color:var(--ink)}
-.ip-row-tag{font-size:20px;font-weight:900;color:var(--ink);transition:opacity .2s ease}
-.ip-row-desc{position:absolute;left:22px;right:22px;bottom:14px;font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .2s ease, transform .2s ease;pointer-events:none}
-.ip-row:hover .ip-row-tag{opacity:0}
-.ip-row:hover .ip-row-desc{opacity:1;transform:translateY(0)}
+.ip-row-top{display:flex;align-items:flex-start;gap:12px}
+.ip-row-avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;margin-top:2px}
+.ip-row-body{flex:1;min-width:0}
+.ip-row-name{font-size:19px;font-weight:900;color:var(--ink);line-height:1.2}
+.ip-row-desc{font-size:14px;font-weight:500;color:var(--ink);line-height:1.4;margin-top:4px;opacity:0;max-height:0;overflow:hidden;transition:opacity .25s ease, max-height .25s ease}
+.ip-row[data-pos="0"] .ip-row-desc,
+.ip-row:hover .ip-row-desc{opacity:1;max-height:60px}
+.ip-row-score{font-size:24px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0}
+/* Progress bar at the bottom of each card */
+.ip-row-bar{position:absolute;left:22px;right:22px;bottom:14px;height:6px;background:rgba(10,15,46,.18);border-radius:100px;overflow:hidden}
+.ip-row-bar-fill{height:100%;background:var(--ink);border-radius:100px;transition:width .6s ease}
 
-/* Toggle switch ("Only show top 3") */
-.ip-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;font-size:15px;color:var(--navy);font-weight:500}
-.ip-switch{position:relative;width:46px;height:26px;border-radius:100px;border:none;background:var(--mg);cursor:pointer;padding:0;transition:background .2s ease;flex-shrink:0}
-.ip-switch-dot{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(10,15,46,.18);transition:transform .2s ease}
+/* Left column actions: toggle + save buttons pinned to the bottom */
+.ip-actions{margin-top:auto;padding-top:28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ip-toggle-pill{display:inline-flex;align-items:center;gap:10px;background:var(--off);border:1.5px solid var(--mg);border-radius:100px;padding:6px 8px 6px 16px;font-size:14px;font-weight:600;color:var(--navy)}
+.ip-switch{position:relative;width:38px;height:22px;border-radius:100px;border:none;background:var(--mg);cursor:pointer;padding:0;transition:background .2s ease;flex-shrink:0}
+.ip-switch-dot{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(10,15,46,.18);transition:transform .2s ease}
 .ip-switch[aria-pressed="true"]{background:var(--blue)}
-.ip-switch[aria-pressed="true"] .ip-switch-dot{transform:translateX(20px)}
+.ip-switch[aria-pressed="true"] .ip-switch-dot{transform:translateX(16px)}
+.ip-action-btn{width:36px;height:36px;border-radius:50%;background:var(--off);border:1.5px solid var(--mg);color:var(--blue);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s, border-color .15s}
+.ip-action-btn:hover{background:var(--mg);border-color:var(--blue)}
+.ip-action-btn svg{width:16px;height:16px}
+.ip-action-pill{display:inline-flex;align-items:center;gap:6px;background:var(--off);border:1.5px solid var(--mg);border-radius:100px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--blue);cursor:pointer;transition:background .15s, border-color .15s}
+.ip-action-pill:hover{background:var(--mg);border-color:var(--blue)}
+.ip-action-pill svg{width:14px;height:14px}
 
 @media (max-width:720px){
-  .ip-layout{grid-template-columns:1fr;gap:20px}
-  .ip-header{padding:0}
-  .ip-intro{max-width:none}
+  .ip-card{padding:22px}
+  .ip-layout{grid-template-columns:1fr;gap:24px}
+  .ip-actions{padding-top:18px}
 }
 /* Dev shortcut button — random-fills the assessment + submits. Lives at
    the bottom-right of the viewport. Only visible while the Assessment

@@ -256,12 +256,14 @@ function submitAssessment() {
 // (in case state was restored from a saved URL).
 function syncProfileUI() {
   const ipEl = document.getElementById('interest-profile');
+  // The legacy standalone .sav row is now superseded by the action buttons
+  // embedded inside .ip-card. Force-hide it regardless of state.
   const saveEl = document.getElementById('profile-save');
+  if (saveEl) saveEl.style.display = 'none';
   if (!ipEl) return;
   if (lastResults) {
     const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
     renderInterestProfile(sorted);
-    if (saveEl) saveEl.style.display = '';
   } else {
     ipEl.innerHTML = `
       <div style="text-align:center;padding:8px 4px">
@@ -271,7 +273,6 @@ function syncProfileUI() {
         </p>
         <button class="cta" id="btn-go-assess">Take the Assessment</button>
       </div>`;
-    if (saveEl) saveEl.style.display = 'none';
   }
 }
 
@@ -292,35 +293,51 @@ function renderInterestProfile(sorted) {
   if (!el) return;
   ipSorted = sorted;
 
+  // Max possible RIASEC average is 5 (each question rated 1-5). Bar fill
+  // is score / 5, so a 4.5 reads as 90% — meaningful even on cards that
+  // aren't the highest score.
   const rowFor = ([k, v], i) => {
-    const tagline = RI[k].name.split('—')[1].trim();
+    const pct = Math.max(6, Math.min(100, Math.round((v / 5) * 100)));
     return `<div class="ip-row" data-pos="${i}" style="background:${BC[k]}">
       <div class="ip-row-top">
         <div class="ip-row-avatar">${k}</div>
-        <span class="ip-row-name">${RI[k].short}</span>
+        <div class="ip-row-body">
+          <div class="ip-row-name">${RI[k].short}</div>
+          <div class="ip-row-desc">${RI[k].desc}</div>
+        </div>
         <span class="ip-row-score">${Math.round(v)}</span>
       </div>
-      <div class="ip-row-tag">${tagline}</div>
-      <div class="ip-row-desc">${RI[k].desc}</div>
+      <div class="ip-row-bar"><div class="ip-row-bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   };
+
+  // Inline SVG icons for the action buttons (link / email / download /
+  // retake). 24-box, currentColor strokes — pick up button colour.
+  const iconLink   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+  const iconMail   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>`;
+  const iconDown   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>`;
+  const iconRetake = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>`;
 
   el.innerHTML = `
     <div class="ip-layout">
       <div class="ip-header">
-        <h2 class="ip-title">Your Quiz Results</h2>
+        <h2 class="ip-title">Your Results</h2>
         <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
+        <div class="ip-actions">
+          <div class="ip-toggle-pill">
+            <span>Show top 3</span>
+            <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowTop3}">
+              <span class="ip-switch-dot"></span>
+            </button>
+          </div>
+          <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
+          <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
+          <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
+          <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
+        </div>
       </div>
-      <div class="ip-results">
-        <div class="ip-stack" id="ip-stack">
-          ${sorted.map(rowFor).join('')}
-        </div>
-        <div class="ip-toggle-row">
-          <span>Only show top 3</span>
-          <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowTop3}">
-            <span class="ip-switch-dot"></span>
-          </button>
-        </div>
+      <div class="ip-stack" id="ip-stack">
+        ${sorted.map(rowFor).join('')}
       </div>
     </div>`;
 
@@ -336,9 +353,10 @@ function applyIpHeights() {
   if (!rows.length) return;
 
   if (!ipShowTop3) {
-    // All-6 mode: equal compact rows.
-    rows.forEach(r => {
-      r.style.height = '76px';
+    // All-6 mode: top card needs extra room for the always-visible
+    // description; other cards stay compact.
+    rows.forEach((r, i) => {
+      r.style.height = (i === 0 ? '128px' : '92px');
       r.classList.remove('ip-row--hidden');
     });
     return;
@@ -346,12 +364,13 @@ function applyIpHeights() {
   // Top-3 mode: proportional heights, hide 4-6.
   const topScores = ipSorted.slice(0, 3).map(([, v]) => Math.max(v, 0.5));
   const sum = topScores.reduce((a, b) => a + b, 0) || 1;
-  // Total stack height for the 3 visible cards. Keeps it visually balanced.
-  const totalPx = 420;
+  const totalPx = 460;
   rows.forEach((r, i) => {
     if (i < 3) {
-      const h = Math.max(72, Math.round((topScores[i] / sum) * totalPx));
-      r.style.height = h + 'px';
+      const share = (topScores[i] / sum) * totalPx;
+      // Top card minimum 140px so its description has room.
+      const min = (i === 0) ? 140 : 84;
+      r.style.height = Math.max(min, Math.round(share)) + 'px';
       r.classList.remove('ip-row--hidden');
     } else {
       r.style.height = '0px';
