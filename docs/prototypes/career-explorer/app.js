@@ -262,7 +262,7 @@ function syncProfileUI() {
   } else {
     ipEl.innerHTML = `
       <div style="text-align:center;padding:8px 4px">
-        <div class="t-eyebrow" style="color:var(--blue);margin-bottom:8px">Get personalized matches</div>
+        <div class="t-eyebrow" style="margin-bottom:8px">Get personalized matches</div>
         <p style="font-size:15px;color:var(--navy);line-height:1.55;margin:0 auto 14px;max-width:440px">
           A short 30-question quiz uncovers your top work styles and unlocks careers tailored to your interests.
         </p>

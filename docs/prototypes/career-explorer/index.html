@@ -28,9 +28,11 @@ body.dark{
   --navy:#E5EBF8;
   --header-bg:#070B22;
 }
-/* H1 panel titles: pure white in dark mode (overrides the slightly cooler
-   off-white --navy used for body text — display titles want max contrast). */
-body.dark .pt{color:#fff}
+/* H1 panel titles + section eyebrows: pure white in dark mode (overrides
+   the slightly cooler off-white --navy used for body text — display + section
+   headings want max contrast). */
+body.dark .pt,
+body.dark .t-eyebrow{color:#fff}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
@@ -44,7 +46,7 @@ body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-appl
    ───────────────────────────────────────────────────────────── */
 .t-display{font-size:clamp(28px,5vw,42px);font-weight:900;line-height:1;text-transform:uppercase;letter-spacing:0}
 .t-heading{font-size:20px;font-weight:900;line-height:1.2;text-transform:uppercase;letter-spacing:.02em}
-.t-eyebrow{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0}
+.t-eyebrow{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--navy)}
 .t-body{font-size:15px;font-weight:400;line-height:1.6;text-transform:none;letter-spacing:0}
 .t-caption{font-size:12px;font-weight:400;line-height:1.5;text-transform:none;letter-spacing:0}
 header{background:var(--header-bg);padding:0 20px;display:flex;align-items:center;gap:20px;height:68px;position:sticky;top:0;z-index:200}
@@ -542,7 +544,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <!-- DEFAULT EMPTY STATE: Bright Outlook careers -->
   <div id="search-empty-state">
-    <div class="t-eyebrow" style="color:var(--blue);margin-bottom:6px">Careers projected to grow rapidly</div>
+    <div class="t-eyebrow" style="margin-bottom:6px">Careers projected to grow rapidly</div>
     <div id="bo-list"></div>
     <div id="bo-more-wrap" style="display:none;margin-top:14px;text-align:center">
       <button class="cta ghost" id="bo-more-btn">Show more</button>
@@ -562,7 +564,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   <div id="cluster-detail" style="display:none;margin-top:28px">
     <div class="cluster-detail-head">
       <div>
-        <div class="t-eyebrow" style="color:var(--blue);margin-bottom:4px">Career cluster</div>
+        <div class="t-eyebrow" style="margin-bottom:4px">Career cluster</div>
         <h2 id="cluster-detail-title" class="t-heading"></h2>
         <p id="cluster-detail-desc" class="t-body" style="color:var(--ts);margin-top:4px"></p>
       </div>
