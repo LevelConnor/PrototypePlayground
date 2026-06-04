@@ -185,10 +185,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 /* Selected-cluster detail section: header row + sub-cluster chips + list */
 .cluster-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
-#cluster-list{display:flex;flex-direction:column;gap:6px}
 
-/* 6px gap between career rows in the results list. */
-#slist{display:flex;flex-direction:column;gap:6px}
 .fc{background:var(--white);border:2px solid var(--mg);border-radius:var(--rf);padding:8px 18px;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .12s}
 .fc:hover{border-color:var(--blue)}
 .fc.active{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -292,7 +289,78 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 #print-footer{display:none;margin-top:32px;padding-top:16px;border-top:1px solid #BFDBFE;font-size:11px;color:#666;}
 #print-restore-url{font-size:11px;word-break:break-all;color:#333;margin-top:4px}
 @media(max-width:600px){main{padding:22px 14px 60px}.qs{gap:3px}.sb{width:28px;height:28px;font-size:11px}.sav-btns{flex-direction:column}.sav-btns .cta{width:100%;text-align:center}}
-</style>
+
+/* ─── Career card grid (editorial) ──────────────────────────────────────
+   Replaces the old .crow vertical list. Each card has a gradient image
+   bg, a soft dark overlay so white text stays readable, title + pills
+   bottom-left, save (♡) top-right.
+   Used by every list — Find My Career, cluster careers, Bright Outlook,
+   related-careers row inside the modal. */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.ccard{position:relative;aspect-ratio:1.05/1;border-radius:20px;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,#2A3960 0%,#5B4570 55%,#3A4A6B 100%);box-shadow:0 4px 16px rgba(10,15,46,.08);transition:transform .2s ease, box-shadow .2s ease}
+.ccard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(10,15,46,.16)}
+.ccard-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 0%,rgba(10,15,46,.45) 55%,rgba(10,15,46,.92) 100%);pointer-events:none}
+.ccard-body{position:absolute;left:18px;right:18px;bottom:18px;color:#fff}
+.ccard-title{font-size:18px;font-weight:900;line-height:1.2;color:#fff;margin:0 0 10px}
+.ccard-pills{display:flex;flex-wrap:wrap;gap:6px}
+.ccard-pill{padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;line-height:1.2;background:#7FE7B8;color:var(--ink);white-space:nowrap}
+.ccard-pill.bo{background:var(--yellow)}
+.ccard-pill.match{background:#FF96E3}
+.ccard-match{position:absolute;top:14px;left:14px;background:#FF96E3;color:var(--ink);padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+.ccard-bm{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s, background .15s}
+.ccard-bm:hover{background:#fff;transform:scale(1.05)}
+.ccard-bm.saved{background:var(--yellow);color:var(--ink)}
+
+/* ─── Career detail modal ───────────────────────────────────────────────
+   Centered overlay. Image-banner header with title + description + pills
+   on the gradient; white body below with pill tabs, big stat cards, and
+   soft section chips. */
+.cmodal-overlay{position:fixed;inset:0;background:rgba(10,15,46,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto}
+.cmodal-overlay.open{display:flex}
+.cmodal{background:var(--white);color:var(--navy);border-radius:24px;max-width:880px;width:100%;overflow:hidden;box-shadow:0 24px 60px rgba(10,15,46,.32);position:relative;animation:cmFadeIn .22s ease}
+@keyframes cmFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.cmodal-head{position:relative;min-height:300px;padding:22px 28px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#2A3960 0%,#5B4570 55%,#3A4A6B 100%)}
+.cmodal-head-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 0%,rgba(10,15,46,.55) 100%);pointer-events:none}
+.cmodal-head-top,.cmodal-head-bottom{position:relative;z-index:1}
+.cmodal-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cmodal-match{background:#FF96E3;color:var(--ink);padding:5px 12px;border-radius:var(--rf);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.cmodal-actions{display:flex;gap:8px;margin-left:auto}
+.cmodal-actions button{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .15s}
+.cmodal-actions button:hover{background:#fff}
+.cmodal-actions button.saved{background:var(--yellow);color:var(--ink)}
+.cmodal-title{font-size:30px;font-weight:900;color:#fff;line-height:1.1;margin:24px 0 10px}
+.cmodal-desc{font-size:15px;color:rgba(255,255,255,.88);line-height:1.5;margin:0 0 14px;max-width:60ch}
+.cmodal-head-pills{display:flex;flex-wrap:wrap;gap:6px}
+.cmodal-head-pills .ccard-pill{font-size:12px}
+
+.cmodal-body{padding:22px 28px 28px}
+.cmodal-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px}
+.cmodal-tab{background:transparent;border:none;padding:10px 18px;border-radius:var(--rf);font-size:14px;font-weight:700;color:var(--blue);cursor:pointer;transition:all .15s}
+.cmodal-tab:hover{background:var(--off)}
+.cmodal-tab.active{background:var(--blue);color:#fff}
+.cmodal-pane[hidden]{display:none}
+.cmodal-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.cmodal-stat{background:#7FE7B8;border-radius:18px;padding:22px 24px;color:var(--ink)}
+.cmodal-stat-label{font-size:14px;font-weight:700;margin-bottom:6px;opacity:.92}
+.cmodal-stat-value{font-size:28px;font-weight:900;line-height:1.1;margin-bottom:4px}
+.cmodal-stat-foot{font-size:13px;line-height:1.4;opacity:.85}
+.cmodal-section{margin-top:24px}
+.cmodal-section-title{font-size:16px;font-weight:700;color:var(--ts);margin-bottom:12px}
+.cmodal-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.cmodal-chip{background:var(--off);border:1px solid var(--mg);border-radius:var(--rmd);padding:12px 16px;font-size:14px;font-weight:600;color:var(--navy);line-height:1.4}
+.cmodal-footer{margin-top:24px;padding-top:18px;border-top:1px solid var(--mg);display:flex;justify-content:flex-end}
+.cmodal-footer a{color:var(--blue);font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.cmodal-footer a:hover{text-decoration:underline}
+
+@media (max-width:680px){
+  .cmodal{border-radius:0;min-height:100vh}
+  .cmodal-overlay{padding:0}
+  .cmodal-head{padding:18px 20px;min-height:260px}
+  .cmodal-body{padding:18px 20px 24px}
+  .cmodal-title{font-size:24px;margin-top:18px}
+  .cmodal-stats{grid-template-columns:1fr}
+  .cmodal-chips{grid-template-columns:1fr}
+}
 </head>
 <body>
 
@@ -497,6 +565,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 </div>
 
 </main>
+
+<!-- Career detail modal — populated by openLiveDetail. Hidden until used. -->
+<div class="cmodal-overlay" id="cmodal-overlay" data-cmodal-backdrop>
+  <div class="cmodal" id="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmodal-title"></div>
+</div>
 
 <footer style="text-align:center;padding:20px 16px 28px;font-size:11px;color:#888;">
   Career data provided by

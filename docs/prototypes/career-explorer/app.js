@@ -88,9 +88,9 @@ document.addEventListener('click', function(e) {
   if (!t.closest('.fb')) closeAllFbs();
 
   // Career cluster card — opens detail section
-  const ccard = t.closest('.cluster-card[data-cluster]');
-  if (ccard && ccard.dataset.cluster) {
-    openClusterDetail(ccard.dataset.cluster);
+  const clusCard = t.closest('.cluster-card[data-cluster]');
+  if (clusCard && clusCard.dataset.cluster) {
+    openClusterDetail(clusCard.dataset.cluster);
     return;
   }
 
@@ -112,32 +112,48 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // CAREER ROWS (always live now)
-  const crow = t.closest('.crow');
-  if (crow && crow.dataset.liveCode) {
-    const bm = t.closest('.bmbtn');
+  // Career card click — opens modal. Bookmark button stops propagation.
+  const ccard = t.closest('.ccard[data-live-code]');
+  if (ccard) {
+    const bm = t.closest('.ccard-bm');
     if (bm) {
       e.stopPropagation();
-      toggleLiveSave(crow.dataset.liveCode);
+      toggleLiveSave(ccard.dataset.liveCode);
       return;
     }
-    openLiveDetail(crow.dataset.liveCode, crow.dataset.prefix || 'sd');
+    openLiveDetail(ccard.dataset.liveCode, ccard.dataset.prefix || 'sd');
     return;
   }
 
-  // CAREER DETAIL TABS
-  const cdt = t.closest('.cdt');
-  if (cdt && cdt.dataset.panel) { switchDTab(cdt); return; }
+  // Modal close: X button or backdrop click
+  if (t.closest('[data-cmodal-close]')) { closeModal(); return; }
+  if (t.dataset && t.dataset.cmodalBackdrop !== undefined) { closeModal(); return; }
+  // (clicking inside .cmodal itself shouldn't close — closest('[data-cmodal-backdrop]')
+  // would also match the overlay container; restrict to the overlay element only)
 
-  // SAVE button inside drawer (live)
-  const cdbm = t.closest('.cdbm');
-  if (cdbm && cdbm.dataset.liveCode) { toggleLiveSave(cdbm.dataset.liveCode); return; }
+  // Modal save button
+  const msave = t.closest('.cmodal-save');
+  if (msave && msave.dataset.liveCode) { toggleLiveSave(msave.dataset.liveCode); return; }
 
-  // RELATED career click inside live (O*NET) drawer
+  // Modal tabs
+  const mtab = t.closest('.cmodal-tab[data-mtab]');
+  if (mtab) {
+    document.querySelectorAll('.cmodal-tab').forEach(b => b.classList.toggle('active', b === mtab));
+    document.querySelectorAll('.cmodal-pane').forEach(p => { p.hidden = (p.dataset.mpane !== mtab.dataset.mtab); });
+    return;
+  }
+
+  // Related-career card click inside the modal — open that career.
   const liveRel = t.closest('[data-live-rel]');
-  if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, liveRel.dataset.prefix || 'sd'); return; }
+  if (liveRel) { openLiveDetail(liveRel.dataset.liveRel, 'sd'); return; }
+});
 
-
+// Close modal on Esc
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const o = document.getElementById('cmodal-overlay');
+    if (o && o.classList.contains('open')) closeModal();
+  }
 });
 
 // Search input — use input event
@@ -566,8 +582,8 @@ function setFbValue(name, text, hasValue) {
 // rows whose cached values don't match. Cards without cached data stay
 // visible (we never penalize a card for missing data).
 function applyClientFilters() {
-  document.querySelectorAll('#slist .crow[data-live-code], #cluster-list .crow[data-live-code]').forEach(row => {
-    const code = row.dataset.liveCode;
+  document.querySelectorAll('#slist .ccard[data-live-code], #cluster-list .ccard[data-live-code]').forEach(card => {
+    const code = card.dataset.liveCode;
     const cached = detailCache[code] || {};
     let hide = false;
     if (minSalary > 0) {
@@ -578,10 +594,7 @@ function applyClientFilters() {
       const z = cached.jobZone;
       if (z && z < eduZoneMin) hide = true;
     }
-    row.style.display = hide ? 'none' : '';
-    // Also hide the inline drawer if present
-    const cdw = document.getElementById(row.id.replace('crow-', 'cdw-'));
-    if (cdw) cdw.style.display = hide ? 'none' : '';
+    card.style.display = hide ? 'none' : '';
   });
 }
 
@@ -792,35 +805,59 @@ function buildCardBadges(career, detail) {
   ].filter(Boolean).join('');
 }
 
+// Six gradients used as card backgrounds. Picked deterministically from
+// the O*NET code so each career consistently lands on the same one — gives
+// the grid visual variety without an external image dependency.
+const CARD_GRADIENTS = [
+  'linear-gradient(135deg,#2A3960 0%,#5B4570 55%,#3A4A6B 100%)',
+  'linear-gradient(135deg,#3D2E5B 0%,#5C3F71 55%,#2A3960 100%)',
+  'linear-gradient(135deg,#1A2640 0%,#4B3A5F 55%,#2D3A5C 100%)',
+  'linear-gradient(135deg,#1F3D5C 0%,#4A4B7E 55%,#2C2E55 100%)',
+  'linear-gradient(135deg,#2E2C56 0%,#5F4476 55%,#3B5570 100%)',
+  'linear-gradient(135deg,#262E4E 0%,#5C3F5F 55%,#3B5A77 100%)',
+];
+function pickGradient(code) {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return CARD_GRADIENTS[h % CARD_GRADIENTS.length];
+}
+
+// Markup for a single career grid card. Title + bottom-aligned salary +
+// Bright Outlook pills, top-right ♡, optional Great Match badge top-left.
+function buildLiveCard(c, cached, code, prefix, isSaved, isGreatMatch) {
+  const tags = (cached && cached.tags) || c.tags || {};
+  const sal = cached && cached.salary && cached.salary.median;
+  const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
+  const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+  return `<div class="ccard" data-live-code="${code}" data-prefix="${prefix||'sd'}" style="background:${pickGradient(code)}">
+    <div class="ccard-overlay"></div>
+    ${isGreatMatch ? `<div class="ccard-match">👤 Great Match</div>` : ''}
+    <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${isSaved?'♥':'♡'}</button>
+    <div class="ccard-body">
+      <h3 class="ccard-title">${c.title}</h3>
+      <div class="ccard-pills">${salPill}${boPill}</div>
+    </div>
+  </div>`;
+}
+
 function renderLiveList(list, listId, prefix) {
   const el = document.getElementById(listId);
   if (!el) return;
+  el.classList.add('cgrid');
   if (!list.length) {
+    el.classList.remove('cgrid');
     el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ts);font-size:15px">No careers found. Try a different keyword.</div>`;
     return;
   }
-  el.innerHTML = list.map(c => {
-    const idx = c.code; // use code as key for live results
-    const isSaved = saved.has('live-'+idx);
-    const cached = detailCache[idx];
-    const badges = buildCardBadges(c, cached);
-
-    return `<div class="crow" data-live-code="${idx}" data-prefix="${prefix}" id="crow-${prefix}-live-${idx.replace(/\./g,'_')}">
-      <div class="crl">
-        <h3>${c.title}</h3>
-        <div class="crm">${badges || '<span class="mb">Loading details…</span>'}</div>
-      </div>
-      <div class="crr">
-        <button class="bmbtn${isSaved?' saved':''}" data-live-code="${idx}">${isSaved?'♥':'♡'}</button>
-        <span class="arr" id="arr-${prefix}-${idx.replace(/\./g,'_')}">›</span>
-      </div>
-    </div>
-    <div class="cdw" id="cdw-${prefix}-${idx.replace(/\./g,'_')}"></div>`;
+  el.innerHTML = list.map((c, i) => {
+    const code = c.code;
+    const isSaved = saved.has('live-'+code);
+    const cached = detailCache[code] || {};
+    // Mark the top card of an assessment-match list as Great Match.
+    const isGreatMatch = (i === 0 && lastResults && !!(c.tags && c.tags.brightOutlook));
+    return buildLiveCard(c, cached, code, prefix, isSaved, isGreatMatch);
   }).join('');
 
-  // Kick off background fetch of salary + outlook for any not-yet-cached
-  // careers, then patch their badges in place. This makes salary appear on
-  // collapsed cards without requiring the user to expand each one first.
   prefetchSummaries(list, prefix);
 }
 
@@ -859,12 +896,17 @@ function prefetchSummaries(list, prefix) {
           _partial: true,
         };
       }
-      // Patch the card's badge row in place
-      const safe = c.code.replace(/\./g, '_');
-      const crow = document.getElementById('crow-' + prefix + '-live-' + safe);
-      if (!crow) return;
-      const bm = crow.querySelector('.crm');
-      if (bm) bm.innerHTML = buildCardBadges(c, detailCache[c.code]);
+      // Patch the card's pills row in place — find all matching cards by
+      // data attribute (the same career may render in multiple lists).
+      document.querySelectorAll(`.ccard[data-live-code="${c.code}"]`).forEach(card => {
+        const pills = card.querySelector('.ccard-pills');
+        if (!pills) return;
+        const sal = detailCache[c.code].salary && detailCache[c.code].salary.median;
+        const tags = detailCache[c.code].tags || {};
+        const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
+        const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+        pills.innerHTML = salPill + boPill;
+      });
       // Re-apply Salary/Education filters now that this card has data.
       applyClientFilters();
     }).catch(() => {
@@ -941,46 +983,53 @@ function enrichRelatedCards(relatedList) {
 }
 
 // Fetch detail for a live result, cache it, then build the drawer
+// Currently-open career code (for the modal). Used by close + tab handlers.
+let openModalCode = null;
+
+function openModal() {
+  const o = document.getElementById('cmodal-overlay');
+  if (!o) return;
+  o.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  const o = document.getElementById('cmodal-overlay');
+  if (!o) return;
+  o.classList.remove('open');
+  document.body.style.overflow = '';
+  openModalCode = null;
+}
+
 async function openLiveDetail(code, prefix) {
-  const safe = code.replace(/\./g, '_');
-  const wrap = document.getElementById('cdw-'+prefix+'-'+safe);
-  const crow = document.getElementById('crow-'+prefix+'-live-'+safe);
-  const arr  = document.getElementById('arr-'+prefix+'-'+safe);
-  if (!wrap || !crow) return;
-
-  const isOpen = wrap.classList.contains('open');
-
-  // Close any open drawers in this list
-  document.querySelectorAll('[id^="cdw-'+prefix+'-"].open').forEach(el => {
-    el.classList.remove('open');
-    const ci = el.id.replace('cdw-'+prefix+'-','');
-    const cr = document.getElementById('crow-'+prefix+'-live-'+ci);
-    const ar = document.getElementById('arr-'+prefix+'-'+ci);
-    if (cr) cr.classList.remove('open');
-    if (ar) ar.classList.remove('open');
-  });
-
-  if (isOpen) return;
-
-  crow.classList.add('open');
-  arr.classList.add('open');
-  wrap.classList.add('open');
+  openModalCode = code;
+  const modal = document.getElementById('cmodal');
+  if (!modal) return;
+  openModal();
 
   // If a full (non-partial) detail is already cached, render immediately.
-  // Partial entries (written by prefetchSummaries / enrichRelatedCards) hold
-  // only salary + outlook; we still need to fetch the rest.
   if (detailCache[code] && !detailCache[code]._partial) {
-    wrap.innerHTML = buildLiveDetail(detailCache[code], code, prefix);
-    setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+    modal.innerHTML = buildModalDetail(detailCache[code], code);
+    modal.scrollTop = 0;
+    enrichRelatedCards(detailCache[code].related || []);
     return;
   }
 
-  // Show skeleton while loading
-  wrap.innerHTML = `<div class="cdb" style="display:flex;flex-direction:column;gap:12px">
-    ${[80,55,95,65,70].map(w=>`<div style="height:12px;width:${w}%;background:var(--lg);border-radius:4px;animation:pulse 1.2s ease-in-out infinite"></div>`).join('')}
-    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
-  </div>`;
-  setTimeout(() => wrap.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+  // Skeleton while loading
+  modal.innerHTML = `
+    <div class="cmodal-head" style="background:${pickGradient(code)}">
+      <div class="cmodal-head-overlay"></div>
+      <div class="cmodal-head-top">
+        <div></div>
+        <div class="cmodal-actions">
+          <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="cmodal-body" style="display:flex;flex-direction:column;gap:12px">
+      ${[80,55,95,65,70].map(w=>`<div style="height:14px;width:${w}%;background:var(--lg);border-radius:4px;animation:pulse 1.2s ease-in-out infinite"></div>`).join('')}
+      <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}</style>
+    </div>`;
+  modal.scrollTop = 0;
 
   try {
     // Fetch live data from O*NET in parallel: basic info, outlook+wages,
@@ -1046,152 +1095,156 @@ async function openLiveDetail(code, prefix) {
     };
     detailCache[code] = detail;
 
-    // Update the card badges now that we have real data
-    const crow2 = document.getElementById('crow-'+prefix+'-live-'+safe);
-    if (crow2) {
-      const bm = crow2.querySelector('.crm');
-      if (bm) bm.innerHTML = buildCardBadges({ code, title: detail.title, tags: detail.tags }, detail);
+    // Update the card pills now that we have real data
+    document.querySelectorAll(`.ccard[data-live-code="${code}"]`).forEach(card => {
+      const pills = card.querySelector('.ccard-pills');
+      if (!pills) return;
+      const sal = detail.salary && detail.salary.median;
+      const tags = detail.tags || {};
+      const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
+      const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+      pills.innerHTML = salPill + boPill;
+    });
+
+    // Only paint into the modal if it's still showing THIS career (user
+    // may have clicked through to a different one while we were fetching).
+    if (openModalCode === code) {
+      modal.innerHTML = buildModalDetail(detail, code);
+      modal.scrollTop = 0;
+      enrichRelatedCards(relatedList);
     }
-
-    wrap.innerHTML = buildLiveDetail(detail, code, prefix);
-
-    // Background-enrich related-career cards with salary + outlook so each
-    // card in the horizontal scroll row shows useful info, not just a title.
-    enrichRelatedCards(relatedList);
 
   } catch (err) {
     console.error('Detail error:', err);
-    wrap.innerHTML = `<div class="cdb"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
+    if (openModalCode === code) {
+      modal.innerHTML = `<div class="cmodal-head" style="background:${pickGradient(code)}"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
+    }
   }
 }
 
-// Build the unified detail drawer — used for every career. Sections that
-// don't have data simply don't render, so the same template gracefully
-// degrades for occupations where O*NET doesn't expose a given field.
-function buildLiveDetail(d, code, prefix) {
-  const pid = prefix + '-' + code.replace(/\./g,'_');
+// Build the career detail modal content. Editorial layout: gradient
+// banner header with title/description/pills, then pill tabs with
+// content panes (overview / income / education / related).
+function buildModalDetail(d, code) {
   const isSaved = saved.has('live-' + code);
   const sal = d.salary  || {};
   const out = d.outlook || {};
   const eb  = d.eduBreakdown || [];
-  const pw  = d.pathways || [];
-  const pr  = d.prepare  || [];
   const tk  = d.tasks    || [];
-  const h   = d.hiring   || {};
   const slo = sal.low  || 0;
   const shi = sal.high || 0;
-  const saveBtn = `<button class="cdbm${isSaved?' saved':''}" data-live-code="${code}">${isSaved?'♥ Saved':'♡ Save this Career'}</button>`;
-  const footer  = `<div class="cdf">${saveBtn}<a class="opill" href="https://www.onetonline.org/link/summary/${code}" target="_blank">View on O*NET →</a></div>`;
+  const salPill = sal.median ? `<span class="ccard-pill">$${sal.median.toLocaleString()}/yr</span>` : '';
+  const boPill  = d.tags?.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+  const isGreatMatch = lastResults && !!d.tags?.brightOutlook;
 
-  // Tabs — "Ways to Prepare" only shows when local curated content provides it.
-  const tabs = [
-    `<button class="cdt active" data-panel="ov-${pid}">Overview</button>`,
-    `<button class="cdt" data-panel="ih-${pid}">Income &amp; Outlook</button>`,
-    `<button class="cdt" data-panel="ed-${pid}">Education</button>`,
-    pr.length ? `<button class="cdt" data-panel="wp-${pid}">Ways to Prepare</button>` : '',
-    `<button class="cdt" data-panel="rc-${pid}">Related</button>`,
-  ].filter(Boolean).join('');
-
-  // Secondary tag chips in OVERVIEW. Bright Outlook intentionally omitted —
-  // it's already conveyed by the card header pill + Job Growth value.
-  const tags = [
-    d.tags?.apprenticeship ? `<span class="ctg">🔨 Apprenticeship Available</span>` : '',
-    d.tags?.stem           ? `<span class="ctg">🔬 STEM</span>`                    : '',
-    d.tags?.green          ? `<span class="ctg">🌱 Green Economy</span>`           : ''
-  ].filter(Boolean).join('');
-
-  return `<div class="cdn">${tabs}</div>
-  <div class="cdb">
-
-  <!-- OVERVIEW -->
-  <div class="cdp active" id="ov-${pid}">
-    <div class="csg">
-      ${sal.median ? `<div class="csb"><div class="csl">Median Salary</div><div class="csv">$${sal.median.toLocaleString()}</div><div class="css2">per year</div></div>` : ''}
-      ${out.growth ? `<div class="csb"><div class="csl">Job Growth</div><div class="csv">${out.growth}</div>${out.descriptor ? `<div class="css2">${out.descriptor}</div>` : ''}</div>` : ''}
-      ${h.openings ? `<div class="csb"><div class="csl">Annual Openings</div><div class="csv" style="font-size:15px">${h.openings}</div><div class="css2">nationally</div></div>` : ''}
-      ${d.cluster ? `<div class="csb"><div class="csl">Career Cluster</div><div class="csv" style="font-size:12px;line-height:1.3">${d.cluster}</div></div>` : ''}
+  return `<div class="cmodal-head" style="background:${pickGradient(code)}">
+    <div class="cmodal-head-overlay"></div>
+    <div class="cmodal-head-top">
+      ${isGreatMatch ? `<div class="cmodal-match">👤 Great Match</div>` : '<div></div>'}
+      <div class="cmodal-actions">
+        <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${isSaved?'♥':'♡'}</button>
+        <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
+      </div>
     </div>
-    ${tags ? `<div class="ctgs" style="margin-bottom:16px">${tags}</div>` : ''}
-    ${d.description ? `<p style="font-size:15px;color:var(--navy);line-height:1.75;margin-bottom:16px">${d.description}</p>` : ''}
-    ${d.sampleTitles?.length ? `<div class="csh">Also called</div><div class="ctgs" style="margin-bottom:16px">${d.sampleTitles.slice(0,6).map(t=>`<span class="ctg">${t}</span>`).join('')}</div>` : ''}
-    ${tk.length ? `<div class="csh">Common Tasks</div><ul class="ctl">${tk.slice(0,8).map(t=>`<li><span class="cta2">→</span>${t}</li>`).join('')}</ul>` : ''}
-    ${footer}
+    <div class="cmodal-head-bottom">
+      <h2 class="cmodal-title" id="cmodal-title">${d.title || code}</h2>
+      ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
+      <div class="cmodal-head-pills">${salPill}${boPill}</div>
+    </div>
   </div>
+  <div class="cmodal-body">
+    <div class="cmodal-tabs">
+      <button class="cmodal-tab active" data-mtab="ov">Overview</button>
+      <button class="cmodal-tab" data-mtab="ih">Income &amp; Outlook</button>
+      <button class="cmodal-tab" data-mtab="ed">Education</button>
+      <button class="cmodal-tab" data-mtab="rc">Related Careers</button>
+    </div>
 
-  <!-- INCOME & OUTLOOK -->
-  <div class="cdp" id="ih-${pid}">
-    ${sal.median ? `
-    <div class="csh" style="margin-top:0">How much do ${d.title}s earn yearly?</div>
-    <p style="font-size:15px;color:var(--navy);margin-bottom:14px;line-height:1.6">Ten percent earned less than $${slo.toLocaleString()} and ten percent earned more than $${shi.toLocaleString()}.</p>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-      <thead><tr style="background:var(--lg)">
-        <th style="text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts)">Income Percentile</th>
-        <th style="text-align:right;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts)">Income</th>
-      </tr></thead>
-      <tbody>
-        <tr style="border-bottom:1px solid var(--mg)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Low (10%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${slo.toLocaleString()}</td></tr>
-        <tr style="border-bottom:1px solid var(--mg);background:var(--off)"><td style="padding:13px 14px;font-size:15px;color:var(--navy);">Median (50%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--navy)">$${sal.median.toLocaleString()}</td></tr>
-        <tr><td style="padding:13px 14px;font-size:15px;color:var(--navy);">High (90%)</td><td style="padding:13px 14px;text-align:right;font-size:15px;font-weight:900;color:var(--blue)">$${shi.toLocaleString()}</td></tr>
-      </tbody>
-    </table>` : '<p style="color:var(--ts);font-size:15px">Salary data not available.</p>'}
-    ${out.growth ? `<div style="background:var(--off);border-radius:var(--rmd);padding:14px 16px;margin-bottom:16px"><div style="font-size:12px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Projected Growth Rate</div><div style="font-size:20px;font-weight:900;color:var(--blue)">${out.growth}${out.descriptor ? ` <span style="font-size:15px;font-weight:400;color:var(--ts)">${out.descriptor}</span>` : ''}</div></div>` : ''}
-    ${h.ind?.length ? `<div class="csh">Top Hiring Industries</div><div class="ctgs" style="margin-bottom:14px">${h.ind.map(i=>`<span class="ctg">${i}</span>`).join('')}</div>` : ''}
-    ${h.states?.length ? `<div class="csh">Top Hiring States</div><div class="ctgs">${h.states.map(s=>`<span class="ctg">${s}</span>`).join('')}</div>` : ''}
-    ${footer}
-  </div>
+    <!-- OVERVIEW -->
+    <div class="cmodal-pane" data-mpane="ov">
+      ${(sal.median || out.growth) ? `<div class="cmodal-stats">
+        ${sal.median ? `<div class="cmodal-stat">
+          <div class="cmodal-stat-label">Median Salary</div>
+          <div class="cmodal-stat-value">$${sal.median.toLocaleString()}</div>
+          <div class="cmodal-stat-foot">per year</div>
+        </div>` : ''}
+        ${out.growth ? `<div class="cmodal-stat">
+          <div class="cmodal-stat-label">Job Growth</div>
+          <div class="cmodal-stat-value">${out.growth}</div>
+          <div class="cmodal-stat-foot">${out.descriptor || ''}</div>
+        </div>` : ''}
+      </div>` : ''}
 
-  <!-- EDUCATION -->
-  <div class="cdp" id="ed-${pid}">
-    ${pw.length ? `<div class="csh" style="margin-top:0">Education Pathways</div><div class="pwl" style="margin-bottom:20px">${pw.map(p=>`<div class="pwi"><div class="pwn">${p.lbl||p.deg}</div><div class="pwd">${p.desc}</div></div>`).join('')}</div>` : ''}
-    ${eb.length ? `<div class="csh">What education level do ${d.title}s have?</div>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-      <thead><tr style="background:var(--lg)">
-        <th style="text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts)">Education Level</th>
-        <th style="text-align:right;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts)">%</th>
-      </tr></thead>
-      <tbody>${eb.map((e,i)=>`
-        <tr style="border-bottom:1px solid var(--mg);${i%2===1?'background:var(--off)':''}">
-          <td style="padding:11px 14px;font-size:15px;color:var(--navy);">${e.level}</td>
-          <td style="padding:11px 14px;text-align:right">
-            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px">
-              <div style="width:80px;height:6px;background:var(--lg);border-radius:3px;overflow:hidden"><div style="width:${Math.min(e.pct,100)}%;height:100%;background:var(--yellow);border-radius:3px"></div></div>
-              <span style="font-size:15px;font-weight:900;color:var(--navy);min-width:42px;text-align:right">${(e.pct||0).toFixed(1)}%</span>
+      ${d.sampleTitles?.length ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Also Called</div>
+        <div class="cmodal-chips">
+          ${d.sampleTitles.slice(0,6).map(t=>`<div class="cmodal-chip">${t}</div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${tk.length ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Common Tasks</div>
+        <div class="cmodal-chips">
+          ${tk.slice(0,8).map(t=>`<div class="cmodal-chip">${t}</div>`).join('')}
+        </div>
+      </div>` : ''}
+    </div>
+
+    <!-- INCOME & OUTLOOK -->
+    <div class="cmodal-pane" data-mpane="ih" hidden>
+      ${sal.median ? `
+        <div class="cmodal-section-title" style="margin-bottom:14px">How much do ${d.title}s earn yearly?</div>
+        <p style="font-size:15px;color:var(--navy);margin:0 0 18px;line-height:1.55">Ten percent earned less than $${slo.toLocaleString()} and ten percent earned more than $${shi.toLocaleString()}.</p>
+        <div class="cmodal-stats" style="margin-bottom:18px">
+          <div class="cmodal-stat" style="background:var(--off);color:var(--navy)"><div class="cmodal-stat-label">Low (10%)</div><div class="cmodal-stat-value">$${slo.toLocaleString()}</div></div>
+          <div class="cmodal-stat"><div class="cmodal-stat-label">Median (50%)</div><div class="cmodal-stat-value">$${sal.median.toLocaleString()}</div></div>
+          <div class="cmodal-stat" style="background:var(--off);color:var(--navy)"><div class="cmodal-stat-label">High (90%)</div><div class="cmodal-stat-value">$${shi.toLocaleString()}</div></div>
+        </div>
+      ` : '<p style="color:var(--ts);font-size:15px">Salary data not available.</p>'}
+      ${out.growth ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Projected Growth</div>
+        <div class="cmodal-stat" style="max-width:380px"><div class="cmodal-stat-label">Outlook</div><div class="cmodal-stat-value">${out.growth}</div>${out.descriptor ? `<div class="cmodal-stat-foot">${out.descriptor}</div>` : ''}</div>
+      </div>` : ''}
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="cmodal-pane" data-mpane="ed" hidden>
+      ${eb.length ? `
+        <div class="cmodal-section-title" style="margin-bottom:14px">What education level do ${d.title}s have?</div>
+        <div class="cmodal-chips" style="grid-template-columns:1fr">
+          ${eb.map(e=>`<div class="cmodal-chip" style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+            <span>${e.level}</span>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+              <div style="width:120px;height:6px;background:var(--lg);border-radius:3px;overflow:hidden"><div style="width:${Math.min(e.pct||0,100)}%;height:100%;background:var(--blue);border-radius:3px"></div></div>
+              <span style="font-size:13px;font-weight:900;min-width:48px;text-align:right">${(e.pct||0).toFixed(1)}%</span>
             </div>
-          </td>
-        </tr>`).join('')}
-      </tbody>
-    </table>` : ''}
-    ${d.tags?.apprenticeship ? `
-    <div style="background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.3);border-radius:var(--rmd);padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:6px">🔨 Registered Apprenticeship Available</div>
-      <p style="font-size:12px;color:var(--navy);line-height:1.5;margin-bottom:10px">A registered apprenticeship program exists for this career — earn while you learn, no college debt required.</p>
-      <a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${code}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--navy);border:none;border-radius:var(--rf);padding:8px 16px;font-size:11px;font-weight:900;text-transform:uppercase;text-decoration:none">Find Apprenticeships →</a>
-    </div>` : ''}
-    ${footer}
-  </div>
-
-  ${pr.length ? `<!-- WAYS TO PREPARE -->
-  <div class="cdp" id="wp-${pid}">
-    <div class="csh" style="margin-top:0">How to prepare for a career as a ${d.title}</div>
-    <p style="font-size:15px;color:var(--navy);margin-bottom:16px;line-height:1.6">You can start building toward this career right now — in high school.</p>
-    ${pr.map(s=>`<div style="background:var(--off);border-radius:var(--rmd);padding:16px;margin-bottom:12px;border-left:3px solid var(--blue)"><div style="font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--blue);margin-bottom:10px">${s.type}</div><ul style="list-style:none;display:flex;flex-direction:column;gap:7px">${(s.items||[]).map(item=>`<li style="display:flex;gap:10px;font-size:15px;color:var(--navy);line-height:1.5"><span style="color:var(--blue);flex-shrink:0">✓</span>${item}</li>`).join('')}</ul></div>`).join('')}
-    ${footer}
-  </div>` : ''}
-
-  <!-- RELATED -->
-  <div class="cdp" id="rc-${pid}">
-    <div class="csh" style="margin-top:0">Related Careers</div>
-    <p style="font-size:15px;color:var(--navy);margin-bottom:16px;line-height:1.6">These careers share similar skills, interests, or education pathways. Scroll to see more.</p>
-    <div class="rcrow">
-      ${(d.related||[]).map(r=>`
-        <div class="rcard" data-live-rel="${r.code}" data-prefix="${prefix}">
-          <div class="rcard-t">${r.title}</div>
-          <div class="rcard-m"></div>
-        </div>`).join('')}
+          </div>`).join('')}
+        </div>
+      ` : '<p style="color:var(--ts);font-size:15px">Education data not available.</p>'}
+      ${d.tags?.apprenticeship ? `<div class="cmodal-section">
+        <div class="cmodal-chip" style="background:rgba(255,216,16,.14);border-color:rgba(255,216,16,.4);display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+          <div style="font-weight:900">🔨 Registered Apprenticeship Available</div>
+          <div style="font-size:13px;color:var(--navy);line-height:1.5">Earn while you learn — no college debt required.</div>
+          <a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${code}" target="_blank" class="cta ylw" style="font-size:11px;padding:7px 14px;text-decoration:none">Find Apprenticeships →</a>
+        </div>
+      </div>` : ''}
     </div>
-    ${footer}
-  </div>
 
+    <!-- RELATED -->
+    <div class="cmodal-pane" data-mpane="rc" hidden>
+      <p style="font-size:15px;color:var(--ts);margin:0 0 16px">These careers share similar skills, interests, or education pathways.</p>
+      <div class="rcrow">
+        ${(d.related||[]).map(r=>`
+          <div class="rcard" data-live-rel="${r.code}" data-prefix="sd">
+            <div class="rcard-t">${r.title}</div>
+            <div class="rcard-m"></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="cmodal-footer">
+      <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" rel="noopener">View on O*NET →</a>
+    </div>
   </div>`;
 }
 
@@ -1231,13 +1284,12 @@ function toggleLiveSave(code) {
   }
   document.getElementById('tc').textContent = saved.size;
   if (document.getElementById('tpn').classList.contains('open')) renderTray();
-  // Sync all UI for this code (any visible card + any open drawer).
-  const safe = code.replace(/\./g, '_');
-  document.querySelectorAll(`.cdbm[data-live-code="${code}"]`).forEach(b => {
+  // Sync all UI for this code: grid card heart + modal save button.
+  document.querySelectorAll(`.ccard-bm[data-live-code="${code}"]`).forEach(b => {
     b.classList.toggle('saved', saved.has(key));
-    b.textContent = saved.has(key) ? '♥ Saved' : '♡ Save this Career';
+    b.textContent = saved.has(key) ? '♥' : '♡';
   });
-  document.querySelectorAll(`.bmbtn[data-live-code="${code}"]`).forEach(b => {
+  document.querySelectorAll(`.cmodal-save[data-live-code="${code}"]`).forEach(b => {
     b.classList.toggle('saved', saved.has(key));
     b.textContent = saved.has(key) ? '♥' : '♡';
   });
