@@ -48,7 +48,7 @@ document.addEventListener('click', function(e) {
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
   // Interest profile expand/collapse (top 3 ↔ all 6)
-  if (t.closest('#ip-toggle')) { toggleInterestProfile(); return; }
+  if (t.closest('#ip-switch')) { toggleIpShowTop3(); return; }
 
   // Filter-bar dropdown toggle (Work style / Education / Salary buttons)
   const fbBtn = t.closest('.fb-btn');
@@ -183,7 +183,9 @@ let eduZoneMin = 0;             // 0 = Any. Filters cards client-side by O*NET j
 // pale steel-blue and pale yellow (designed against a dark background) and
 // were illegible on white. Replaced with deeper, well-saturated tones that
 // keep the same semantic associations.
-const BC = {R:'#0083FF',I:'#F4845F',A:'#9B72CF',S:'#E5A800',E:'#4F6F8A',C:'#9B8E2E'};
+// Vivid RIASEC palette for the quiz-results cards (matches the design spec).
+// All chosen so dark navy text reads cleanly on them.
+const BC = {R:'#0083FF',I:'#FF7A1A',A:'#F49FFB',S:'#FFD810',E:'#A78BFA',C:'#68F4B8'};
 const RI = {
   R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, machines, and physical tasks.',bg:'#0A0F2E'},
   I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, science, and solving complex problems.',bg:'#1D0E32'},
@@ -277,47 +279,91 @@ function syncProfileUI() {
 // Each row carries letter avatar + name + descriptor + bar + numeric score,
 // sorted high → low, with the top 3 emphasized and the remaining muted.
 // Tracks whether the user has expanded the interest profile to show all 6
-// rows. Defaults to collapsed (top 3 only) on first render.
-let interestProfileExpanded = false;
+// Toggle state: false = show all 6 (default), true = show top 3 with
+// heights proportional to the user's RIASEC scores.
+let ipShowTop3 = false;
+// Stash the sorted scores so the toggle handler can recompute heights
+// without re-fetching anything.
+let ipSorted = null;
 
 function renderInterestProfile(sorted) {
   const el = document.getElementById('interest-profile');
   if (!el) return;
-  // Bar width is the absolute share of the 5-point scale (so a 4.6 reads as
-  // 92%) — meaningful even when the user's "lowest" score is still high.
+  ipSorted = sorted;
+
   const rowFor = ([k, v], i) => {
-    const pct = Math.max(4, Math.min(100, Math.round((v / 5) * 100)));
-    const isRest = i >= 3;
-    return `<div class="ip-row${isRest?' is-rest':''}">
-      <div class="ip-avatar" style="background:${BC[k]}">${k}</div>
-      <div class="ip-body">
-        <div class="ip-name">${RI[k].short}<span class="ip-tag">${RI[k].name.split('—')[1].trim()}</span></div>
-        <div class="ip-desc">${RI[k].desc}</div>
-        <div class="ip-bar"><div class="ip-fill" style="width:${pct}%;background:${BC[k]}"></div></div>
+    const tagline = RI[k].name.split('—')[1].trim();
+    return `<div class="ip-row" data-pos="${i}" style="background:${BC[k]}">
+      <div class="ip-row-top">
+        <div class="ip-row-avatar">${k}</div>
+        <span class="ip-row-name">${RI[k].short}</span>
+        <span class="ip-row-score">${Math.round(v)}</span>
       </div>
+      <div class="ip-row-tag">${tagline}</div>
+      <div class="ip-row-desc">${RI[k].desc}</div>
     </div>`;
   };
-  const top3 = sorted.slice(0,3).map(rowFor).join('');
-  const rest = sorted.slice(3).map((entry, i) => rowFor(entry, i + 3)).join('');
-  const expanded = interestProfileExpanded;
+
   el.innerHTML = `
-    <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
-    <div class="ip-rows">
-      ${top3}
-      ${rest ? `<div class="ip-more-wrap" id="ip-more-wrap"${expanded?' data-expanded':''}>${rest}</div>` : ''}
-    </div>
-    ${rest ? `<div class="ip-toggle-wrap">
-      <button class="ip-toggle" id="ip-toggle" aria-expanded="${expanded}">
-        <span class="ip-toggle-text">${expanded ? 'Show top 3 only' : 'Show all 6 work styles'}</span>
-        <span class="ip-toggle-chevron" aria-hidden="true">${expanded ? '▴' : '▾'}</span>
-      </button>
-    </div>` : ''}
-    <p class="ip-footnote">Your interests and career goals can change over time. Retake the assessment anytime.</p>`;
+    <div class="ip-layout">
+      <div class="ip-header">
+        <h2 class="ip-title">Your Quiz Results</h2>
+        <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
+      </div>
+      <div class="ip-results">
+        <div class="ip-stack" id="ip-stack">
+          ${sorted.map(rowFor).join('')}
+        </div>
+        <div class="ip-toggle-row">
+          <span>Only show top 3</span>
+          <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowTop3}">
+            <span class="ip-switch-dot"></span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  applyIpHeights();
 }
 
-function toggleInterestProfile() {
-  interestProfileExpanded = !interestProfileExpanded;
-  syncProfileUI();
+// Compute + apply heights to each .ip-row based on the current toggle state.
+// Default: all 6 cards at the same compact height. Top-3 mode: cards 1-3
+// scale to their relative scores; cards 4-6 collapse to height:0.
+function applyIpHeights() {
+  if (!ipSorted) return;
+  const rows = document.querySelectorAll('#ip-stack .ip-row');
+  if (!rows.length) return;
+
+  if (!ipShowTop3) {
+    // All-6 mode: equal compact rows.
+    rows.forEach(r => {
+      r.style.height = '76px';
+      r.classList.remove('ip-row--hidden');
+    });
+    return;
+  }
+  // Top-3 mode: proportional heights, hide 4-6.
+  const topScores = ipSorted.slice(0, 3).map(([, v]) => Math.max(v, 0.5));
+  const sum = topScores.reduce((a, b) => a + b, 0) || 1;
+  // Total stack height for the 3 visible cards. Keeps it visually balanced.
+  const totalPx = 420;
+  rows.forEach((r, i) => {
+    if (i < 3) {
+      const h = Math.max(72, Math.round((topScores[i] / sum) * totalPx));
+      r.style.height = h + 'px';
+      r.classList.remove('ip-row--hidden');
+    } else {
+      r.style.height = '0px';
+      r.classList.add('ip-row--hidden');
+    }
+  });
+}
+
+function toggleIpShowTop3() {
+  ipShowTop3 = !ipShowTop3;
+  const sw = document.getElementById('ip-switch');
+  if (sw) sw.setAttribute('aria-pressed', String(ipShowTop3));
+  applyIpHeights();
 }
 
 // Fetch O*NET careers matching the user's top-3 Holland code. Falls back to

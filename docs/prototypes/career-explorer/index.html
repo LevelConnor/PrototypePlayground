@@ -115,34 +115,37 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Replaces 4 redundant elements (top-3 ribbon, bubble chart,
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
-.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:28px 28px 24px;margin:0 0 24px}
-.ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin-bottom:20px}
-.ip-rows{display:flex;flex-direction:column}
-.ip-row{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--mg);transition:opacity .2s}
-.ip-row:last-child{border-bottom:none}
-.ip-row.is-rest{opacity:.55}
-.ip-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:900;letter-spacing:.02em;flex-shrink:0}
-.ip-body{min-width:0}
-.ip-name{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);line-height:1.2}
-.ip-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ts);margin-left:6px}
-.ip-desc{font-size:12px;color:var(--ts);line-height:1.45;margin:3px 0 8px}
-.ip-bar{height:6px;background:var(--off);border-radius:var(--rf);overflow:hidden}
-.ip-fill{height:100%;border-radius:var(--rf);transition:width .6s ease}
-.ip-divider{display:flex;align-items:center;gap:10px;padding:14px 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ts)}
-.ip-divider::before,.ip-divider::after{content:'';flex:1;height:1px;background:var(--mg)}
-/* Expand/collapse for rows 4-6. Hidden by default; shown when data-expanded
-   attribute is on the wrapper (toggled in JS). */
-.ip-more-wrap{display:none}
-.ip-more-wrap[data-expanded]{display:block}
-.ip-toggle-wrap{display:flex;justify-content:center;margin-top:6px}
-.ip-toggle{background:none;border:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);cursor:pointer;border-radius:var(--rf);transition:background .15s}
-.ip-toggle:hover{background:var(--off)}
-.ip-toggle-chevron{font-size:11px;line-height:1;transform:translateY(-1px)}
-.ip-footnote{font-size:12px;color:var(--ts);text-align:center;margin-top:18px;line-height:1.5}
-@media (max-width:520px){
-  .ip-card{padding:20px}
-  .ip-row{grid-template-columns:36px 1fr;gap:10px}
-  .ip-avatar{width:36px;height:36px;font-size:13px}
+.ip-card{margin:0 0 24px}
+.ip-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:36px;align-items:start}
+.ip-header{padding:8px 0}
+.ip-title{font-size:24px;font-weight:900;color:var(--navy);margin:0 0 12px;line-height:1.15}
+.ip-intro{font-size:15px;color:var(--ts);line-height:1.55;margin:0;max-width:360px}
+
+.ip-results{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:12px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
+.ip-stack{display:flex;flex-direction:column;gap:8px}
+.ip-row{position:relative;border-radius:18px;padding:14px 22px;color:var(--ink);overflow:hidden;cursor:default;display:flex;flex-direction:column;justify-content:space-between;height:76px;
+  transition:height .45s cubic-bezier(.4,0,.2,1), opacity .25s ease, padding .3s ease}
+.ip-row--hidden{opacity:0;padding-top:0;padding-bottom:0}
+.ip-row-top{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ip-row-avatar{width:26px;height:26px;border-radius:50%;background:rgba(10,15,46,.88);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.ip-row-name{font-size:15px;font-weight:700;color:var(--ink)}
+.ip-row-score{font-size:30px;font-weight:900;margin-left:auto;line-height:1;color:var(--ink)}
+.ip-row-tag{font-size:20px;font-weight:900;color:var(--ink);transition:opacity .2s ease}
+.ip-row-desc{position:absolute;left:22px;right:22px;bottom:14px;font-size:13px;font-weight:500;color:var(--ink);line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .2s ease, transform .2s ease;pointer-events:none}
+.ip-row:hover .ip-row-tag{opacity:0}
+.ip-row:hover .ip-row-desc{opacity:1;transform:translateY(0)}
+
+/* Toggle switch ("Only show top 3") */
+.ip-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;font-size:15px;color:var(--navy);font-weight:500}
+.ip-switch{position:relative;width:46px;height:26px;border-radius:100px;border:none;background:var(--mg);cursor:pointer;padding:0;transition:background .2s ease;flex-shrink:0}
+.ip-switch-dot{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(10,15,46,.18);transition:transform .2s ease}
+.ip-switch[aria-pressed="true"]{background:var(--blue)}
+.ip-switch[aria-pressed="true"] .ip-switch-dot{transform:translateX(20px)}
+
+@media (max-width:720px){
+  .ip-layout{grid-template-columns:1fr;gap:20px}
+  .ip-header{padding:0}
+  .ip-intro{max-width:none}
 }
 .sav{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rlg);padding:20px 22px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
 .sav h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:3px}
