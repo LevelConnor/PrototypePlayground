@@ -314,7 +314,9 @@ function renderInterestProfile(sorted) {
   // Pills below the top scale down by (score / topScore). The score number
   // sits OUTSIDE the pill on the right. The pill has a CSS min-width that
   // keeps the description visible even when the score is very low.
-  const MAX_PCT = 92; // leaves room for the score number next to a full pill
+  // Score now lives INSIDE the pill, so the top pill can fill 100 % of
+  // the row width.
+  const MAX_PCT = 100;
   const topScore = sorted.length
     ? ((lastOnetScores && lastOnetScores[sorted[0][0]] != null)
         ? lastOnetScores[sorted[0][0]]
