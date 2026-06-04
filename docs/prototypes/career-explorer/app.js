@@ -46,17 +46,6 @@ document.addEventListener('click', function(e) {
   // Bright Outlook "Show more" pagination button
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
-  // Cluster pagination ("Show more" inside the slist)
-  if (t.id === 'slist-more-btn' && loadedClusterCode_v2) {
-    loadClusterIntoSlist(loadedClusterCode_v2, activeCluster);
-    return;
-  }
-
-  // Filter-mode tabs (Work style / Area / Cluster) — pure view state,
-  // swaps which chip group is visible. Doesn't change any filter.
-  const fmt = t.closest('.fmtab');
-  if (fmt && fmt.dataset.mode) { setFilterMode(fmt.dataset.mode); return; }
-
   // Interest profile expand/collapse (top 3 ↔ all 6)
   if (t.closest('#ip-toggle')) { toggleInterestProfile(); return; }
 
@@ -66,21 +55,33 @@ document.addEventListener('click', function(e) {
     const letter = rc.dataset.r;
     if (activeR.has(letter)) activeR.delete(letter);
     else activeR.add(letter);
-    if (activeR.size > 0) {
-      document.getElementById('sinput').value = '';
-      activeCluster = '';
-    }
+    if (activeR.size > 0) document.getElementById('sinput').value = '';
     updateSearch();
     return;
   }
 
-  // Career cluster chip — single-active toggle.
-  const cc = t.closest('.cluster-chip[data-cluster]');
-  if (cc && cc.dataset.cluster) {
-    const name = cc.dataset.cluster;
-    activeCluster = (activeCluster === name) ? '' : name;
-    if (activeCluster) document.getElementById('sinput').value = '';
-    updateSearch();
+  // Career cluster card — opens detail section
+  const ccard = t.closest('.cluster-card[data-cluster]');
+  if (ccard && ccard.dataset.cluster) {
+    openClusterDetail(ccard.dataset.cluster);
+    return;
+  }
+
+  // Close cluster detail
+  if (t.id === 'cluster-detail-close') { closeClusterDetail(); return; }
+
+  // Sub-cluster chip — visual highlight only (O*NET API doesn't support
+  // sub-cluster filtering; chips surface as context).
+  const sub = t.closest('.sub-chip[data-sub]');
+  if (sub) {
+    document.querySelectorAll('.sub-chip').forEach(c => c.classList.remove('active'));
+    sub.classList.add('active');
+    return;
+  }
+
+  // Cluster-page pagination ("Show more" inside #cluster-list-more)
+  if (t.id === 'cluster-list-more-btn' && loadedClusterCode_v2) {
+    loadClusterIntoTarget(loadedClusterCode_v2, activeCluster, 'cluster-list', 'cluster-rcount', 'cluster-list-more');
     return;
   }
 
@@ -195,10 +196,8 @@ function submitAssessment() {
   activeR.clear();
   sorted.slice(0,3).forEach(([k]) => activeR.add(k));
   syncRiasecChipsUI();
-  setFilterMode('riasec');
   // Clear any existing keyword search so RIASEC mode is the entry point.
   document.getElementById('sinput').value = '';
-  activeCluster = '';
   updateSearch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -451,17 +450,12 @@ async function renderBrightOutlook() {
   await loadBrightOutlookPage();
 }
 
-// Unified search dispatcher. Picks a mode based on what's set, syncs the
-// chip UI, and renders into #slist. Mode priority:
-//   keyword (sinput >= 2 chars) > cluster (activeCluster) > riasec (activeR)
-//   > empty (Bright Outlook list).
-// Area chips are keyword shortcuts — clicking one writes into sinput and falls
-// into keyword mode. RIASEC chips stay visible when keyword/cluster mode wins
-// so the user still sees their interest context.
+// Unified search dispatcher for the Find My Career page.
+// Mode priority: keyword (sinput >= 2 chars) > riasec (activeR) > empty.
+// Cluster browsing lives on its own /clusters tab now.
 function updateSearch() {
   const q = document.getElementById('sinput').value.trim();
   syncRiasecChipsUI();
-  syncClusterChipsUI();
 
   if (q.length >= 2) {
     hideEmptyState();
@@ -475,11 +469,6 @@ function updateSearch() {
     document.getElementById('slist').innerHTML =
       '<div style="text-align:center;padding:40px 20px;color:var(--ts);font-size:15px">Type at least 2 characters to search.</div>';
     document.getElementById('slist-more').innerHTML = '';
-    return;
-  }
-  if (activeCluster) {
-    hideEmptyState();
-    renderClusterIntoSlist();
     return;
   }
   if (activeR.size > 0) {
@@ -498,27 +487,6 @@ function syncRiasecChipsUI() {
     c.classList.toggle('active', activeR.has(c.dataset.r));
   });
 }
-
-function syncClusterChipsUI() {
-  document.querySelectorAll('.cluster-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.cluster === activeCluster);
-  });
-}
-
-// Filter-mode tabs: switch which chip group is visible. Pure view state —
-// doesn't reset any active filter. Modes: 'riasec' | 'area' | 'cluster'.
-function setFilterMode(mode) {
-  document.querySelectorAll('.fmtab').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === mode);
-  });
-  document.querySelectorAll('.fc-group[data-mode-pane]').forEach(g => {
-    g.hidden = (g.dataset.modePane !== mode);
-  });
-}
-
-// Only two real filter modes now (Area was dropped — it was just keyword
-// sugar). Default to Work style; user can switch to Cluster.
-function pickInitialFilterMode() { return 'riasec'; }
 
 // ─── RIASEC (Holland-code) mode ───────────────────────────────────────────
 async function renderRiasecIntoSlist() {
@@ -572,14 +540,14 @@ async function renderRiasecIntoSlist() {
   rcount.innerHTML = `<strong>${careers.length}</strong> career${careers.length!==1?'s':''} matching <strong>${usedCode}</strong> (your top work styles)`;
 }
 
-// ─── Cluster mode ─────────────────────────────────────────────────────────
+// ─── Cluster careers loader (used by the Career Clusters page) ──────────
 const CLUSTER_PAGE_SIZE = 15;
 let clusterCareers_v2 = [];
 let clusterTotal_v2 = null;
 let clusterLoading_v2 = false;
 let loadedClusterCode_v2 = null;
 
-async function loadClusterIntoSlist(code, name) {
+async function loadClusterIntoTarget(code, name, listId, rcountId, moreId) {
   if (clusterLoading_v2) return;
   clusterLoading_v2 = true;
   const start = clusterCareers_v2.length + 1;
@@ -597,36 +565,77 @@ async function loadClusterIntoSlist(code, name) {
     }));
     clusterTotal_v2 = data.total || clusterTotal_v2 || page.length;
     clusterCareers_v2 = clusterCareers_v2.concat(page);
-    renderLiveList(clusterCareers_v2, 'slist', 'sd');
-    document.getElementById('rcount').innerHTML =
+    renderLiveList(clusterCareers_v2, listId, 'cl');
+    document.getElementById(rcountId).innerHTML =
       `<strong>${name}</strong> — showing ${clusterCareers_v2.length} of ${clusterTotal_v2} career${clusterTotal_v2!==1?'s':''}`;
     const hasMore = clusterCareers_v2.length < clusterTotal_v2;
-    document.getElementById('slist-more').innerHTML = hasMore
-      ? '<div style="margin-top:14px;text-align:center"><button class="cta ghost" id="slist-more-btn">Show more</button></div>'
+    document.getElementById(moreId).innerHTML = hasMore
+      ? '<div style="margin-top:14px;text-align:center"><button class="cta ghost" id="cluster-list-more-btn">Show more</button></div>'
       : '';
   } catch (err) {
     console.error('Cluster fetch failed:', err);
-    document.getElementById('slist').innerHTML =
+    document.getElementById(listId).innerHTML =
       '<div style="color:var(--ts);font-size:15px;padding:14px 0">Couldn\'t reach O*NET. Try again later.</div>';
   } finally {
     clusterLoading_v2 = false;
   }
 }
 
-function renderClusterIntoSlist() {
-  const code = CLUSTER_CODES[activeCluster];
-  if (!code) return;
-  // Reset pagination if cluster changed
-  if (loadedClusterCode_v2 !== code) {
-    clusterCareers_v2 = [];
-    clusterTotal_v2 = null;
-    loadedClusterCode_v2 = code;
-    document.getElementById('slist').innerHTML =
-      '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
-    document.getElementById('rcount').innerHTML = `<strong>${activeCluster}</strong> — loading…`;
-    document.getElementById('slist-more').innerHTML = '';
-  }
-  loadClusterIntoSlist(code, activeCluster);
+// ─── Career Clusters page ───────────────────────────────────────────────
+// Render the editorial grid of cluster cards. Called once on DOM ready.
+function renderClusterGrid() {
+  const grid = document.getElementById('cluster-grid');
+  if (!grid) return;
+  grid.innerHTML = CLUSTERS.map(c => `
+    <div class="cluster-card" data-cluster="${c.name}">
+      <img src="${c.img}" alt="${c.name}" loading="lazy"
+           onerror="this.style.display='none'">
+      <div class="cluster-card-overlay"></div>
+      <div class="cluster-card-cta">View Careers</div>
+      <div class="cluster-card-body">
+        <h3 class="cluster-card-title">${c.name}</h3>
+        <p class="cluster-card-desc">${c.desc}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Open the cluster detail section (sub-clusters + career list), scroll
+// it into view, and fire the first page of careers.
+function openClusterDetail(name) {
+  const cl = CLUSTERS.find(c => c.name === name);
+  if (!cl) return;
+  activeCluster = name;
+  const detail = document.getElementById('cluster-detail');
+  detail.style.display = 'block';
+  document.getElementById('cluster-detail-title').textContent = cl.name;
+  document.getElementById('cluster-detail-desc').textContent = cl.desc;
+  document.getElementById('cluster-subs').innerHTML =
+    cl.subs.map(s => `<button class="fc sub-chip" data-sub="${s}">${s}</button>`).join('');
+
+  // Reset pagination + fire the load
+  const code = CLUSTER_CODES[name];
+  clusterCareers_v2 = [];
+  clusterTotal_v2 = null;
+  loadedClusterCode_v2 = code;
+  document.getElementById('cluster-list').innerHTML =
+    '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
+  document.getElementById('cluster-rcount').innerHTML = `<strong>${name}</strong> — loading…`;
+  document.getElementById('cluster-list-more').innerHTML = '';
+  loadClusterIntoTarget(code, name, 'cluster-list', 'cluster-rcount', 'cluster-list-more');
+
+  // Scroll the detail into view
+  setTimeout(() => detail.scrollIntoView({behavior:'smooth', block:'start'}), 60);
+}
+
+function closeClusterDetail() {
+  activeCluster = '';
+  loadedClusterCode_v2 = null;
+  clusterCareers_v2 = [];
+  clusterTotal_v2 = null;
+  const detail = document.getElementById('cluster-detail');
+  if (detail) detail.style.display = 'none';
+  document.getElementById('cluster-grid').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 async function _execLiveSearch(q) {
@@ -1205,21 +1214,25 @@ function restoreFromURL() {
 }
 
 /* ══ CLUSTERS ══ */
+// Used to render the Career Clusters editorial grid. img/desc are for the
+// card; subs lists O*NET's official sub-clusters (shown as chips after a
+// cluster is selected — O*NET's API doesn't filter by sub-cluster, so they
+// surface as context, not as a working filter).
 const CLUSTERS = [
-  {name:'Advanced Manufacturing',        icon:'⚙️'},
-  {name:'Agriculture',                   icon:'🌾'},
-  {name:'Arts, Entertainment & Design',  icon:'🎨'},
-  {name:'Construction',                  icon:'🏗️'},
-  {name:'Digital Technology',            icon:'💻'},
-  {name:'Education',                     icon:'📚'},
-  {name:'Energy & Natural Resources',    icon:'⚡'},
-  {name:'Financial Services',            icon:'💰'},
-  {name:'Healthcare & Human Services',   icon:'🏥'},
-  {name:'Hospitality, Events & Tourism', icon:'🍽️'},
-  {name:'Management & Entrepreneurship', icon:'🚀'},
-  {name:'Marketing & Sales',             icon:'📣'},
-  {name:'Public Service & Safety',       icon:'🛡️'},
-  {name:'Supply Chain & Transportation', icon:'🚚'},
+  {name:'Advanced Manufacturing',        icon:'⚙️',  img:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80', desc:'Make products using machines, robotics, and smart technology.', subs:['Engineering','Industrial Machinery','Production & Automation','Robotics','Safety & Quality Assurance']},
+  {name:'Agriculture',                   icon:'🌾',  img:'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80', desc:'Work with plants, animals, and the environment to grow food.',   subs:['Agribusiness','Agricultural Technology & Automation','Animal Systems','Food Science & Processing','Plant Systems','Water Systems']},
+  {name:'Arts, Entertainment & Design',  icon:'🎨',  img:'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80', desc:'Express ideas through art, performance, and digital creation.',   subs:['Design & Digital Arts','Fashion & Interiors','Fine Arts','Lighting & Sound Technology','Media Production & Broadcasting','Performing Arts']},
+  {name:'Construction',                  icon:'🏗️', img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80', desc:'Design and build homes, buildings, roads, and other structures.', subs:['Architecture & Civil Engineering','Construction Planning & Development','Equipment Operation & Maintenance','Skilled Trades']},
+  {name:'Digital Technology',            icon:'💻',  img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80', desc:'Use computers, code, and smart systems to solve problems.',       subs:['Data Science & AI','Network Systems & Cybersecurity','IT Support & Services','Software Solutions','Unmanned Vehicle Technology','Web & Cloud']},
+  {name:'Education',                     icon:'📚',  img:'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80', desc:'Help others learn, grow, and reach their goals.',                 subs:['Early Childhood Development','Education Administration & Leadership','Learner Support & Community Engagement','Teaching, Training & Facilitation']},
+  {name:'Energy & Natural Resources',    icon:'⚡',  img:'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&q=80', desc:'Power and protect the planet through energy and natural systems.',subs:['Clean & Alternative Energy','Conservation & Land Management','Ecological Research & Development','Environmental Protection','Resource Extraction','Utilities']},
+  {name:'Financial Services',            icon:'💰',  img:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80', desc:'Help people and businesses make smart money decisions.',          subs:['Accounting','Banking & Credit','Financial Strategy & Investments','Insurance','Real Estate']},
+  {name:'Healthcare & Human Services',   icon:'🏥',  img:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80', desc:"Take care of people's physical and emotional health.",            subs:['Behavioral & Mental Health','Biotechnology Research & Development','Community & Social Services','Health Data & Administration','Personal Care Services','Physical Health']},
+  {name:'Hospitality, Events & Tourism', icon:'🍽️', img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80', desc:'Help people enjoy travel, dining, and other experiences.',        subs:['Accommodations','Conferences & Events','Culinary & Food Services','Travel & Leisure']},
+  {name:'Management & Entrepreneurship', icon:'🚀',  img:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80', desc:'Lead people, start businesses, and bring new ideas to life.',     subs:['Business Information Management','Entrepreneurship & Small Business','Leadership & Operations','Project Management','Regulation']},
+  {name:'Marketing & Sales',             icon:'📣',  img:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&q=80', desc:'Communicate ideas and help people find products they love.',     subs:['Marketing & Advertising','Market Research, Analytics & Ethics','Retail & Customer Experience','Strategic Sales']},
+  {name:'Public Service & Safety',       icon:'🛡️', img:'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=800&q=80', desc:'Protect people and help communities stay safe and supported.',    subs:['Emergency Response','Judicial Systems','Local, State & Federal Services','Military & National Security','Public Safety']},
+  {name:'Supply Chain & Transportation', icon:'🚚',  img:'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80', desc:'Move people, goods, and information safely and efficiently.',    subs:['Air & Space Transportation','Ground & Rail Transportation','Maintenance & Repair','Marine Transportation','Planning & Logistics','Purchasing & Warehousing']},
 ];
 
 // Map our local cluster names to O*NET career-cluster codes
@@ -1455,19 +1468,7 @@ function handleZipSearch(pid, careerTitle, onetCode) {
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', function() {
   restoreFromURL();
-  renderClusterChips();
+  renderClusterGrid();
   syncProfileUI();
-  setFilterMode(pickInitialFilterMode());
   updateSearch();
 });
-
-// Render the cluster filter chips into the Find My Career panel. Called
-// once on page load. Each chip is single-active; click handling lives in
-// the global click listener.
-function renderClusterChips() {
-  const host = document.getElementById('cluster-chips');
-  if (!host) return;
-  host.innerHTML = CLUSTERS.map(c =>
-    `<button class="fc cluster-chip" data-cluster="${c.name}">${c.icon} ${c.name}</button>`
-  ).join('');
-}

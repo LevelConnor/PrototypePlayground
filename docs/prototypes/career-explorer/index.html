@@ -128,13 +128,21 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .fl{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:10px}
 .fcs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
 
-/* Filter-mode tabs (above the chip groups). One row of pill tabs that swap
-   which chip group is visible — keeps the page from showing 26 chips at once. */
-.fmtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.fmtab{background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:8px 16px;font-size:13px;font-weight:700;color:var(--ts);cursor:pointer;transition:all .15s}
-.fmtab:hover{border-color:var(--blue);color:var(--blue)}
-.fmtab.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.fc-group[hidden]{display:none}
+/* ─── Career Clusters editorial grid ──────────────────────────────────── */
+.cluster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.cluster-card{position:relative;border-radius:var(--rlg);overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:var(--navy);transition:transform .2s ease, box-shadow .2s ease}
+.cluster-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,15,46,.12)}
+.cluster-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cluster-card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 0%,rgba(10,15,46,.45) 50%,rgba(10,15,46,.92) 100%)}
+.cluster-card-body{position:absolute;left:18px;right:18px;bottom:16px;color:#fff}
+.cluster-card-title{font-size:18px;font-weight:900;line-height:1.2;margin:0 0 6px;letter-spacing:.01em}
+.cluster-card-desc{font-size:13px;font-weight:400;color:rgba(255,255,255,.82);line-height:1.45}
+.cluster-card-cta{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:var(--white);color:var(--navy);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:10px 22px;border-radius:var(--rf);opacity:0;transition:all .2s ease;pointer-events:none}
+.cluster-card:hover .cluster-card-cta{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* Selected-cluster detail section: header row + sub-cluster chips + list */
+.cluster-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+#cluster-list{display:flex;flex-direction:column;gap:6px}
 
 /* 6px gap between career rows in the results list. */
 #slist{display:flex;flex-direction:column;gap:6px}
@@ -267,6 +275,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 <nav>
   <button class="nt active" data-tab="assessment">Take the Assessment</button>
   <button class="nt" data-tab="search">Find My Career</button>
+  <button class="nt" data-tab="clusters">Explore Career Clusters</button>
 </nav>
 
 <main>
@@ -358,17 +367,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
   <div class="sbx-w"><input class="sbx" id="sinput" type="text" placeholder="Search for careers by keyword"><span class="si2">🔍</span></div>
 
-  <!-- Filter-mode picker. One row of tabs swaps between the three chip
-       groups so we don't show 26 chips at once. The dispatcher
-       (updateSearch in app.js) decides which group's chips actually
-       drive the result list — the tabs are pure view state. -->
-  <div class="fl">Find careers by</div>
-  <div class="fmtabs">
-    <button class="fmtab active" data-mode="riasec">🌐 Work style</button>
-    <button class="fmtab" data-mode="cluster">📚 Cluster</button>
-  </div>
-  <!-- Chip groups (one visible at a time, swapped by the tabs above) -->
-  <div class="fcs fc-group" id="riasec-chips" data-mode-pane="riasec">
+  <!-- Work-style (RIASEC) chips. After the assessment runs, the user's
+       top-3 are pre-selected. Toggling re-runs the Holland match. The
+       Cluster filter mode lives on its own dedicated tab now. -->
+  <div class="fl">Match by work style</div>
+  <div class="fcs" id="riasec-chips">
     <button class="fc rc" data-r="R">Realistic</button>
     <button class="fc rc" data-r="I">Investigative</button>
     <button class="fc rc" data-r="A">Artistic</button>
@@ -376,7 +379,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
     <button class="fc rc" data-r="E">Enterprising</button>
     <button class="fc rc" data-r="C">Conventional</button>
   </div>
-  <div class="fcs fc-group" id="cluster-chips" data-mode-pane="cluster" hidden></div>
   <hr class="rdiv"><div class="rc2" id="rcount"></div>
   <div id="slist"></div>
   <div id="slist-more"></div>
@@ -390,6 +392,31 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
       <button class="cta ghost" id="bo-more-btn">Show more</button>
       <div id="bo-count" style="font-size:12px;color:var(--ts);margin-top:8px"></div>
     </div>
+  </div>
+</div>
+
+<!-- CAREER CLUSTERS — editorial photo grid -->
+<div class="panel" id="panel-clusters">
+  <div class="pt" style="color:var(--blue)">Explore Career Clusters</div>
+  <p class="ps" style="margin-bottom:24px">Browse 14 career clusters — broad fields from the official O*NET taxonomy. Tap any cluster to see its sub-areas and the careers inside.</p>
+  <div class="cluster-grid" id="cluster-grid"></div>
+
+  <!-- Sub-cluster + career list, revealed after a card is selected. Scrolls
+       into view on click. -->
+  <div id="cluster-detail" style="display:none;margin-top:28px">
+    <div class="cluster-detail-head">
+      <div>
+        <div class="t-eyebrow" style="color:var(--blue);margin-bottom:4px">Career cluster</div>
+        <h2 id="cluster-detail-title" class="t-heading"></h2>
+        <p id="cluster-detail-desc" class="t-body" style="color:var(--ts);margin-top:4px"></p>
+      </div>
+      <button class="cta ghost" id="cluster-detail-close">✕ Close</button>
+    </div>
+    <div class="fl" style="margin-top:18px">Areas in this cluster</div>
+    <div class="fcs" id="cluster-subs"></div>
+    <hr class="rdiv"><div class="rc2" id="cluster-rcount"></div>
+    <div id="cluster-list"></div>
+    <div id="cluster-list-more"></div>
   </div>
 </div>
 
