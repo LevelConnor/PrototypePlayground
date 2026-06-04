@@ -581,7 +581,11 @@ function setFbValue(name, text, hasValue) {
 // rows whose cached values don't match. Cards without cached data stay
 // visible (we never penalize a card for missing data).
 function applyClientFilters() {
-  document.querySelectorAll('#slist .ccard[data-live-code], #cluster-list .ccard[data-live-code]').forEach(card => {
+  // Walk every grid (#slist, #cluster-list, #bo-list, …) — renderLiveList
+  // marks each result container with .cgrid, so a single selector covers
+  // all of them. Earlier this only targeted two specific IDs, so filters
+  // were silently ignored on the Bright Outlook empty state.
+  document.querySelectorAll('.cgrid .ccard[data-live-code]').forEach(card => {
     const code = card.dataset.liveCode;
     const cached = detailCache[code] || {};
     let hide = false;
