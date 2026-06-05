@@ -358,7 +358,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 /* Two gradient styles: default = primary-blue, .bright = sunrise.
    The class is added by buildLiveCard based on the Bright Outlook flag. */
-.ccard{position:relative;aspect-ratio:1.05/1;border-radius:20px;overflow:hidden;cursor:pointer;background:#213168;box-shadow:0 4px 16px rgba(10,15,46,.08);transition:background .3s ease, transform .2s ease, box-shadow .2s ease}
+.ccard{position:relative;aspect-ratio:1.05/1;border-radius:20px;overflow:hidden;cursor:pointer;
+  background:linear-gradient(180deg,#0A1535 0%,#13245A 42%,#0083FF 100%);
+  background-repeat:no-repeat;background-size:100% 150%;background-position:0 0;
+  box-shadow:0 4px 16px rgba(10,15,46,.08);
+  transition:background-position .7s cubic-bezier(.4,0,.2,1), transform .2s ease, box-shadow .2s ease}
 /* Sunrise gradient is sized taller than the card and slides on hover:
    default position shows the cool blue top; hovering pans to the warm
    bottom so the "sun" rises into view. */
@@ -371,7 +375,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 }
 .ccard.bright:hover{background-position:0 100%}
 .ccard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(10,15,46,.16)}
-.ccard:not(.bright):hover{background:var(--blue)}
+.ccard:not(.bright):hover{background-position:0 100%}
 .ccard-body{position:absolute;left:18px;right:18px;bottom:18px;color:#fff;z-index:1}
 .ccard-title{font-size:20px;font-weight:900;line-height:1.2;color:#fff;margin:0 0 10px;letter-spacing:-.01em;text-shadow:0 1px 4px rgba(10,15,46,.18)}
 .ccard-pills{display:flex;flex-wrap:wrap;gap:6px}
