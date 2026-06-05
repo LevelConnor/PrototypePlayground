@@ -812,7 +812,7 @@ async function renderRiasecIntoSlist() {
     }
   });
   renderLiveList(list, 'slist', 'sd');
-  rcount.textContent = `Scroll down to see the ${careers.length} career${careers.length!==1?'s':''} matching your top work styles`;
+  rcount.textContent = `${careers.length} career${careers.length!==1?'s':''} match your top work styles. Find them below.`;
   applyClientFilters();
 }
 
