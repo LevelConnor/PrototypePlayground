@@ -322,14 +322,24 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 /* min-height:0 is required so this flex child can shrink and scroll
    instead of pushing past the panel bottom. */
 .tbody2{flex:1;min-height:0;overflow-y:auto;padding:20px}
-/* When the tray holds .ccard tiles (the new shared component), use a
-   single-column layout so cards remain readable inside the 400px panel.
-   Override the default aspect-ratio so each card is roughly half the
-   vertical height it has elsewhere — keeps the tray compact. */
-.tbody2.cgrid{display:grid;grid-template-columns:1fr;gap:12px}
-.tbody2.cgrid .ccard{aspect-ratio:2.3/1}
-.tbody2.cgrid .ccard-title{font-size:17px;margin-bottom:8px}
-.tbody2.cgrid .ccard-body{left:14px;right:14px;bottom:14px}
+/* When the tray holds .ccard tiles, force a single-column layout AND
+   give each card an explicit fixed height (instead of an aspect-ratio).
+   aspect-ratio inside a grid item can be brittle when combined with
+   absolutely-positioned children — so we lock height for predictable,
+   non-overlapping rows. */
+.tbody2.cgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start}
+.tbody2.cgrid .ccard{
+  aspect-ratio:auto;
+  height:118px;min-height:118px;
+}
+.tbody2.cgrid .ccard-title{
+  font-size:16px;line-height:1.25;margin:0 0 8px;
+  /* Truncate at one line so a very long career title can't push the
+     body out of the card and look like it's bleeding into the next. */
+  display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.tbody2.cgrid .ccard-body{left:16px;right:60px;bottom:14px}
 .tempty{text-align:center;padding:40px 20px;color:var(--ts);font-size:15px}
 .ti{background:var(--off);border-radius:var(--rmd);padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .ti h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
@@ -769,6 +779,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05d"></script>
+<script src="app.js?v=2026-06-05e"></script>
 </body>
 </html>
