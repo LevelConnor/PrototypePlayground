@@ -876,7 +876,7 @@ async function _execLiveSearch(q) {
     }));
     const total = data.total || occs.length;
     rcount.textContent = total + ' career' + (total !== 1 ? 's' : '') + ' found' +
-      (total > occs.length ? ` (showing ${occs.length})` : '') + ' · via O*NET';
+      (total > occs.length ? ` (showing ${occs.length})` : '');
     renderLiveList(occs, 'slist', 'sd');
     document.getElementById('slist-more').innerHTML = '';
   } catch (err) {
