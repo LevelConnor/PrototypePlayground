@@ -366,10 +366,21 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 /* Sunrise gradient is sized taller than the card and slides on hover:
    default position shows the cool blue top; hovering pans to the warm
    bottom so the "sun" rises into view. */
+/* Sunrise radial gradient: warm yellow/peach pools at the bottom-center
+   like a rising sun, fading through pink and mauve up to a soft blue
+   at the top corners. The radial gives the gradient a curved feel
+   rather than the flat horizontal banding of a linear sweep. Sized
+   slightly taller so the hover pan still nudges the warm core upward. */
 .ccard.bright{
-  background:linear-gradient(180deg,#5C9CE8 0%,#9C8AD0 28%,#D896B9 55%,#E89D8C 76%,#F2BB7A 92%,#F5D182 100%);
+  background:radial-gradient(ellipse 130% 110% at 50% 115%,
+    #F5D182 0%,
+    #F2BB7A 14%,
+    #E89D8C 30%,
+    #D896B9 50%,
+    #9C8AD0 72%,
+    #5C9CE8 100%);
   background-repeat:no-repeat;
-  background-size:100% 150%;
+  background-size:100% 130%;
   background-position:0 0;
   transition:background-position .7s cubic-bezier(.4,0,.2,1), transform .2s ease, box-shadow .2s ease;
 }
