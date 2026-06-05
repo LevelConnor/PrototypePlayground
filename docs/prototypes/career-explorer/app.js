@@ -1434,28 +1434,32 @@ function closeTray() { document.getElementById('tov').classList.remove('open'); 
 function renderTray() {
   const b = document.getElementById('tbody');
   if (!saved.size) {
+    b.classList.remove('cgrid');
     b.innerHTML = `<div class="tempty"><div style="margin-bottom:12px;color:var(--ts)">${heartIcon(false, 28)}</div><p>No saved careers yet.<br>Tap the heart on any career to save it here.</p></div>`;
     return;
   }
   const codes = [...saved]
     .filter(k => typeof k === 'string' && k.startsWith('live-'))
     .map(k => k.slice('live-'.length));
+  // Render saved entries with the same .ccard component used everywhere
+  // else (Find My Career, Clusters, Bright Outlook, Related). The heart
+  // is always 'saved' here; clicking it removes the career. Tapping the
+  // card body opens the modal — same as the rest of the app.
+  b.classList.add('cgrid');
   b.innerHTML = codes.map(code => {
     const meta = savedMeta.get(code) || { title: code, salary: null };
-    const salaryPill = meta.salary
-      ? `<span class="mb">$${meta.salary.toLocaleString()}/yr</span>`
-      : `<span class="mb" style="opacity:.6">Loading…</span>`;
-    return `<div class="ti">
-      <div>
-        <h4>${meta.title}</h4>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">${salaryPill}</div>
-      </div>
-      <button class="trm" data-tray-remove="${code}">✕</button>
-    </div>`;
+    // Shape an object that buildLiveCard understands: needs c.title and
+    // a cached entry with .tags + .salary.median for the salary pill.
+    const c = { title: meta.title, isMatch: false };
+    const cached = detailCache[code] || {
+      tags: {},
+      salary: { median: meta.salary || 0 },
+    };
+    // Always pass isSaved=true so the heart renders filled. Pass a
+    // tray-specific prefix so any future modal routing can tell where
+    // the click came from.
+    return buildLiveCard(c, cached, code, 'tray', true);
   }).join('');
-  b.querySelectorAll('[data-tray-remove]').forEach(btn => {
-    btn.addEventListener('click', () => toggleLiveSave(btn.dataset.trayRemove));
-  });
   // Kick off background backfill if any titles are missing. Snapshot the
   // current titles before the fetch so we only re-render when something
   // ACTUALLY changed — otherwise a network-failed backfill (which falls
