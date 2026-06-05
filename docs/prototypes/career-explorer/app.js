@@ -1456,10 +1456,21 @@ function renderTray() {
   b.querySelectorAll('[data-tray-remove]').forEach(btn => {
     btn.addEventListener('click', () => toggleLiveSave(btn.dataset.trayRemove));
   });
-  // Kick off background backfill if any titles are missing.
+  // Kick off background backfill if any titles are missing. Snapshot the
+  // current titles before the fetch so we only re-render when something
+  // ACTUALLY changed — otherwise a network-failed backfill (which falls
+  // back to title=code) re-triggers ensureSavedMeta in a tight loop and
+  // freezes the page.
+  const beforeSnapshot = new Map(
+    [...savedMeta].map(([c, m]) => [c, m && m.title])
+  );
   ensureSavedMeta().then(() => {
-    // Re-render only if still open and at least one meta changed.
-    if (document.getElementById('tpn').classList.contains('open')) renderTray();
+    if (!document.getElementById('tpn').classList.contains('open')) return;
+    let changed = false;
+    savedMeta.forEach((m, c) => {
+      if (m && beforeSnapshot.get(c) !== m.title) changed = true;
+    });
+    if (changed) renderTray();
   });
 }
 
