@@ -16,6 +16,9 @@
 //        code is a 6-digit O*NET career-cluster code (e.g. 010100)
 //   GET /holland/{code}?start=1&end=20          -> /online/onet_data/interests/{code}
 //        code is a 1-3 letter Holland code (e.g. S, SI, SIR)
+//   GET /fit/{code}?start=1&end=100              -> /mnm/interestprofiler/careers?area={code}
+//        code is a 1-3 letter Holland code; response includes per-career
+//        'fit' field with O*NET's My Next Move fit grade (Best/Great/etc).
 
 const ONET_BASE = 'https://api-v2.onetcenter.org';
 
@@ -133,6 +136,13 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/onet_data/interests/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === 'fit' && parts.length === 2 && HOLLAND_CODE_RE.test(parts[1])) {
+      // My Next Move career matches: returns each career with a 'fit'
+      // grade (Best Fit, Great Fit, etc.) computed by O*NET against the
+      // supplied RIASEC area code.
+      const start = url.searchParams.get('start') || '1';
+      const end = url.searchParams.get('end') || '100';
+      onetPath = `/mnm/interestprofiler/careers?area=${parts[1]}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
