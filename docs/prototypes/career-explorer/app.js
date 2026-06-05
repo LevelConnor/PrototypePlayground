@@ -743,6 +743,27 @@ function applyClientFilters() {
     }
     card.style.display = hide ? 'none' : '';
   });
+  // After filtering, refresh the RIASEC mode's match-count headline so it
+  // reflects the count of cards actually on screen rather than the raw
+  // API result size.
+  refreshRiasecRcount();
+}
+
+// Recompute the #rcount headline from currently-visible #slist cards.
+// Called after filter changes so the number stays in sync with what the
+// user actually sees. Only runs when we're displaying RIASEC matches
+// (lastResults is set) — keyword-search headlines are computed elsewhere.
+function refreshRiasecRcount() {
+  const rcount = document.getElementById('rcount');
+  const slist = document.getElementById('slist');
+  if (!rcount || !slist || !lastResults) return;
+  // Skip if we're showing the loading/empty state in #slist instead of
+  // actual cards.
+  const cards = slist.querySelectorAll('.ccard[data-live-code]');
+  if (!cards.length) return;
+  let visible = 0;
+  cards.forEach(c => { if (c.style.display !== 'none') visible++; });
+  rcount.textContent = `${visible} career${visible!==1?'s':''} match your top work styles. Find them below.`;
 }
 
 // ─── RIASEC (Holland-code) mode ───────────────────────────────────────────
