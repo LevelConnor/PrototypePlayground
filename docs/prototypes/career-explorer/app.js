@@ -427,7 +427,7 @@ async function renderAssessmentMatches(top3) {
   }
 
   if (!careers.length) {
-    mcards.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:18px 0">No matches available from O*NET right now. Try Search Careers above.</div>';
+    mcards.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:18px 0">No matches available from O*NET right now. Try Explore Careers above.</div>';
     return;
   }
 
