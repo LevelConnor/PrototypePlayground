@@ -787,8 +787,8 @@ async function loadClusterIntoTarget(code, name, listId, rcountId, moreId) {
     clusterTotal_v2 = data.total || clusterTotal_v2 || page.length;
     clusterCareers_v2 = clusterCareers_v2.concat(page);
     renderLiveList(clusterCareers_v2, listId, 'cl');
-    document.getElementById(rcountId).innerHTML =
-      `<strong>${name}</strong> — showing ${clusterCareers_v2.length} of ${clusterTotal_v2} career${clusterTotal_v2!==1?'s':''}`;
+    document.getElementById(rcountId).textContent =
+      `${clusterCareers_v2.length} of ${clusterTotal_v2} career${clusterTotal_v2!==1?'s':''}`;
     const hasMore = clusterCareers_v2.length < clusterTotal_v2;
     document.getElementById(moreId).innerHTML = hasMore
       ? '<div style="margin-top:14px;text-align:center"><button class="cta ghost" id="cluster-list-more-btn">Show more</button></div>'
@@ -841,7 +841,7 @@ function openClusterDetail(name) {
   loadedClusterCode_v2 = code;
   document.getElementById('cluster-list').innerHTML =
     '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
-  document.getElementById('cluster-rcount').innerHTML = `<strong>${name}</strong> — loading…`;
+  document.getElementById('cluster-rcount').textContent = 'Loading…';
   document.getElementById('cluster-list-more').innerHTML = '';
   loadClusterIntoTarget(code, name, 'cluster-list', 'cluster-rcount', 'cluster-list-more');
 
