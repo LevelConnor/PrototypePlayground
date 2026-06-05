@@ -59,6 +59,7 @@ const CAREER_CODE_RE = /^[0-9]{2}-[0-9]{4}\.[0-9]{2}$/;
 const ALLOWED_DETAIL_SLICES = new Set([
   'tasks', 'skills', 'knowledge', 'work_activities', 'abilities',
   'interests', 'work_context', 'job_zone', 'education', 'related_occupations',
+  'career_cluster',
 ]);
 const ALLOWED_BRIGHT_OUTLOOK_CATEGORIES = new Set(['grow', 'openings', 'emerging']);
 const CLUSTER_CODE_RE = /^[0-9]{6}$/;
@@ -139,6 +140,15 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/onet_data/interests/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === '__probe' && url.searchParams.has('path')) {
+      // TEMPORARY diagnostic passthrough for exploring O*NET endpoints.
+      // Allow only paths starting with /online/ or /mnm/ so this can't
+      // be abused to hit arbitrary URLs. REMOVE after investigation.
+      const raw = url.searchParams.get('path') || '';
+      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
+        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
+      }
+      onetPath = raw;
     } else if (parts[0] === 'fit' && parts.length === 1) {
       // My Next Move career matches. Requires the 6 RIASEC scores (each
       // 0-40, from the Mini Interest Profiler) as query params; returns
