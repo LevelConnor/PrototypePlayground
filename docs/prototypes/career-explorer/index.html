@@ -118,7 +118,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Replaces 4 redundant elements (top-3 ribbon, bubble chart,
    colour key, description grid) on the assessment results page.
    ───────────────────────────────────────────────────────────── */
-.ip-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:24px;margin:0 0 18px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
+.ip-card,.cluster-head-card{background:var(--white);border:1.5px solid var(--mg);border-radius:24px;padding:24px;margin:0 0 18px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
 .ip-layout{display:flex;flex-direction:column;gap:26px}
 .ip-header{display:flex;flex-direction:column;gap:8px}
 .ip-title{font-size:32px;font-weight:900;color:var(--navy);margin:0;line-height:1.05;letter-spacing:-.01em}
@@ -668,16 +668,18 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   <!-- Sub-cluster + career list, revealed after a card is selected. Scrolls
        into view on click. -->
   <div id="cluster-detail" style="display:none;margin-top:28px">
-    <div class="cluster-detail-head">
-      <div>
-        <div class="t-eyebrow" style="margin-bottom:4px">Career cluster</div>
-        <h2 id="cluster-detail-title" class="t-heading"></h2>
-        <p id="cluster-detail-desc" class="t-body" style="color:var(--ts);margin-top:4px"></p>
+    <div class="cluster-head-card">
+      <div class="cluster-detail-head">
+        <div>
+          <div class="t-eyebrow" style="margin-bottom:4px">Career cluster</div>
+          <h2 id="cluster-detail-title" class="t-heading"></h2>
+          <p id="cluster-detail-desc" class="t-body" style="color:var(--ts);margin-top:4px"></p>
+        </div>
+        <button class="cta ghost" id="cluster-detail-close">✕ Close</button>
       </div>
-      <button class="cta ghost" id="cluster-detail-close">✕ Close</button>
+      <div class="fl" style="margin-top:18px">Areas in this cluster</div>
+      <div class="fcs" id="cluster-subs" style="margin-bottom:0"></div>
     </div>
-    <div class="fl" style="margin-top:18px">Areas in this cluster</div>
-    <div class="fcs" id="cluster-subs"></div>
     <div class="rc2" id="cluster-rcount"></div>
     <div class="bo-explainer">
       <span class="bo-badge">☀ Bright Outlook</span>
