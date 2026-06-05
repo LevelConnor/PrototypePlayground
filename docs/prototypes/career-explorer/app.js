@@ -782,26 +782,54 @@ async function renderRiasecIntoSlist() {
   rcount.textContent = `Matching careers for ${fullCode}…`;
   slist.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
 
-  // Fallback ladder: try 3-letter, then 2-letter, then 1-letter.
-  // O*NET returns up to ~150 careers for a 1-letter code, ~100-120 for
-  // 2-letter, fewer for narrow 3-letter combos. Request a generous page
-  // (end=100) and keep all of them — the previous end=20 cap was the
-  // reason the work-style filter always showed 20 even when 100+ matched.
+  // Two paths to result fetching:
+  //  - If the user has completed the quiz, lastOnetScores has all 6
+  //    RIASEC scores (0-40 each). Use the /fit endpoint so O*NET returns
+  //    its native Best/Great/Good grades.
+  //  - Otherwise (user toggled chips without taking the quiz) fall back
+  //    to /holland and synthesize a Best-fit badge via set-overlap.
   const HOLLAND_PAGE = 100;
-  let careers = [];
-  let usedCode = '';
-  for (let n = fullCode.length; n >= 1; n--) {
-    const sub = fullCode.slice(0, n);
+  const useFit = lastOnetScores
+    && Object.keys(lastOnetScores).length === 6;
+  let careers = [];          // raw API entries
+  let usedCode = '';         // RIASEC code we ended up showing (for diagnostics)
+  let fitMode = false;       // true => entries carry .fit; false => use overlap
+
+  if (useFit) {
     try {
-      const data = await onetGet(`/holland/${sub}?end=${HOLLAND_PAGE}`);
-      const occ = (data && data.occupation) || [];
-      if (occ.length >= 5 || n === 1) {
-        careers = occ;
-        usedCode = sub;
-        break;
-      }
-      if (!careers.length) { careers = occ; usedCode = sub; }
-    } catch (e) { /* try next */ }
+      const q = new URLSearchParams({
+        realistic:     lastOnetScores.R,
+        investigative: lastOnetScores.I,
+        artistic:      lastOnetScores.A,
+        social:        lastOnetScores.S,
+        enterprising:  lastOnetScores.E,
+        conventional:  lastOnetScores.C,
+        end: String(HOLLAND_PAGE),
+      });
+      const data = await onetGet('/fit?' + q.toString());
+      careers = (data && data.career) || [];
+      usedCode = fullCode;
+      fitMode = true;
+    } catch (e) {
+      // fall through to Holland ladder
+    }
+  }
+
+  if (!careers.length) {
+    // Holland fallback ladder: try 3-letter, then 2-letter, then 1-letter.
+    for (let n = fullCode.length; n >= 1; n--) {
+      const sub = fullCode.slice(0, n);
+      try {
+        const data = await onetGet(`/holland/${sub}?end=${HOLLAND_PAGE}`);
+        const occ = (data && data.occupation) || [];
+        if (occ.length >= 5 || n === 1) {
+          careers = occ;
+          usedCode = sub;
+          break;
+        }
+        if (!careers.length) { careers = occ; usedCode = sub; }
+      } catch (e) { /* try next */ }
+    }
   }
 
   if (!careers.length) {
@@ -810,17 +838,27 @@ async function renderRiasecIntoSlist() {
     return;
   }
 
-  // Best Fit = O*NET 'Best Fit': career's own 3-letter Holland code
-  // contains all of the user's top interest letters (order-independent).
-  // Mirrors how O*NET's My Next Move surfaces Best Fit careers.
+  // Build the render list. In FIT mode, each entry carries its O*NET
+  // fit grade (Best/Great/Good). In Holland-fallback mode, we synthesize
+  // a Best-fit boolean using set-overlap so the badge still works.
   const userLetterSet = new Set(letters.slice(0, 3));
   const list = careers.map(c => {
-    const careerLetters = new Set((c.interest_code || '').split(''));
-    let overlap = 0;
-    userLetterSet.forEach(l => { if (careerLetters.has(l)) overlap++; });
+    let fitGrade = null;
+    let isMatch = false;
+    if (fitMode) {
+      fitGrade = c.fit || null;
+      isMatch = fitGrade === 'Best';
+    } else {
+      const careerLetters = new Set((c.interest_code || '').split(''));
+      let overlap = 0;
+      userLetterSet.forEach(l => { if (careerLetters.has(l)) overlap++; });
+      isMatch = overlap === userLetterSet.size;
+      if (isMatch) fitGrade = 'Best';
+    }
     return {
       code: c.code, title: c.title,
-      isMatch: overlap === userLetterSet.size,  // all of user's top interests appear in career's code
+      isMatch,
+      fitGrade,
       tags: {
         brightOutlook:  !!(c.tags && c.tags.bright_outlook),
         apprenticeship: !!(c.tags && c.tags.apprenticeship),
@@ -829,8 +867,10 @@ async function renderRiasecIntoSlist() {
       },
     };
   });
-  // Holland responses inline a job_zone object per career. Stash it now so
-  // the Education filter has data without a per-card extra fetch.
+  // Holland responses inline a job_zone object per career; stash it for
+  // the Education filter. /fit responses don't include job_zone, so the
+  // Education filter on those is best-effort — values fill in as cards
+  // get opened (which triggers the full detail fetch).
   careers.forEach(c => {
     if (c.job_zone && c.job_zone.code) {
       detailCache[c.code] = detailCache[c.code] || { _partial: true };
@@ -1011,8 +1051,16 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
   const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
   const brightCls = tags.brightOutlook ? ' bright' : '';
+  // Map O*NET fit grades to badge variants. Falls back to the legacy
+  // .isMatch boolean (Best Fit only) for callers that haven't been
+  // updated to pass c.fitGrade.
+  const grade = c.fitGrade || (c.isMatch ? 'Best' : '');
+  let fitBadge = '';
+  if (grade === 'Best')  fitBadge = `<div class="ccard-match best">👤 Best Fit</div>`;
+  else if (grade === 'Great') fitBadge = `<div class="ccard-match great">★ Great Fit</div>`;
+  else if (grade === 'Good')  fitBadge = `<div class="ccard-match good">✓ Good Fit</div>`;
   return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
-    ${c.isMatch ? `<div class="ccard-match">👤 Best Fit</div>` : ''}
+    ${fitBadge}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
