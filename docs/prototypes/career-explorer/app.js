@@ -98,12 +98,22 @@ document.addEventListener('click', function(e) {
   // Close cluster detail
   if (t.id === 'cluster-detail-close') { closeClusterDetail(); return; }
 
-  // Sub-cluster chip — visual highlight only (O*NET API doesn't support
-  // sub-cluster filtering; chips surface as context).
+  // Sub-cluster chip — toggles a client-side title-keyword filter over
+  // the loaded cluster cards. Clicking the active chip again clears it.
+  // (O*NET's API doesn't expose sub-cluster codes for direct filtering,
+  // so we tokenize the chip label and match against career titles.)
   const sub = t.closest('.sub-chip[data-sub]');
   if (sub) {
-    document.querySelectorAll('.sub-chip').forEach(c => c.classList.remove('active'));
-    sub.classList.add('active');
+    const subVal = sub.dataset.sub;
+    if (activeClusterSub === subVal) {
+      activeClusterSub = '';
+      sub.classList.remove('active');
+    } else {
+      activeClusterSub = subVal;
+      document.querySelectorAll('.sub-chip').forEach(c => c.classList.remove('active'));
+      sub.classList.add('active');
+    }
+    applyClusterSubFilter();
     return;
   }
 
@@ -183,6 +193,7 @@ let lastResults = null;
 let lastOnetScores = null;
 const activeR = new Set();      // active RIASEC chips (work-style filter)
 let activeCluster = '';         // active cluster filter (one at a time)
+let activeClusterSub = '';      // active sub-cluster chip (title-keyword filter)
 let minSalary = 0;              // 0 = Any. Filters cards client-side by detailCache median.
 let eduZoneMin = 0;             // 0 = Any. Filters cards client-side by O*NET job_zone (1-5).
 // RIASEC palette. Updated for the new light-mode page: E and C used to be
@@ -669,6 +680,44 @@ function setFbValue(name, text, hasValue) {
 // Apply Education + Salary filters to the rendered career list by hiding
 // rows whose cached values don't match. Cards without cached data stay
 // visible (we never penalize a card for missing data).
+// Client-side sub-cluster filter. O*NET's API doesn't expose sub-cluster
+// codes for the cluster results endpoint, so we tokenize the chip label
+// (e.g. "Air & Space Transportation" -> ["air", "space", "transportation"])
+// and hide cards whose title doesn't contain any of the keywords. Imperfect
+// but a sensible default — surfaces obvious matches without server changes.
+const SUB_STOPWORDS = new Set(['and','the','for','with','from','this','that']);
+function clusterSubTokens(label) {
+  if (!label) return [];
+  return label.toLowerCase()
+    .split(/[\s&/,]+/)
+    .map(t => t.trim())
+    .filter(t => t.length >= 3 && !SUB_STOPWORDS.has(t));
+}
+function applyClusterSubFilter() {
+  const list = document.getElementById('cluster-list');
+  if (!list) return;
+  const tokens = clusterSubTokens(activeClusterSub);
+  let visible = 0, total = 0;
+  list.querySelectorAll('.ccard[data-live-code]').forEach(card => {
+    total++;
+    if (!tokens.length) { card.style.display = ''; visible++; return; }
+    const title = (card.querySelector('.ccard-title')?.textContent || '').toLowerCase();
+    const match = tokens.some(t => title.includes(t));
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  // Update the count line so the filter state is obvious.
+  const rc = document.getElementById('cluster-rcount');
+  if (rc) {
+    if (activeClusterSub) {
+      rc.textContent = `${visible} of ${total} career${total!==1?'s':''} matching "${activeClusterSub}"`;
+    } else {
+      const tt = clusterTotal_v2 || total;
+      rc.textContent = `${total} of ${tt} career${tt!==1?'s':''}`;
+    }
+  }
+}
+
 function applyClientFilters() {
   // Walk every grid (#slist, #cluster-list, #bo-list, …) — renderLiveList
   // marks each result container with .cgrid, so a single selector covers
@@ -789,6 +838,8 @@ async function loadClusterIntoTarget(code, name, listId, rcountId, moreId) {
     renderLiveList(clusterCareers_v2, listId, 'cl');
     document.getElementById(rcountId).textContent =
       `${clusterCareers_v2.length} of ${clusterTotal_v2} career${clusterTotal_v2!==1?'s':''}`;
+    // Re-apply the sub-cluster keyword filter to the newly rendered cards.
+    if (rcountId === 'cluster-rcount') applyClusterSubFilter();
     const hasMore = clusterCareers_v2.length < clusterTotal_v2;
     document.getElementById(moreId).innerHTML = hasMore
       ? '<div style="margin-top:14px;text-align:center"><button class="cta ghost" id="cluster-list-more-btn">Show more</button></div>'
@@ -827,6 +878,7 @@ function openClusterDetail(name) {
   const cl = CLUSTERS.find(c => c.name === name);
   if (!cl) return;
   activeCluster = name;
+  activeClusterSub = '';
   const detail = document.getElementById('cluster-detail');
   detail.style.display = 'block';
   document.getElementById('cluster-detail-title').textContent = cl.name;
