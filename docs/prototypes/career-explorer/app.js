@@ -286,7 +286,7 @@ function syncProfileUI() {
         <p style="font-size:15px;color:var(--ts);line-height:1.55;margin:0 auto 18px;max-width:480px">
           A short 30-question quiz uncovers your top work styles and unlocks careers tailored to your interests.
         </p>
-        <button class="cta" id="btn-go-assess">Take the Assessment</button>
+        <button class="cta" id="btn-go-assess">Get Matched With Careers</button>
       </div>`;
   }
 }
