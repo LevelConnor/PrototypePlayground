@@ -686,37 +686,31 @@ function setFbValue(name, text, hasValue) {
 // Apply Education + Salary filters to the rendered career list by hiding
 // rows whose cached values don't match. Cards without cached data stay
 // visible (we never penalize a card for missing data).
-// Client-side sub-cluster filter. O*NET's API doesn't expose sub-cluster
-// codes for the cluster results endpoint, so we tokenize the chip label
-// (e.g. "Air & Space Transportation" -> ["air", "space", "transportation"])
-// and hide cards whose title doesn't contain any of the keywords. Imperfect
-// but a sensible default — surfaces obvious matches without server changes.
-const SUB_STOPWORDS = new Set(['and','the','for','with','from','this','that']);
-function clusterSubTokens(label) {
-  if (!label) return [];
-  return label.toLowerCase()
-    .split(/[\s&/,]+/)
-    .map(t => t.trim())
-    .filter(t => t.length >= 3 && !SUB_STOPWORDS.has(t));
-}
+// Sub-cluster filter — matches by O*NET's authoritative sub_cluster code
+// (e.g. 010101 = Engineering inside Advanced Manufacturing) instead of
+// keyword guesses on titles. activeClusterSub now stores a 6-digit code,
+// not a free-text label. The chip's title is kept on data-sub-title so
+// the count line can still surface a friendly name.
 function applyClusterSubFilter() {
   const list = document.getElementById('cluster-list');
   if (!list) return;
-  const tokens = clusterSubTokens(activeClusterSub);
   let visible = 0, total = 0;
   list.querySelectorAll('.ccard[data-live-code]').forEach(card => {
     total++;
-    if (!tokens.length) { card.style.display = ''; visible++; return; }
-    const title = (card.querySelector('.ccard-title')?.textContent || '').toLowerCase();
-    const match = tokens.some(t => title.includes(t));
+    const code = card.dataset.liveCode;
+    if (!activeClusterSub) { card.style.display = ''; visible++; return; }
+    const careerSub = careerSubCode_v2.get(code);
+    const match = careerSub === activeClusterSub;
     card.style.display = match ? '' : 'none';
     if (match) visible++;
   });
-  // Update the count line so the filter state is obvious.
   const rc = document.getElementById('cluster-rcount');
   if (rc) {
     if (activeClusterSub) {
-      rc.textContent = `${visible} of ${total} career${total!==1?'s':''} matching "${activeClusterSub}"`;
+      const subTitle =
+        (clusterSubCatalog_v2.find(s => s.code === activeClusterSub) || {}).title
+        || activeClusterSub;
+      rc.textContent = `${visible} of ${total} career${total!==1?'s':''} in ${subTitle}`;
     } else {
       const tt = clusterTotal_v2 || total;
       rc.textContent = `${total} of ${tt} career${tt!==1?'s':''}`;
@@ -884,35 +878,66 @@ async function renderRiasecIntoSlist() {
 
 // ─── Cluster careers loader (used by the Career Clusters page) ──────────
 const CLUSTER_PAGE_SIZE = 15;
-let clusterCareers_v2 = [];
+let clusterCareers_v2 = [];   // currently-rendered slice
+let clusterPool_v2 = [];      // all careers fetched up front
 let clusterTotal_v2 = null;
 let clusterLoading_v2 = false;
 let loadedClusterCode_v2 = null;
+// Sub-cluster catalog harvested from the API response so the chips reflect
+// O*NET's real taxonomy instead of a hand-curated list.
+let clusterSubCatalog_v2 = []; // [{code, title}]
+// Map: career.code -> sub_cluster.code so the chip filter can match by ID.
+let careerSubCode_v2 = new Map();
 
 async function loadClusterIntoTarget(code, name, listId, rcountId, moreId) {
   if (clusterLoading_v2) return;
   clusterLoading_v2 = true;
-  const start = clusterCareers_v2.length + 1;
-  const end = start + CLUSTER_PAGE_SIZE - 1;
   try {
-    const data = await onetGet(`/career_cluster/${code}?start=${start}&end=${end}`);
-    const page = (data.career || []).map(c => ({
-      code: c.code, title: c.title,
-      tags: {
-        brightOutlook:  !!(c.tags && c.tags.bright_outlook),
-        apprenticeship: !!(c.tags && c.tags.apprenticeship),
-        stem:           !!(c.tags && c.tags.stem),
-        green:          !!(c.tags && c.tags.green),
-      },
-    }));
-    clusterTotal_v2 = data.total || clusterTotal_v2 || page.length;
-    clusterCareers_v2 = clusterCareers_v2.concat(page);
+    // First call: if no pool yet, fetch ALL careers in one shot (cluster
+    // sizes top out around ~170, well within a single page). Reading the
+    // full set up front lets us enumerate every sub-cluster present so
+    // chips can be built from real data — not from the static CLUSTERS
+    // table. Subsequent "Show more" presses just advance through the
+    // already-fetched pool.
+    if (!clusterPool_v2.length) {
+      const data = await onetGet(`/career_cluster/${code}?start=1&end=300`);
+      const occ = data.occupation || data.career || [];
+      clusterPool_v2 = occ.map(c => {
+        const sub = (c.sub_cluster && c.sub_cluster[0]) || null;
+        if (sub && sub.code) careerSubCode_v2.set(c.code, sub.code);
+        return {
+          code: c.code, title: c.title,
+          tags: {
+            brightOutlook:  !!(c.tags && c.tags.bright_outlook),
+            apprenticeship: !!(c.tags && c.tags.apprenticeship),
+            stem:           !!(c.tags && c.tags.stem),
+            green:          !!(c.tags && c.tags.green),
+          },
+        };
+      });
+      clusterTotal_v2 = data.total || clusterPool_v2.length;
+      // Build the unique sub-cluster catalog, preserving the order O*NET
+      // returns careers in (which roughly groups them by sub-cluster).
+      const seen = new Set();
+      clusterSubCatalog_v2 = [];
+      for (const c of occ) {
+        const s = (c.sub_cluster && c.sub_cluster[0]) || null;
+        if (s && s.code && !seen.has(s.code)) {
+          seen.add(s.code);
+          clusterSubCatalog_v2.push({ code: s.code, title: s.title });
+        }
+      }
+      // Render the chips now that we know what they should be.
+      renderClusterSubChips();
+    }
+    // Advance the rendered slice by one page.
+    const nextLen = Math.min(clusterCareers_v2.length + CLUSTER_PAGE_SIZE, clusterPool_v2.length);
+    clusterCareers_v2 = clusterPool_v2.slice(0, nextLen);
     renderLiveList(clusterCareers_v2, listId, 'cl');
     document.getElementById(rcountId).textContent =
       `${clusterCareers_v2.length} of ${clusterTotal_v2} career${clusterTotal_v2!==1?'s':''}`;
-    // Re-apply the sub-cluster keyword filter to the newly rendered cards.
     if (rcountId === 'cluster-rcount') applyClusterSubFilter();
-    const hasMore = clusterCareers_v2.length < clusterTotal_v2;
+    const hasMore = clusterCareers_v2.length < clusterPool_v2.length;
     document.getElementById(moreId).innerHTML = hasMore
       ? '<div style="margin-top:14px;text-align:center"><button class="cta ghost" id="cluster-list-more-btn">Show more</button></div>'
       : '';
@@ -923,6 +948,15 @@ async function loadClusterIntoTarget(code, name, listId, rcountId, moreId) {
   } finally {
     clusterLoading_v2 = false;
   }
+}
+
+// Repaint #cluster-subs from the live sub-cluster catalog.
+function renderClusterSubChips() {
+  const host = document.getElementById('cluster-subs');
+  if (!host) return;
+  host.innerHTML = clusterSubCatalog_v2
+    .map(s => `<button class="fc sub-chip${activeClusterSub === s.code ? ' active' : ''}" data-sub="${s.code}" data-sub-title="${s.title}">${s.title}</button>`)
+    .join('');
 }
 
 // ─── Career Clusters page ───────────────────────────────────────────────
@@ -955,12 +989,16 @@ function openClusterDetail(name) {
   detail.style.display = 'block';
   document.getElementById('cluster-detail-title').textContent = cl.name;
   document.getElementById('cluster-detail-desc').textContent = cl.desc;
-  document.getElementById('cluster-subs').innerHTML =
-    cl.subs.map(s => `<button class="fc sub-chip" data-sub="${s}">${s}</button>`).join('');
+  // Chips render after the cluster fetch (built from O*NET's real
+  // sub-cluster catalog). Show a placeholder so the row doesn't pop in.
+  document.getElementById('cluster-subs').innerHTML = '';
 
   // Reset pagination + fire the load
   const code = CLUSTER_CODES[name];
   clusterCareers_v2 = [];
+  clusterPool_v2 = [];
+  careerSubCode_v2 = new Map();
+  clusterSubCatalog_v2 = [];
   clusterTotal_v2 = null;
   loadedClusterCode_v2 = code;
   document.getElementById('cluster-list').innerHTML =
@@ -975,8 +1013,12 @@ function openClusterDetail(name) {
 
 function closeClusterDetail() {
   activeCluster = '';
+  activeClusterSub = '';
   loadedClusterCode_v2 = null;
   clusterCareers_v2 = [];
+  clusterPool_v2 = [];
+  careerSubCode_v2 = new Map();
+  clusterSubCatalog_v2 = [];
   clusterTotal_v2 = null;
   const detail = document.getElementById('cluster-detail');
   if (detail) detail.style.display = 'none';

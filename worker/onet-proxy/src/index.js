@@ -12,8 +12,10 @@
 //                  interests, work_context, job_zone, education, related_occupations }
 //   GET /bright_outlook/{category}?start=1&end=20  -> /mnm/bright_outlook/{category}
 //        category ∈ { grow, openings, emerging }
-//   GET /career_cluster/{code}?start=1&end=20   -> /mnm/career_clusters/{code}
-//        code is a 6-digit O*NET career-cluster code (e.g. 010100)
+//   GET /career_cluster/{code}?start=1&end=20   -> /online/career_clusters/{code}
+//        code is a 6-digit O*NET career-cluster code (e.g. 010100).
+//        Response: { summary, occupation: [{ code, title, tags,
+//        sub_cluster: [{ code, title }] }, ...] }
 //   GET /holland/{code}?start=1&end=20          -> /online/onet_data/interests/{code}
 //        code is a 1-3 letter Holland code (e.g. S, SI, SIR)
 //   GET /fit?realistic=N&investigative=N&artistic=N&social=N&enterprising=N&conventional=N
@@ -59,7 +61,6 @@ const CAREER_CODE_RE = /^[0-9]{2}-[0-9]{4}\.[0-9]{2}$/;
 const ALLOWED_DETAIL_SLICES = new Set([
   'tasks', 'skills', 'knowledge', 'work_activities', 'abilities',
   'interests', 'work_context', 'job_zone', 'education', 'related_occupations',
-  'career_cluster',
 ]);
 const ALLOWED_BRIGHT_OUTLOOK_CATEGORIES = new Set(['grow', 'openings', 'emerging']);
 const CLUSTER_CODE_RE = /^[0-9]{6}$/;
@@ -140,15 +141,6 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/onet_data/interests/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
-    } else if (parts[0] === '__probe' && url.searchParams.has('path')) {
-      // TEMPORARY diagnostic passthrough for exploring O*NET endpoints.
-      // Allow only paths starting with /online/ or /mnm/ so this can't
-      // be abused to hit arbitrary URLs. REMOVE after investigation.
-      const raw = url.searchParams.get('path') || '';
-      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
-        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
-      }
-      onetPath = raw;
     } else if (parts[0] === 'fit' && parts.length === 1) {
       // My Next Move career matches. Requires the 6 RIASEC scores (each
       // 0-40, from the Mini Interest Profiler) as query params; returns
@@ -167,9 +159,19 @@ export default {
       if (!q.has('end')) q.set('end', '100');
       onetPath = `/mnm/interestprofiler/careers?${q.toString()}`;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
+      // /online/ has richer data than /mnm/ — each occupation carries a
+      // sub_cluster: [{code, title}] annotation that lets us filter the
+      // cluster view by sub-cluster instead of by keyword guess.
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
-      onetPath = `/mnm/career_clusters/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      onetPath = `/online/career_clusters/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === 'sub_cluster' && parts.length === 2 && /^[0-9]{6}$/.test(parts[1])) {
+      // Direct sub-cluster lookup. Path validates a 6-digit code but the
+      // upstream rejects parent codes ending in 00 — only sub codes work
+      // (e.g. 010101). Returns the same shape as career_cluster.
+      const start = url.searchParams.get('start') || '1';
+      const end = url.searchParams.get('end') || '50';
+      onetPath = `/online/career_clusters/sub_clusters/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
     } else if (parts[0] === 'bright_outlook' && parts.length === 2 && ALLOWED_BRIGHT_OUTLOOK_CATEGORIES.has(parts[1])) {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
