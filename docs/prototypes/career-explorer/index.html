@@ -319,10 +319,17 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .thdr{background:var(--off);border-bottom:1.5px solid var(--mg);padding:20px 22px;display:flex;align-items:center;justify-content:space-between}
 .thdr h2{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy)}
 .tclose{background:var(--white);border:1.5px solid var(--mg);color:var(--navy);width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.tbody2{flex:1;overflow-y:auto;padding:20px}
+/* min-height:0 is required so this flex child can shrink and scroll
+   instead of pushing past the panel bottom. */
+.tbody2{flex:1;min-height:0;overflow-y:auto;padding:20px}
 /* When the tray holds .ccard tiles (the new shared component), use a
-   single-column layout so cards remain readable inside the 400px panel. */
-.tbody2.cgrid{display:grid;grid-template-columns:1fr;gap:14px}
+   single-column layout so cards remain readable inside the 400px panel.
+   Override the default aspect-ratio so each card is roughly half the
+   vertical height it has elsewhere — keeps the tray compact. */
+.tbody2.cgrid{display:grid;grid-template-columns:1fr;gap:12px}
+.tbody2.cgrid .ccard{aspect-ratio:2.3/1}
+.tbody2.cgrid .ccard-title{font-size:17px;margin-bottom:8px}
+.tbody2.cgrid .ccard-body{left:14px;right:14px;bottom:14px}
 .tempty{text-align:center;padding:40px 20px;color:var(--ts);font-size:15px}
 .ti{background:var(--off);border-radius:var(--rmd);padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .ti h4{font-size:15px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px}
@@ -762,6 +769,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05c"></script>
+<script src="app.js?v=2026-06-05d"></script>
 </body>
 </html>
