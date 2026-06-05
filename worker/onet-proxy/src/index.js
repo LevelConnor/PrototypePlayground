@@ -16,9 +16,12 @@
 //        code is a 6-digit O*NET career-cluster code (e.g. 010100)
 //   GET /holland/{code}?start=1&end=20          -> /online/onet_data/interests/{code}
 //        code is a 1-3 letter Holland code (e.g. S, SI, SIR)
-//   GET /fit/{code}?start=1&end=100              -> /mnm/interestprofiler/careers?area={code}
-//        code is a 1-3 letter Holland code; response includes per-career
-//        'fit' field with O*NET's My Next Move fit grade (Best/Great/etc).
+//   GET /fit?realistic=N&investigative=N&artistic=N&social=N&enterprising=N&conventional=N
+//          &start=1&end=100&job_zones=1,2,3,4,5
+//        -> /mnm/interestprofiler/careers
+//        Forwards the 6 RIASEC scores (each 0-40) plus optional pagination
+//        + job_zones filter. Response includes per-career 'fit' field with
+//        O*NET's My Next Move fit grade (Best/Great/Good).
 
 const ONET_BASE = 'https://api-v2.onetcenter.org';
 
@@ -136,13 +139,23 @@ export default {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
       onetPath = `/online/onet_data/interests/${parts[1]}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
-    } else if (parts[0] === 'fit' && parts.length === 2 && HOLLAND_CODE_RE.test(parts[1])) {
-      // My Next Move career matches: returns each career with a 'fit'
-      // grade (Best Fit, Great Fit, etc.) computed by O*NET against the
-      // supplied RIASEC area code.
-      const start = url.searchParams.get('start') || '1';
-      const end = url.searchParams.get('end') || '100';
-      onetPath = `/mnm/interestprofiler/careers?area=${parts[1]}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    } else if (parts[0] === 'fit' && parts.length === 1) {
+      // My Next Move career matches. Requires the 6 RIASEC scores (each
+      // 0-40, from the Mini Interest Profiler) as query params; returns
+      // each career with a 'fit' grade. We forward only the whitelisted
+      // params to keep the proxy contract explicit.
+      const allowed = [
+        'realistic', 'investigative', 'artistic',
+        'social', 'enterprising', 'conventional',
+        'job_zones', 'start', 'end', 'answers',
+      ];
+      const q = new URLSearchParams();
+      for (const k of allowed) {
+        const v = url.searchParams.get(k);
+        if (v != null && v !== '') q.set(k, v);
+      }
+      if (!q.has('end')) q.set('end', '100');
+      onetPath = `/mnm/interestprofiler/careers?${q.toString()}`;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
       const start = url.searchParams.get('start') || '1';
       const end = url.searchParams.get('end') || '20';
