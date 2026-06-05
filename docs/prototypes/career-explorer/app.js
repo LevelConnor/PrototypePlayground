@@ -1056,9 +1056,9 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   // updated to pass c.fitGrade.
   const grade = c.fitGrade || (c.isMatch ? 'Best' : '');
   let fitBadge = '';
-  if (grade === 'Best')  fitBadge = `<div class="ccard-match best">👤 Best Fit</div>`;
-  else if (grade === 'Great') fitBadge = `<div class="ccard-match great">★ Great Fit</div>`;
-  else if (grade === 'Good')  fitBadge = `<div class="ccard-match good">✓ Good Fit</div>`;
+  if (grade === 'Best')  fitBadge = `<div class="ccard-match">Best Fit</div>`;
+  else if (grade === 'Great') fitBadge = `<div class="ccard-match">Great Fit</div>`;
+  else if (grade === 'Good')  fitBadge = `<div class="ccard-match">Good Fit</div>`;
   return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
     ${fitBadge}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
