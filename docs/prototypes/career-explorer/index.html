@@ -582,16 +582,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
        Cold-start: shows the "Take the Assessment" CTA inside the same card. -->
   <div id="interest-profile"></div>
 
-  <!-- Save-your-profile row, only shown once an assessment has been taken. -->
-  <div class="sav" id="profile-save" style="display:none">
-    <div><h4>Save your profile</h4><p>No account needed.</p></div>
-    <div class="sav-btns">
-      <button class="cta ylw" id="btn-copy-link">🔗 Copy Link</button>
-      <button class="cta ghost" id="btn-email">✉️ Email Myself</button>
-      <button class="cta ghost" id="btn-print">🖨 Save as PDF</button>
-      <button class="cta ghost" id="btn-retake">↩ Retake</button>
-    </div>
-  </div>
+  <!-- Legacy 'save your profile' row — its buttons live inside the .ip-card
+       footer now, but the wrapper stays so syncProfileUI's force-hide
+       toggle has something to reference. No interactive children so no
+       duplicate-id collision with the .ip-card action buttons. -->
+  <div class="sav" id="profile-save" style="display:none" aria-hidden="true"></div>
 
   <!-- Match summary headline. Lives above the search/filter row so the
        count framing sits before the controls. -->
@@ -763,6 +758,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=2026-06-05"></script>
 </body>
 </html>
