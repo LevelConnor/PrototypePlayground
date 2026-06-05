@@ -286,6 +286,12 @@ function syncProfileUI() {
   // embedded inside .ip-card. Force-hide it regardless of state.
   const saveEl = document.getElementById('profile-save');
   if (saveEl) saveEl.style.display = 'none';
+  // After the quiz is taken, the Your Results card carries the whole
+  // headline; hide the panel <h1> + subtitle to remove the duplication.
+  const pt = document.getElementById('search-pt');
+  const ps = document.getElementById('search-ps');
+  if (pt) pt.style.display = lastResults ? 'none' : '';
+  if (ps) ps.style.display = lastResults ? 'none' : '';
   if (!ipEl) return;
   if (lastResults) {
     const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
