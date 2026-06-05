@@ -783,19 +783,24 @@ async function renderRiasecIntoSlist() {
   slist.innerHTML = '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
 
   // Fallback ladder: try 3-letter, then 2-letter, then 1-letter.
+  // O*NET returns up to ~150 careers for a 1-letter code, ~100-120 for
+  // 2-letter, fewer for narrow 3-letter combos. Request a generous page
+  // (end=100) and keep all of them — the previous end=20 cap was the
+  // reason the work-style filter always showed 20 even when 100+ matched.
+  const HOLLAND_PAGE = 100;
   let careers = [];
   let usedCode = '';
   for (let n = fullCode.length; n >= 1; n--) {
     const sub = fullCode.slice(0, n);
     try {
-      const data = await onetGet(`/holland/${sub}?end=20`);
+      const data = await onetGet(`/holland/${sub}?end=${HOLLAND_PAGE}`);
       const occ = (data && data.occupation) || [];
       if (occ.length >= 5 || n === 1) {
-        careers = occ.slice(0, 20);
+        careers = occ;
         usedCode = sub;
         break;
       }
-      if (!careers.length) { careers = occ.slice(0, 20); usedCode = sub; }
+      if (!careers.length) { careers = occ; usedCode = sub; }
     } catch (e) { /* try next */ }
   }
 
