@@ -369,7 +369,15 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   transition:transform .2s ease, box-shadow .2s ease}
 .ccard:not(.bright)::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,#213168 0%,#0083FF 100%);
+  /* Same radial shape as the Bright Outlook card: glow pooled toward
+     the bottom-center, fading to navy at the top corners. On hover the
+     overlay fades out, leaving the solid var(--blue) base showing —
+     which reads as a smooth "navy edges -> primary blue" transition. */
+  background:radial-gradient(ellipse 130% 110% at 50% 115%,
+    #0083FF 0%,
+    #1F62C9 35%,
+    #213168 80%,
+    #1A2756 100%);
   opacity:1;transition:opacity .35s ease;z-index:0;
 }
 /* Sunrise gradient is sized taller than the card and slides on hover:
