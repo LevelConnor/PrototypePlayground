@@ -419,29 +419,27 @@ function submitAssessment() {
 // (in case state was restored from a saved URL).
 function syncProfileUI() {
   const ipEl = document.getElementById('interest-profile');
+  const homeCta = document.getElementById('home-quiz-cta');
   // The legacy standalone .sav row is now superseded by the action buttons
   // embedded inside .ip-card. Force-hide it regardless of state.
   const saveEl = document.getElementById('profile-save');
   if (saveEl) saveEl.style.display = 'none';
-  // After the quiz is taken, the Your Results card carries the whole
-  // headline; hide the panel <h1> + subtitle to remove the duplication.
-  const pt = document.getElementById('search-pt');
-  const ps = document.getElementById('search-ps');
-  if (pt) pt.style.display = lastResults ? 'none' : '';
-  if (ps) ps.style.display = lastResults ? 'none' : '';
-  if (!ipEl) return;
   if (lastResults) {
-    const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
-    renderInterestProfile(sorted);
+    // Quiz taken -> results card replaces the Get-Matched link card on
+    // the Home landing.
+    if (homeCta) homeCta.style.display = 'none';
+    if (ipEl) {
+      ipEl.style.display = '';
+      const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
+      renderInterestProfile(sorted);
+    }
   } else {
-    ipEl.innerHTML = `
-      <div class="ip-card" style="text-align:center;padding:32px 28px">
-        <div class="t-eyebrow" style="margin-bottom:8px">Get personalized matches</div>
-        <p style="font-size:15px;color:var(--ts);line-height:1.55;margin:0 auto 18px;max-width:480px">
-          A short 30-question quiz uncovers your top work styles and unlocks careers tailored to your interests.
-        </p>
-        <button class="cta" id="btn-go-assess">Get Matched With Careers</button>
-      </div>`;
+    // No quiz taken -> Get-Matched link card is the primary CTA.
+    if (homeCta) homeCta.style.display = '';
+    if (ipEl) {
+      ipEl.style.display = 'none';
+      ipEl.innerHTML = '';
+    }
   }
 }
 

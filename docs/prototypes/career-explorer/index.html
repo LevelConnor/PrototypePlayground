@@ -656,16 +656,22 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   <div class="pt" id="home-pt">Let's figure out what you want to do.</div>
   <p class="ps">Take the interest questionnaire, browse careers, or dive straight into a field.</p>
 
-  <button class="home-card" data-tab-target="assessment" type="button">
-    <div class="home-card-icon home-icon-quiz" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
-    </div>
-    <div class="home-card-body">
-      <h2 class="home-card-title">Get Matched With Careers</h2>
-      <p class="home-card-desc">Take the O*NET Interest Profiler and get a personalized list of careers that match. Quick (30 items) or full (60 items).</p>
-    </div>
-    <span class="home-card-cta">Take the quiz →</span>
-  </button>
+  <!-- Quiz slot. Shows the Get-Matched CTA before the quiz is taken; once
+       results exist, syncProfileUI() hides #home-quiz-cta and #interest-profile
+       moves into view carrying the Your Results card. -->
+  <div id="home-quiz-cta">
+    <button class="home-card" data-tab-target="assessment" type="button">
+      <div class="home-card-icon home-icon-quiz" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+      </div>
+      <div class="home-card-body">
+        <h2 class="home-card-title">Get Matched With Careers</h2>
+        <p class="home-card-desc">Take the O*NET Interest Profiler and get a personalized list of careers that match. Quick (30 items) or full (60 items).</p>
+      </div>
+      <span class="home-card-cta">Take the quiz →</span>
+    </button>
+  </div>
+  <div id="interest-profile" style="display:none"></div>
 
   <button class="home-card" data-tab-target="search" type="button">
     <div class="home-card-icon home-icon-explore" aria-hidden="true">
@@ -767,9 +773,9 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   <div class="pt" id="search-pt">Explore Careers</div>
   <p class="ps" id="search-ps" style="margin-bottom:18px">Match careers to your interests, browse a field, or search by keyword.</p>
 
-  <!-- Interest Profile (populated after the user takes the assessment).
-       Cold-start: shows the "Take the Assessment" CTA inside the same card. -->
-  <div id="interest-profile"></div>
+  <!-- Interest Profile results card lives on the Home landing now
+       (#interest-profile inside #panel-home). The Explore Careers page
+       jumps straight into the search + matches list. -->
 
   <!-- Legacy 'save your profile' row — its buttons live inside the .ip-card
        footer now, but the wrapper stays so syncProfileUI's force-hide
@@ -954,6 +960,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05r"></script>
+<script src="app.js?v=2026-06-05s"></script>
 </body>
 </html>
