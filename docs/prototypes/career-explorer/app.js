@@ -529,7 +529,7 @@ function renderInterestProfile(sorted) {
     <div class="ip-card">
       <div class="ip-layout">
         <div class="ip-header">
-          <h2 class="ip-title">Your Results</h2>
+          <h2 class="ip-title">Your Career Quiz Results</h2>
           <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
         </div>
         <div class="ip-stack">
