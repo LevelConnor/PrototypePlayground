@@ -71,7 +71,7 @@ document.addEventListener('click', function(e) {
   if (t.id === 'bo-more-btn') { loadBrightOutlookPage(); return; }
 
   // Interest profile expand/collapse (top 3 ↔ all 6)
-  if (t.closest('#ip-switch')) { toggleIpShowAll(); return; }
+  if (t.closest('.ip-switch')) { toggleIpShowAll(); return; }
 
   // Filter-bar dropdown toggle (Work style / Education / Salary buttons)
   const fbBtn = t.closest('.fb-btn');
@@ -418,28 +418,52 @@ function submitAssessment() {
 // in lastResults. Called when the assessment completes and on initial load
 // (in case state was restored from a saved URL).
 function syncProfileUI() {
-  const ipEl = document.getElementById('interest-profile');
+  const targets = document.querySelectorAll('.interest-profile');
   const homeCta = document.getElementById('home-quiz-cta');
+  // Search-panel headline needs to stay hidden while the results card is
+  // in place there — otherwise the page has 'Explore Careers' above
+  // 'Your Results' back-to-back.
+  const searchPt = document.getElementById('search-pt');
+  const searchPs = document.getElementById('search-ps');
   // The legacy standalone .sav row is now superseded by the action buttons
   // embedded inside .ip-card. Force-hide it regardless of state.
   const saveEl = document.getElementById('profile-save');
   if (saveEl) saveEl.style.display = 'none';
   if (lastResults) {
-    // Quiz taken -> results card replaces the Get-Matched link card on
-    // the Home landing.
+    // Quiz taken -> results card replaces the Get-Matched card on Home,
+    // and lands at the top of Explore Careers.
     if (homeCta) homeCta.style.display = 'none';
-    if (ipEl) {
-      ipEl.style.display = '';
-      const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
-      renderInterestProfile(sorted);
-    }
+    if (searchPt) searchPt.style.display = 'none';
+    if (searchPs) searchPs.style.display = 'none';
+    const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
+    renderInterestProfile(sorted);
   } else {
-    // No quiz taken -> Get-Matched link card is the primary CTA.
+    // No quiz -> Get-Matched card is the primary CTA on Home. On Explore
+    // Careers the search-only interest-profile slot gets the small CTA
+    // fallback card (previous behavior). Home slot stays hidden.
     if (homeCta) homeCta.style.display = '';
-    if (ipEl) {
-      ipEl.style.display = 'none';
-      ipEl.innerHTML = '';
-    }
+    if (searchPt) searchPt.style.display = '';
+    if (searchPs) searchPs.style.display = '';
+    const ctaHtml = `
+      <div class="ip-card" style="text-align:center;padding:32px 28px">
+        <div class="t-eyebrow" style="margin-bottom:8px">Get personalized matches</div>
+        <p style="font-size:15px;color:var(--ts);line-height:1.55;margin:0 auto 18px;max-width:480px">
+          A short 30-question quiz uncovers your top work styles and unlocks careers tailored to your interests.
+        </p>
+        <button class="cta" id="btn-go-assess">Get Matched With Careers</button>
+      </div>`;
+    targets.forEach(el => {
+      // Home's slot has data-hide-when-empty so it stays out of the way
+      // when no quiz has been taken (the Get-Matched card serves the
+      // purpose there). Others show the fallback CTA.
+      if (el.dataset.hideWhenEmpty !== undefined) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+      } else {
+        el.style.display = '';
+        el.innerHTML = ctaHtml;
+      }
+    });
   }
 }
 
@@ -456,8 +480,11 @@ let ipShowAll = false;
 let ipSorted = null;
 
 function renderInterestProfile(sorted) {
-  const el = document.getElementById('interest-profile');
-  if (!el) return;
+  // Multiple containers can hold the results card (Home landing +
+  // Explore Careers). renderInterestProfile paints the same markup
+  // into every '.interest-profile' element on the page.
+  const targets = document.querySelectorAll('.interest-profile');
+  if (!targets.length) return;
   ipSorted = sorted;
 
   // Each row is a single colored pill whose width is proportional to the
@@ -498,14 +525,14 @@ function renderInterestProfile(sorted) {
   const iconDown   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>`;
   const iconRetake = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>`;
 
-  el.innerHTML = `
+  const cardHtml = `
     <div class="ip-card">
       <div class="ip-layout">
         <div class="ip-header">
           <h2 class="ip-title">Your Results</h2>
           <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
         </div>
-        <div class="ip-stack" id="ip-stack">
+        <div class="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
         <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.${
@@ -516,7 +543,7 @@ function renderInterestProfile(sorted) {
         <div class="ip-foot">
           <div class="ip-toggle-pill">
             <span>Show Full Results</span>
-            <button class="ip-switch" id="ip-switch" type="button" aria-pressed="${ipShowAll}">
+            <button class="ip-switch" type="button" aria-pressed="${ipShowAll}">
               <span class="ip-switch-dot"></span>
             </button>
           </div>
@@ -529,6 +556,7 @@ function renderInterestProfile(sorted) {
         </div>
       </div>
     </div>`;
+  targets.forEach(el => { el.innerHTML = cardHtml; el.style.display = ''; });
 
   applyIpVisibility();
 }
@@ -536,7 +564,7 @@ function renderInterestProfile(sorted) {
 // Show all 6 rows or just the top 3, with a max-height collapse on rows 4-6.
 function applyIpVisibility() {
   if (!ipSorted) return;
-  const rows = document.querySelectorAll('#ip-stack .ip-row');
+  const rows = document.querySelectorAll('.ip-stack .ip-row');
   if (!rows.length) return;
   rows.forEach((r, i) => {
     if (ipShowAll || i < 3) r.classList.remove('ip-row--hidden');
@@ -546,8 +574,9 @@ function applyIpVisibility() {
 
 function toggleIpShowAll() {
   ipShowAll = !ipShowAll;
-  const sw = document.getElementById('ip-switch');
-  if (sw) sw.setAttribute('aria-pressed', String(ipShowAll));
+  document.querySelectorAll('.ip-switch').forEach(sw => {
+    sw.setAttribute('aria-pressed', String(ipShowAll));
+  });
   applyIpVisibility();
 }
 

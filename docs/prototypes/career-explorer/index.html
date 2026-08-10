@@ -671,7 +671,11 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <span class="home-card-cta">Take the quiz →</span>
     </button>
   </div>
-  <div id="interest-profile" style="display:none"></div>
+  <!-- Home-side interest-profile slot. Only visible AFTER the quiz —
+       hide-when-empty tells syncProfileUI not to render the small
+       fallback CTA card here (the Get-Matched home-card above already
+       serves that role). -->
+  <div id="interest-profile" class="interest-profile" data-hide-when-empty style="display:none"></div>
 
   <button class="home-card" data-tab-target="search" type="button">
     <div class="home-card-icon home-icon-explore" aria-hidden="true">
@@ -773,9 +777,11 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   <div class="pt" id="search-pt">Explore Careers</div>
   <p class="ps" id="search-ps" style="margin-bottom:18px">Match careers to your interests, browse a field, or search by keyword.</p>
 
-  <!-- Interest Profile results card lives on the Home landing now
-       (#interest-profile inside #panel-home). The Explore Careers page
-       jumps straight into the search + matches list. -->
+  <!-- Second interest-profile slot on the Explore Careers page. Shares
+       the .interest-profile class with the Home slot so renderInterest
+       Profile paints into both. Shows the small CTA fallback here when
+       the quiz hasn't been taken (no data-hide-when-empty). -->
+  <div class="interest-profile"></div>
 
   <!-- Legacy 'save your profile' row — its buttons live inside the .ip-card
        footer now, but the wrapper stays so syncProfileUI's force-hide
@@ -960,6 +966,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05s"></script>
+<script src="app.js?v=2026-06-05t"></script>
 </body>
 </html>
