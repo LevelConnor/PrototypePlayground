@@ -1266,12 +1266,55 @@ function heartIcon(filled, size = 18) {
 
 // Markup for a single career grid card. Title + bottom-aligned salary +
 // Bright Outlook pills, top-right ♡, optional Best Fit badge top-left.
+// Map the O*NET SOC 2-digit prefix to a cluster name so we can reuse
+// the 14 cluster images as career-card backdrops without an extra fetch
+// per career. Not a perfect science (a Petroleum Engineer with prefix
+// 17 gets an Advanced Manufacturing image, not Energy) but it's free,
+// deterministic, and every card gets a contextually relevant photo.
+const SOC_TO_CLUSTER_IMG = {
+  '11':'Management & Entrepreneurship',    // Management occupations
+  '13':'Financial Services',                // Business & Financial Operations
+  '15':'Digital Technology',                // Computer & Mathematical
+  '17':'Advanced Manufacturing',            // Architecture & Engineering
+  '19':'Energy & Natural Resources',        // Life, Physical, and Social Science
+  '21':'Healthcare & Human Services',       // Community & Social Service
+  '23':'Public Service & Safety',           // Legal
+  '25':'Education',                         // Educational Instruction & Library
+  '27':'Arts, Entertainment & Design',      // Arts, Design, Entertainment, Sports, Media
+  '29':'Healthcare & Human Services',       // Healthcare Practitioners
+  '31':'Healthcare & Human Services',       // Healthcare Support
+  '33':'Public Service & Safety',           // Protective Service
+  '35':'Hospitality, Events & Tourism',     // Food Preparation & Serving
+  '37':'Hospitality, Events & Tourism',     // Building & Grounds Cleaning
+  '39':'Hospitality, Events & Tourism',     // Personal Care & Service
+  '41':'Marketing & Sales',                 // Sales
+  '43':'Management & Entrepreneurship',     // Office & Administrative Support
+  '45':'Agriculture',                       // Farming, Fishing, Forestry
+  '47':'Construction',                      // Construction & Extraction
+  '49':'Supply Chain & Transportation',     // Installation, Maintenance, Repair
+  '51':'Advanced Manufacturing',            // Production
+  '53':'Supply Chain & Transportation',     // Transportation & Material Moving
+  '55':'Public Service & Safety',           // Military Specific
+};
+let _clusterImgByName = null;
+function careerImageUrl(code) {
+  if (!_clusterImgByName) {
+    _clusterImgByName = Object.create(null);
+    for (const c of CLUSTERS) _clusterImgByName[c.name] = c.img;
+  }
+  const prefix = String(code || '').slice(0, 2);
+  const clusterName = SOC_TO_CLUSTER_IMG[prefix];
+  return (clusterName && _clusterImgByName[clusterName])
+    || (CLUSTERS[0] && CLUSTERS[0].img);
+}
+
 function buildLiveCard(c, cached, code, prefix, isSaved) {
   const tags = (cached && cached.tags) || c.tags || {};
   const sal = cached && cached.salary && cached.salary.median;
   const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
   const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
   const brightCls = tags.brightOutlook ? ' bright' : '';
+  const imgUrl = careerImageUrl(code);
   // Map O*NET fit grades to badge variants. Falls back to the legacy
   // .isMatch boolean (Best Fit only) for callers that haven't been
   // updated to pass c.fitGrade.
@@ -1280,7 +1323,9 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   if (grade === 'Best')  fitBadge = `<div class="ccard-match">Best Fit</div>`;
   else if (grade === 'Great') fitBadge = `<div class="ccard-match">Great Fit</div>`;
   else if (grade === 'Good')  fitBadge = `<div class="ccard-match">Good Fit</div>`;
-  return `<div class="ccard${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
+  return `<div class="ccard has-image${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
+    <img class="ccard-img" src="${imgUrl}" alt="" loading="lazy" onerror="this.style.display='none'">
+    <div class="ccard-overlay"></div>
     ${fitBadge}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
     <div class="ccard-body">
