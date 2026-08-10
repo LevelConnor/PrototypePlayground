@@ -90,6 +90,19 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .sd{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0}
 .pw{background:var(--mg);border-radius:var(--rf);height:6px;margin-bottom:24px}
 .pf{height:6px;border-radius:var(--rf);background:var(--blue);transition:width .3s}
+/* Quiz length toggle. Segmented pill above the questions. */
+.q-mode-row{display:flex;justify-content:center;margin:0 0 24px}
+.q-mode-pill{display:inline-flex;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:4px;gap:2px}
+.q-mode-opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 22px;border:none;background:transparent;border-radius:var(--rf);cursor:pointer;color:var(--ts);transition:background .15s, color .15s}
+.q-mode-opt .q-mode-label{font-size:14px;font-weight:900;line-height:1}
+.q-mode-opt .q-mode-sub{font-size:11px;font-weight:500;line-height:1.2;opacity:.85}
+.q-mode-opt:hover:not(.active){color:var(--navy)}
+.q-mode-opt.active{background:var(--blue);color:#fff}
+.q-mode-opt.active .q-mode-sub{opacity:.9}
+@media (max-width:520px){.q-mode-opt{padding:8px 14px}.q-mode-opt .q-mode-label{font-size:13px}.q-mode-opt .q-mode-sub{font-size:10px}}
+/* Refine-with-full link on the Your Results card. */
+.ip-refine{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;margin-left:6px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+.ip-refine:hover{text-decoration:underline}
 .sdiv{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
 .sdl{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--blue);white-space:nowrap}
 .sdln{flex:1;height:1px;background:var(--mg)}
@@ -544,43 +557,23 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
     <div class="pt">Get Matched With Careers</div>
     <p class="ps">Rate how much you'd enjoy each activity. There are no right or wrong answers.</p>
     <div class="pw"><div class="pf" id="pf" style="width:0%"></div></div>
+    <!-- Length toggle. Quick = 30 items (curated subset), Full = 60 items
+         (O*NET's complete Interest Profiler). Preserves answers between
+         modes so switching mid-quiz doesn't wipe progress. -->
+    <div class="q-mode-row" id="q-mode-row">
+      <div class="q-mode-pill" role="group" aria-label="Quiz length">
+        <button class="q-mode-opt active" data-mode="quick" type="button">
+          <span class="q-mode-label">Quick</span><span class="q-mode-sub">30 questions · ~5 min</span>
+        </button>
+        <button class="q-mode-opt" data-mode="full" type="button">
+          <span class="q-mode-label">Full O*NET</span><span class="q-mode-sub">60 questions · ~10 min</span>
+        </button>
+      </div>
+    </div>
     <div id="qwrap">
-      <div class="sdiv"><span class="sdl">Section 1 — Hands-On &amp; Technical</span><div class="sdln"></div></div>
-      <div class="qr" data-t="R"><span class="qt">Build or repair furniture, appliances, or machinery</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="R"><span class="qt">Operate heavy equipment or power tools on a job site</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="R"><span class="qt">Work outdoors in construction, agriculture, or conservation</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="R"><span class="qt">Install or maintain electrical wiring or plumbing systems</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="R"><span class="qt">Work with your hands to make something real and tangible</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="sdiv"><span class="sdl">Section 2 — Research &amp; Analysis</span><div class="sdln"></div></div>
-      <div class="qr" data-t="I"><span class="qt">Conduct experiments to test a scientific hypothesis</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="I"><span class="qt">Study the causes of a medical condition or disease</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="I"><span class="qt">Analyze large datasets to find patterns and insights</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="I"><span class="qt">Research and write a detailed report on a complex topic</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="I"><span class="qt">Solve a difficult math or logic puzzle</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="sdiv"><span class="sdl">Section 3 — Creative &amp; Artistic</span><div class="sdln"></div></div>
-      <div class="qr" data-t="A"><span class="qt">Design graphics, logos, or layouts for a brand</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="A"><span class="qt">Write short stories, poetry, screenplays, or journalism</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="A"><span class="qt">Perform in theater, music, dance, or spoken word</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="A"><span class="qt">Design a website, app, or interactive digital experience</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="A"><span class="qt">Direct or produce a film, video, or multimedia project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="sdiv"><span class="sdl">Section 4 — Helping &amp; Teaching</span><div class="sdln"></div></div>
-      <div class="qr" data-t="S"><span class="qt">Teach or tutor students of any age in a subject you know</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="S"><span class="qt">Help someone work through a personal problem or crisis</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="S"><span class="qt">Provide medical or physical care to a patient or client</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="S"><span class="qt">Volunteer or work with community organizations</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="S"><span class="qt">Counsel or guide people through major life decisions</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="sdiv"><span class="sdl">Section 5 — Leading &amp; Persuading</span><div class="sdln"></div></div>
-      <div class="qr" data-t="E"><span class="qt">Start and manage your own business or side project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="E"><span class="qt">Lead a team toward a shared goal or deadline</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="E"><span class="qt">Pitch an idea, product, or cause to an audience</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="E"><span class="qt">Negotiate deals or contracts on behalf of others</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="E"><span class="qt">Develop and execute a marketing or sales strategy</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="sdiv"><span class="sdl">Section 6 — Organizing &amp; Managing</span><div class="sdln"></div></div>
-      <div class="qr" data-t="C"><span class="qt">Manage financial records, budgets, or accounts</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="C"><span class="qt">Create detailed systems, spreadsheets, or databases</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="C"><span class="qt">Follow a defined process to complete a task accurately</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="C"><span class="qt">Process and verify data, invoices, or legal documents</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
-      <div class="qr" data-t="C"><span class="qt">Plan and coordinate the logistics of an event or project</span><div class="qs"><button class="sb" data-v="1">1</button><button class="sb" data-v="2">2</button><button class="sb" data-v="3">3</button><button class="sb" data-v="4">4</button><button class="sb" data-v="5">5</button></div></div>
+      <div style="text-align:center;padding:60px 20px;color:var(--ts);font-size:15px">
+        Loading questions from O*NET…
+      </div>
     </div>
     <div class="sr">
       <button class="cta ghost" id="btn-reset">Reset</button>
@@ -591,7 +584,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
   <!-- Dev shortcut: random-fills all 30 questions + submits. Tucked in the
        bottom-right of the assessment panel so it doesn't get in the way. -->
-  <button id="btn-autofill" class="dev-autofill" title="Dev: random-fill all 30 + submit" aria-label="Random-fill assessment">🎲</button>
+  <button id="btn-autofill" class="dev-autofill" title="Dev: random-fill all questions + submit" aria-label="Random-fill assessment">🎲</button>
 </div>
 
 <!-- FIND MY CAREER -->
@@ -779,6 +772,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05l"></script>
+<script src="app.js?v=2026-06-05m"></script>
 </body>
 </html>

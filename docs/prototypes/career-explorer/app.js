@@ -19,11 +19,20 @@ document.addEventListener('click', function(e) {
   const sb = t.closest('.sb');
   if (sb && sb.closest('#qwrap')) { rate(sb); return; }
 
-  // ASSESSMENT submit / reset
+  // ASSESSMENT submit / reset / mode toggle
   if (t.id === 'btn-submit') { submitAssessment(); return; }
   if (t.id === 'btn-reset') { resetAssessment(); return; }
   if (t.id === 'btn-autofill') { autofillAssessment(); return; }
   if (t.id === 'btn-retake') { resetAssessment(); return; }
+  const modeBtn = t.closest('.q-mode-opt');
+  if (modeBtn && modeBtn.dataset.mode) { setQuizMode(modeBtn.dataset.mode); return; }
+  // Refine link on the results card — flip to full mode, keep the answers
+  // already given, and route back to the assessment.
+  if (t.id === 'btn-refine-quiz') {
+    setQuizMode('full');
+    goToAssessment();
+    return;
+  }
   if (t.id === 'btn-explore-matches') { goToSearch(); return; }
   if (t.id === 'btn-go-assess') { goToAssessment(); return; }
 
@@ -183,7 +192,30 @@ function debounce(fn, ms) {
 }
 
 /* ══ STATE ══ */
-const saved = new Set(), answered = {};
+const saved = new Set();
+// Answers keyed by O*NET question index (1..60). Value: {area, val}.
+// Keyed by index (not row position) so switching Quick <-> Full preserves
+// what the user has already answered.
+const answered = new Map();
+// O*NET Interest Profiler items, loaded once at boot from /ip_questions.
+// Each item: {index: 1..60, area: 'realistic'|..., text: '...'}.
+let IP_QUESTIONS = [];
+// O*NET area name -> single-letter RIASEC key used everywhere else.
+const AREA_KEY = {
+  realistic:'R', investigative:'I', artistic:'A',
+  social:'S', enterprising:'E', conventional:'C',
+};
+// Section headers per area, in canonical R-I-A-S-E-C order.
+const AREA_SECTIONS = [
+  { key:'realistic',     letter:'R', label:'Section 1 — Hands-On & Technical' },
+  { key:'investigative', letter:'I', label:'Section 2 — Research & Analysis' },
+  { key:'artistic',      letter:'A', label:'Section 3 — Creative & Artistic' },
+  { key:'social',        letter:'S', label:'Section 4 — Helping & Teaching' },
+  { key:'enterprising',  letter:'E', label:'Section 5 — Leading & Persuading' },
+  { key:'conventional',  letter:'C', label:'Section 6 — Organizing & Managing' },
+];
+// 'quick' = 30 items (every other O*NET item, 5 per area). 'full' = all 60.
+let quizMode = 'quick';
 let lastResults = null;
 // O*NET-style 0-40 scores per RIASEC dimension, computed from the same
 // answers as lastResults. O*NET's Mini Interest Profiler convention:
@@ -237,21 +269,113 @@ function goToSearch() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 /* ══ ASSESSMENT ══ */
+// Items currently in play for the active quiz mode.
+function activeItems() {
+  if (!IP_QUESTIONS.length) return [];
+  if (quizMode === 'full') return IP_QUESTIONS;
+  // Quick mode: every other item (5 per area, 30 total). O*NET lists items
+  // in r,r,i,i,a,a,s,s,e,e,c,c cycles so indices 0,2,4,… still cover all
+  // 6 areas evenly.
+  return IP_QUESTIONS.filter((_, i) => i % 2 === 0);
+}
+
+// Update the "N of X answered" caption and the top progress bar based on
+// how many of the current active items are answered.
+function updateAnsweredUI() {
+  const items = activeItems();
+  const total = items.length || 30;
+  const activeIdx = new Set(items.map(q => q.index));
+  let n = 0;
+  answered.forEach((_v, k) => { if (activeIdx.has(k)) n++; });
+  const qans = document.getElementById('qans');
+  if (qans) qans.textContent = n + ' of ' + total + ' answered';
+  const pf = document.getElementById('pf');
+  if (pf) pf.style.width = Math.round((n / total) * 100) + '%';
+}
+
 function rate(btn) {
   const row = btn.closest('.qr');
   row.querySelectorAll('.sb').forEach(b => b.className = 'sb');
   btn.classList.add('s' + btn.dataset.v);
-  const idx = Array.from(document.querySelectorAll('.qr')).indexOf(row);
-  answered[idx] = {type: row.dataset.t, val: parseInt(btn.dataset.v)};
-  const n = Object.keys(answered).length;
-  document.getElementById('qans').textContent = n + ' of 30 answered';
-  document.getElementById('pf').style.width = Math.round((n/30)*100) + '%';
+  const qIndex = parseInt(row.dataset.qidx, 10);
+  answered.set(qIndex, { area: row.dataset.t, val: parseInt(btn.dataset.v, 10) });
+  updateAnsweredUI();
+}
+
+// Render the quiz into #qwrap from the O*NET item bank. Called at boot
+// after /ip_questions resolves, and every time the user toggles quiz mode.
+// Preserves any answers already in the answered map — .sb buttons for
+// previously-rated items are pre-selected via .s{val} class.
+function renderQuiz() {
+  const wrap = document.getElementById('qwrap');
+  if (!wrap) return;
+  const items = activeItems();
+  if (!items.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--ts);font-size:15px">Loading questions from O*NET…</div>';
+    return;
+  }
+  const byArea = {};
+  items.forEach(q => { (byArea[q.area] = byArea[q.area] || []).push(q); });
+  wrap.innerHTML = AREA_SECTIONS.map(sec => {
+    const areaItems = byArea[sec.key] || [];
+    if (!areaItems.length) return '';
+    const rows = areaItems.map(q => {
+      const prior = answered.get(q.index);
+      const btn = (v) => `<button class="sb${prior && prior.val === v ? ' s' + v : ''}" data-v="${v}">${v}</button>`;
+      return `<div class="qr" data-t="${sec.letter}" data-qidx="${q.index}">
+        <span class="qt">${q.text}</span>
+        <div class="qs">${btn(1)}${btn(2)}${btn(3)}${btn(4)}${btn(5)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="sdiv"><span class="sdl">${sec.label}</span><div class="sdln"></div></div>${rows}`;
+  }).join('');
+  updateAnsweredUI();
+}
+
+// Fetch the O*NET Interest Profiler item bank once and render.
+async function initQuiz() {
+  if (IP_QUESTIONS.length) { renderQuiz(); return; }
+  try {
+    const data = await onetGet('/ip_questions');
+    IP_QUESTIONS = (data && data.question) || [];
+  } catch (e) {
+    console.error('Failed to load IP questions', e);
+    const wrap = document.getElementById('qwrap');
+    if (wrap) wrap.innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:var(--ts);font-size:15px">Couldn\'t load questions. Try again later.</div>';
+    return;
+  }
+  renderQuiz();
+}
+
+// Quiz-length pill click handler.
+function setQuizMode(mode) {
+  if (mode !== 'quick' && mode !== 'full') return;
+  if (quizMode === mode) return;
+  quizMode = mode;
+  document.querySelectorAll('.q-mode-opt').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  renderQuiz();
 }
 
 function submitAssessment() {
-  if (Object.keys(answered).length < 20) { alert('Please answer at least 20 questions.'); return; }
+  const items = activeItems();
+  const activeIdx = new Set(items.map(q => q.index));
   const tot={R:0,I:0,A:0,S:0,E:0,C:0}, cnt={R:0,I:0,A:0,S:0,E:0,C:0};
-  Object.values(answered).forEach(({type,val}) => { tot[type]+=val; cnt[type]++; });
+  let answeredCount = 0;
+  answered.forEach((v, k) => {
+    if (!activeIdx.has(k)) return;
+    tot[v.area] += v.val;
+    cnt[v.area]++;
+    answeredCount++;
+  });
+  // Require ~2/3 completion. 30-item quiz -> 20 min. 60-item -> 40 min.
+  const min = Math.max(6, Math.floor(items.length * 2 / 3));
+  if (answeredCount < min) {
+    alert(`Please answer at least ${min} of ${items.length} questions.`);
+    return;
+  }
   const avgs = {}, onet = {};
   Object.keys(tot).forEach(k => {
     avgs[k] = cnt[k] ? +(tot[k]/cnt[k]).toFixed(2) : 0;
@@ -373,7 +497,11 @@ function renderInterestProfile(sorted) {
         <div class="ip-stack" id="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
-        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.</p>
+        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.${
+          quizMode === 'quick'
+            ? ` <button class="ip-refine" id="btn-refine-quiz" type="button">Take the full 60-question quiz for sharper matches →</button>`
+            : ''
+        }</p>
         <div class="ip-foot">
           <div class="ip-toggle-pill">
             <span>Show Full Results</span>
@@ -452,13 +580,12 @@ async function renderAssessmentMatches(top3) {
 }
 
 function resetAssessment() {
-  Object.keys(answered).forEach(k => delete answered[k]);
+  answered.clear();
   lastResults = null;
-  document.querySelectorAll('.sb').forEach(b => b.className = 'sb');
-  document.getElementById('qans').textContent = '0 of 30 answered';
-  document.getElementById('pf').style.width = '0%';
-  document.getElementById('afw').style.display = 'block';
-  document.getElementById('rw').style.display = 'none';
+  lastOnetScores = null;
+  renderQuiz(); // repaints .qr rows with no selection and resets the count
+  const afw = document.getElementById('afw'); if (afw) afw.style.display = 'block';
+  const rw = document.getElementById('rw');   if (rw) rw.style.display = 'none';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1908,4 +2035,6 @@ document.addEventListener('DOMContentLoaded', function() {
   syncProfileUI();
   updateFbValueLabels();
   updateSearch();
+  // Fetch the O*NET Interest Profiler item bank + render into #qwrap.
+  initQuiz();
 });
