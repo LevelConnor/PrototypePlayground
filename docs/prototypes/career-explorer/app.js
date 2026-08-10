@@ -15,6 +15,13 @@ document.addEventListener('click', function(e) {
   const nt = t.closest('.nt');
   if (nt && nt.dataset.tab) { switchTab(nt.dataset.tab, nt); return; }
 
+  // HOME landing — big link cards jump to the corresponding sub-panel.
+  const homeCard = t.closest('.home-card[data-tab-target]');
+  if (homeCard) {
+    switchTab(homeCard.dataset.tabTarget);
+    return;
+  }
+
   // ASSESSMENT rating buttons
   const sb = t.closest('.sb');
   if (sb && sb.closest('#qwrap')) { rate(sb); return; }
@@ -1659,6 +1666,8 @@ function toggleLiveSave(code) {
     b.classList.toggle('saved', saved.has(key));
     b.innerHTML = heartIcon(saved.has(key));
   });
+  // Keep the Home landing's Saved-Careers strip in sync.
+  renderHomeSaved();
 }
 
 // Backfill metadata for any saved careers we don't have details for yet.
@@ -1681,6 +1690,45 @@ async function ensureSavedMeta() {
       });
     } catch (e) { /* leave as-is */ }
   }));
+}
+
+/* ══ HOME LANDING ══
+   Renders the "Saved Careers" strip on #panel-home and toggles the
+   "Your Next Moves" section based on whether the user has saved
+   anything yet. Called at boot and after every toggleLiveSave. */
+function renderHomeSaved() {
+  const el = document.getElementById('home-saved');
+  if (!el) return;
+  const codes = [...saved]
+    .filter(k => typeof k === 'string' && k.startsWith('live-'))
+    .map(k => k.slice('live-'.length));
+  if (!codes.length) {
+    el.classList.remove('cgrid');
+    el.innerHTML = `<div class="home-saved-empty">
+      Nothing saved yet. Hit the heart on any career (from your quiz results,
+      the explore page, or a cluster) and it'll land here.
+    </div>`;
+  } else {
+    el.classList.add('cgrid');
+    el.innerHTML = codes.map(code => {
+      const meta = savedMeta.get(code) || { title: code, salary: null };
+      const cached = detailCache[code] || {
+        tags: {},
+        salary: { median: meta.salary || 0 },
+      };
+      return buildLiveCard(
+        { title: meta.title, isMatch: false },
+        cached,
+        code,
+        'home',
+        true
+      );
+    }).join('');
+    // Background-backfill titles / outlook for anything we don't have.
+    ensureSavedMeta();
+  }
+  const nm = document.getElementById('home-next-moves');
+  if (nm) nm.style.display = codes.length ? '' : 'none';
 }
 
 /* ══ TRAY ══ */
@@ -2035,6 +2083,8 @@ document.addEventListener('DOMContentLoaded', function() {
   syncProfileUI();
   updateFbValueLabels();
   updateSearch();
+  // Landing page: paint the Saved-Careers strip and toggle Next Moves.
+  renderHomeSaved();
   // Fetch the O*NET Interest Profiler item bank + render into #qwrap.
   initQuiz();
 });
