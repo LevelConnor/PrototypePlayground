@@ -327,6 +327,9 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .cluster-card-body{position:absolute;left:18px;right:18px;bottom:16px;color:#fff}
 .cluster-card-title{font-size:22px;font-weight:900;line-height:1.2;margin:0 0 6px;letter-spacing:.01em}
 .cluster-card-desc{font-size:15px;font-weight:400;color:rgba(255,255,255,.82);line-height:1.45}
+/* Small career-count pill on each cluster card. Fills in after
+   loadClusterCounts() resolves; absent until then to avoid layout jank. */
+.cluster-card-count{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.92);color:var(--ink);font-size:11px;font-weight:900;padding:6px 12px;border-radius:100px;letter-spacing:.02em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2;box-shadow:0 4px 10px rgba(10,15,46,.10)}
 .cluster-card-cta{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:#fff;color:var(--ink);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:10px 22px;border-radius:var(--rf);opacity:0;transition:all .2s ease;pointer-events:none}
 .cluster-card:hover .cluster-card-cta{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
@@ -943,6 +946,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05o"></script>
+<script src="app.js?v=2026-06-05p"></script>
 </body>
 </html>

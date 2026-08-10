@@ -1111,21 +1111,48 @@ function renderClusterSubChips() {
 
 // ─── Career Clusters page ───────────────────────────────────────────────
 // Render the editorial grid of cluster cards. Called once on DOM ready.
+// Career-count-per-cluster cache, populated by loadClusterCounts().
+// Keyed by cluster name (matches CLUSTERS[].name).
+const clusterTotals = new Map();
+
 function renderClusterGrid() {
   const grid = document.getElementById('cluster-grid');
   if (!grid) return;
-  grid.innerHTML = CLUSTERS.map(c => `
+  grid.innerHTML = CLUSTERS.map(c => {
+    const total = clusterTotals.get(c.name);
+    const countPill = total
+      ? `<div class="cluster-card-count">${total} careers</div>`
+      : '';
+    return `
     <div class="cluster-card" data-cluster="${c.name}">
       <img src="${c.img}" alt="${c.name}" loading="lazy"
            onerror="this.style.display='none'">
       <div class="cluster-card-overlay"></div>
+      ${countPill}
       <div class="cluster-card-cta">View Careers</div>
       <div class="cluster-card-body">
         <h3 class="cluster-card-title">${c.name}</h3>
         <p class="cluster-card-desc">${c.desc}</p>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
+}
+
+// Fetch the O*NET total-careers count for every cluster once, then
+// re-render the grid so each card shows a count pill. Cheap — one
+// `?end=1` request per cluster; edge cache holds them for 1h. Failures
+// silently omit the pill instead of surfacing a broken state.
+async function loadClusterCounts() {
+  if (clusterTotals.size >= CLUSTERS.length) return;
+  await Promise.all(CLUSTERS.map(async c => {
+    const code = CLUSTER_CODES[c.name];
+    if (!code) return;
+    try {
+      const data = await onetGet(`/career_cluster/${code}?end=1`);
+      if (data && data.total) clusterTotals.set(c.name, data.total);
+    } catch (e) { /* leave the pill absent */ }
+  }));
+  renderClusterGrid();
 }
 
 // Open the cluster detail section (sub-clusters + career list), scroll
@@ -2328,4 +2355,6 @@ document.addEventListener('DOMContentLoaded', function() {
   renderHomeSaved();
   // Fetch the O*NET Interest Profiler item bank + render into #qwrap.
   initQuiz();
+  // Populate the cluster-card career-count pills once totals arrive.
+  loadClusterCounts();
 });
