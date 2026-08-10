@@ -21,6 +21,12 @@ document.addEventListener('click', function(e) {
     switchTab(homeCard.dataset.tabTarget);
     return;
   }
+  // Next Moves card -> open the matching modal.
+  const nmCard = t.closest('.home-nm-card[data-nm]');
+  if (nmCard) { openNextMoves(nmCard.dataset.nm); return; }
+  // Next Moves modal close (X button OR clicking the backdrop directly).
+  if (t.closest('[data-nm-close]')) { closeNextMoves(); return; }
+  if (t.dataset && t.dataset.nmBackdrop !== undefined) { closeNextMoves(); return; }
 
   // ASSESSMENT rating buttons
   const sb = t.closest('.sb');
@@ -1691,6 +1697,241 @@ async function ensureSavedMeta() {
     } catch (e) { /* leave as-is */ }
   }));
 }
+
+/* ══ NEXT MOVES (Home landing modals) ══
+   Three modals reachable from the Home page — Courses To Take,
+   Skills and Experiences, Programs & Pathways. Each iterates the
+   user's saved careers and enriches them with the relevant O*NET
+   slice (knowledge / skills+work_activities / education+job_zone),
+   fetching in parallel and rendering as data arrives. */
+
+// { 'code|slice': Promise resolving to parsed JSON }
+const nmSliceCache = new Map();
+let nmOpenType = null; // 'courses' | 'skills' | 'pathways'
+
+function nmSlice(code, slice) {
+  const key = code + '|' + slice;
+  if (nmSliceCache.has(key)) return nmSliceCache.get(key);
+  const p = onetGet(`/career/${code}/details/${slice}`).catch(() => null);
+  nmSliceCache.set(key, p);
+  return p;
+}
+
+// Human-friendly meta for each modal.
+const NM_TYPES = {
+  courses: {
+    title: 'Courses To Take',
+    subtitle: 'Academic subjects that map to the careers you\'ve saved, ranked by how important each is to the job.',
+  },
+  skills: {
+    title: 'Skills and Experiences',
+    subtitle: 'The abilities to practice and the kinds of on-the-job activities that build them.',
+  },
+  pathways: {
+    title: 'Programs & Pathways',
+    subtitle: 'The typical education level and pathway for each of your saved careers.',
+  },
+};
+
+function openNextMoves(type) {
+  if (!NM_TYPES[type]) return;
+  nmOpenType = type;
+  const overlay = document.getElementById('nm-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderNextMoves();
+}
+
+function closeNextMoves() {
+  const overlay = document.getElementById('nm-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  nmOpenType = null;
+}
+
+// Escape untrusted strings that go into innerHTML.
+function nmEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Escape for a CSS/DOM id selector (career codes contain '.' and '-').
+function nmSel(s) { return String(s).replace(/[^a-zA-Z0-9]/g, '_'); }
+
+// Codes the user has saved. Reused by every renderer.
+function nmSavedCodes() {
+  return [...saved]
+    .filter(k => typeof k === 'string' && k.startsWith('live-'))
+    .map(k => k.slice('live-'.length));
+}
+
+// Career title, resolving from any of the metadata sources we might have.
+function nmCareerTitle(code) {
+  const meta = savedMeta.get(code);
+  if (meta && meta.title && meta.title !== code) return meta.title;
+  const cached = detailCache[code];
+  if (cached && cached.title) return cached.title;
+  return code;
+}
+
+function renderNextMoves() {
+  const modal = document.getElementById('nm-modal');
+  if (!modal) return;
+  const type = nmOpenType;
+  const cfg = NM_TYPES[type];
+  const codes = nmSavedCodes();
+  const head = `
+    <div class="nm-head">
+      <div class="nm-head-l">
+        <h2 id="nm-title">${nmEsc(cfg.title)}</h2>
+        <p>${nmEsc(cfg.subtitle)}</p>
+      </div>
+      <button class="cmodal-close" data-nm-close aria-label="Close">✕</button>
+    </div>`;
+  if (!codes.length) {
+    modal.innerHTML = head + `
+      <div class="nm-body">
+        <div class="nm-empty">You haven't saved any careers yet. Save a career from your quiz results, the explore page, or a cluster to see recommendations here.</div>
+      </div>`;
+    return;
+  }
+  // Render skeleton per career; each renderer fills its own <div>.
+  modal.innerHTML = head + `
+    <div class="nm-body">
+      ${codes.map(code => `
+        <div class="nm-career" id="nm-career-${nmSel(code)}">
+          <div class="nm-career-head">
+            <h3 class="nm-career-title">${nmEsc(nmCareerTitle(code))}</h3>
+          </div>
+          <div class="nm-career-body" data-nm-slot="${nmEsc(code)}">
+            <div class="nm-loading">Loading from O*NET…</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  modal.scrollTop = 0;
+  // Kick off the per-career fetch pipeline.
+  if (type === 'courses') codes.forEach(nmFillCourses);
+  else if (type === 'skills') codes.forEach(nmFillSkills);
+  else if (type === 'pathways') codes.forEach(nmFillPathways);
+}
+
+// Utility: sort elements by importance descending, take top N with a
+// nonzero importance and a name we can show.
+function nmTopElements(data, n) {
+  const els = (data && data.element) || [];
+  return els
+    .filter(e => e && e.name && (e.importance == null || e.importance > 0))
+    .sort((a, b) => (b.importance || 0) - (a.importance || 0))
+    .slice(0, n);
+}
+
+async function nmFillCourses(code) {
+  const slot = document.querySelector(`[data-nm-slot="${cssAttr(code)}"]`);
+  if (!slot) return;
+  const data = await nmSlice(code, 'knowledge');
+  const top = nmTopElements(data, 6);
+  if (!top.length) {
+    slot.innerHTML = `<div class="nm-empty" style="padding:14px 12px">O*NET didn't return knowledge areas for this career.</div>`;
+    return;
+  }
+  slot.innerHTML = `
+    <div class="nm-subhead">Top academic subjects</div>
+    <ul class="nm-list">
+      ${top.map(e => `<li>
+        <div>
+          <div><strong>${nmEsc(e.name)}</strong></div>
+          <div class="nm-list-sub">${nmEsc(e.description)}</div>
+        </div>
+      </li>`).join('')}
+    </ul>`;
+}
+
+async function nmFillSkills(code) {
+  const slot = document.querySelector(`[data-nm-slot="${cssAttr(code)}"]`);
+  if (!slot) return;
+  const [skillsData, activitiesData] = await Promise.all([
+    nmSlice(code, 'skills'),
+    nmSlice(code, 'work_activities'),
+  ]);
+  const topSkills = nmTopElements(skillsData, 5);
+  const topActivities = nmTopElements(activitiesData, 4);
+  const hasSkills = !!topSkills.length;
+  const hasActs = !!topActivities.length;
+  if (!hasSkills && !hasActs) {
+    slot.innerHTML = `<div class="nm-empty" style="padding:14px 12px">O*NET didn't return skills for this career.</div>`;
+    return;
+  }
+  slot.innerHTML = `
+    ${hasSkills ? `<div class="nm-subhead">Skills to build</div>
+      <ul class="nm-list">
+        ${topSkills.map(e => `<li>
+          <div>
+            <div><strong>${nmEsc(e.name)}</strong></div>
+            <div class="nm-list-sub">${nmEsc(e.description)}</div>
+          </div>
+        </li>`).join('')}
+      </ul>` : ''}
+    ${hasActs ? `<div class="nm-subhead">Ways to get real-world experience</div>
+      <ul class="nm-list">
+        ${topActivities.map(e => `<li>
+          <div>
+            <div><strong>${nmEsc(e.name)}</strong></div>
+            <div class="nm-list-sub">${nmEsc(e.description)}</div>
+          </div>
+        </li>`).join('')}
+      </ul>` : ''}`;
+}
+
+async function nmFillPathways(code) {
+  const slot = document.querySelector(`[data-nm-slot="${cssAttr(code)}"]`);
+  if (!slot) return;
+  const [eduData, zoneData, summary] = await Promise.all([
+    nmSlice(code, 'education'),
+    nmSlice(code, 'job_zone'),
+    // Summary gives us the tags (apprenticeship, bright_outlook, etc.)
+    onetGet(`/career/${code}`).catch(() => null),
+  ]);
+  const eduRows = (eduData && eduData.response) || [];
+  const topEdu = eduRows
+    .filter(r => r && r.title && r.percentage_of_respondents != null)
+    .sort((a, b) => b.percentage_of_respondents - a.percentage_of_respondents)
+    .slice(0, 4);
+  const tags = (summary && summary.tags) || {};
+  const zoneTitle = zoneData && zoneData.title
+    ? String(zoneData.title).replace(/^Job Zone [A-Za-z]+:\s*/, '')
+    : '';
+  const parts = [];
+  if (zoneTitle || (zoneData && zoneData.education)) {
+    parts.push(`<div class="nm-subhead">Preparation needed</div>
+      <div>${zoneTitle ? `<div style="font-weight:900;color:var(--navy);margin-bottom:4px">${nmEsc(zoneTitle)}</div>` : ''}${zoneData && zoneData.education ? `<div class="nm-list-sub">${nmEsc(zoneData.education)}</div>` : ''}</div>`);
+  }
+  if (topEdu.length) {
+    parts.push(`<div class="nm-subhead">What most workers have</div>
+      <div class="nm-tags">
+        ${topEdu.map(r => `<span class="nm-tag${r.percentage_of_respondents >= 50 ? ' blue' : ''}">${nmEsc(r.title)} · ${r.percentage_of_respondents}%</span>`).join('')}
+      </div>`);
+  }
+  const badges = [];
+  if (tags.apprenticeship) badges.push('<span class="nm-tag yellow">🔨 Registered apprenticeship available</span>');
+  if (tags.bright_outlook) badges.push('<span class="nm-tag">☀ Bright Outlook</span>');
+  if (tags.stem) badges.push('<span class="nm-tag">STEM</span>');
+  if (tags.green) badges.push('<span class="nm-tag">Green economy</span>');
+  if (badges.length) {
+    parts.push(`<div class="nm-subhead">Signals</div><div class="nm-tags">${badges.join('')}</div>`);
+  }
+  parts.push(`<div class="nm-actions">
+    <a href="https://www.onetonline.org/link/summary/${nmEsc(code)}" target="_blank" rel="noopener">View on O*NET →</a>
+    ${tags.apprenticeship ? `<a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${nmEsc(code)}" target="_blank" rel="noopener">Find apprenticeships →</a>` : ''}
+  </div>`);
+  slot.innerHTML = parts.join('');
+}
+
+// CSS attribute selectors don't play nicely with '.' — escape for safety.
+function cssAttr(s) { return String(s).replace(/([\\"])/g, '\\$1'); }
 
 /* ══ HOME LANDING ══
    Renders the "Saved Careers" strip on #panel-home and toggles the
