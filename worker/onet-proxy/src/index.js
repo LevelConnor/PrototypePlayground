@@ -158,6 +158,18 @@ export default {
       }
       if (!q.has('end')) q.set('end', '100');
       onetPath = `/mnm/interestprofiler/careers?${q.toString()}`;
+    } else if (parts[0] === 'ip_questions' && parts.length === 1) {
+      // O*NET Interest Profiler 60-question item bank. Cached edge-side
+      // for 24h (the item bank is static).
+      onetPath = `/mnm/interestprofiler/questions?end=60`;
+    } else if (parts[0] === '__probe' && url.searchParams.has('path')) {
+      // TEMPORARY diagnostic passthrough for O*NET path exploration.
+      // Restricted to /online/* and /mnm/*. Remove after investigation.
+      const raw = url.searchParams.get('path') || '';
+      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
+        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
+      }
+      onetPath = raw;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
       // /online/ has richer data than /mnm/ — each occupation carries a
       // sub_cluster: [{code, title}] annotation that lets us filter the
