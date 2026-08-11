@@ -39,7 +39,9 @@ document.addEventListener('click', function(e) {
   if (t.id === 'btn-submit') { submitAssessment(); return; }
   if (t.id === 'btn-reset') { resetAssessment(); return; }
   if (t.id === 'btn-autofill') { autofillAssessment(); return; }
-  if (t.id === 'btn-retake') { resetAssessment(); return; }
+  // t.closest — the button contains an SVG icon whose child <path>
+  // becomes the click target, so a strict t.id check would miss those.
+  if (t.closest('#btn-retake')) { resetAssessment(); return; }
   const modeBtn = t.closest('.q-mode-opt');
   if (modeBtn && modeBtn.dataset.mode) { setQuizMode(modeBtn.dataset.mode); return; }
   if (t.id === 'btn-explore-matches') { goToSearch(); return; }
@@ -710,8 +712,13 @@ function resetAssessment() {
   lastResults = null;
   lastOnetScores = null;
   renderQuiz(); // repaints .qr rows with no selection and resets the count
+  // Revert the Home + Search Careers pages to their pre-quiz state
+  // (hides the results card, restores the Get-Matched CTA card).
+  syncProfileUI();
   const afw = document.getElementById('afw'); if (afw) afw.style.display = 'block';
   const rw = document.getElementById('rw');   if (rw) rw.style.display = 'none';
+  // Route the user back into the quiz so they can start over.
+  switchTab('assessment');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
