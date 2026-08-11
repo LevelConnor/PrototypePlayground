@@ -487,7 +487,7 @@ function syncProfileUI() {
         </div>
         <div class="home-card-body">
           <h2 class="home-card-title">Get Matched With Careers</h2>
-          <p class="home-card-desc">Take the O*NET Interest Profiler and get a personalized list of careers that match. Quick (30 items) or full (60 items).</p>
+          <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
         </div>
         <span class="home-card-cta">Take the quiz →</span>
       </button>`;
