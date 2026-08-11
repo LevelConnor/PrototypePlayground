@@ -1707,6 +1707,8 @@ async function openLiveDetail(code, prefix) {
     modal.scrollTop = 0;
     enrichRelatedCards(detailCache[code].related || []);
     hydrateStateMap(code);
+    wireHeadMedia(modal);
+    wireHeroDesc(modal);
     return;
   }
 
@@ -1864,6 +1866,7 @@ async function openLiveDetail(code, prefix) {
       enrichRelatedCards(relatedList);
       hydrateStateMap(code);
       wireHeadMedia(modal);
+      wireHeroDesc(modal);
     }
 
   } catch (err) {
@@ -1917,6 +1920,22 @@ async function getUsMapSvg() {
 // element is emitted without a <source>; we add it here and listen for
 // load errors — if the CareerOneStop CDN doesn't have a video for this
 // O*NET code, we hide the player and show the poster image instead.
+// Clamp the description to 5 lines and reveal a Read-more toggle only
+// when the text actually overflows.
+function wireHeroDesc(root) {
+  const desc = root && root.querySelector('[data-desc]');
+  const btn = root && root.querySelector('[data-desc-toggle]');
+  if (!desc || !btn) return;
+  // scrollHeight includes the clipped lines; clientHeight is the 5-line box.
+  if (desc.scrollHeight - desc.clientHeight > 2) {
+    btn.hidden = false;
+    btn.addEventListener('click', () => {
+      const expanded = desc.classList.toggle('expanded');
+      btn.textContent = expanded ? 'Show less' : 'Read more';
+    });
+  }
+}
+
 function wireHeadMedia(root) {
   const wrap = root && root.querySelector('[data-head-media]');
   if (!wrap) return;
@@ -2041,7 +2060,10 @@ function buildModalDetail(d, code) {
       <div class="cmodal-head-left">
         ${fitBadgeModal}
         <h2 class="cmodal-title" id="cmodal-title">${d.title || code}</h2>
-        ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
+        ${d.description ? `<div class="cmodal-desc-wrap">
+          <p class="cmodal-desc" data-desc>${d.description}</p>
+          <button type="button" class="cmodal-desc-toggle" data-desc-toggle hidden>Read more</button>
+        </div>` : ''}
         <div class="cmodal-head-pills">${salPill}${boPill}</div>
       </div>
       <div class="cmodal-head-right" data-head-media>
