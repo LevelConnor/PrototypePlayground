@@ -192,12 +192,6 @@ document.addEventListener('click', function(e) {
     document.querySelectorAll('.cmodal-pane').forEach(p => { p.hidden = (p.dataset.mpane !== mtab.dataset.mtab); });
     return;
   }
-  // Above-average state chip -> selects that state in the outlook UI.
-  const stateChip = t.closest('[data-state-chip]');
-  if (stateChip) {
-    renderStateOutlookResult(stateChip.dataset.stateChip);
-    return;
-  }
 
   // Related-career cards now share the .ccard[data-live-code] markup —
   // the handler above already routes their clicks. No extra wiring needed.
@@ -222,49 +216,6 @@ document.addEventListener('input', function(e) {
     repaintCluster();
   }
 });
-// State-outlook <select> uses the change event (input fires for text
-// inputs; change is what select elements dispatch).
-document.addEventListener('change', function(e) {
-  if (e.target && e.target.matches && e.target.matches('[data-state-select]')) {
-    renderStateOutlookResult(e.target.value);
-  }
-});
-
-// Paint the outlook line from a 2-letter state code. Called on <select>
-// change and on chip click. Empty code -> hint. Only variation is a
-// small colored dot to the left of the text — no bordered/colored box.
-function renderStateOutlookResult(stateCode) {
-  const wrap = document.querySelector('.state-outlook[data-code]');
-  if (!wrap) return;
-  const box = wrap.querySelector('[data-state-result]');
-  if (!box) return;
-  const dot = box.querySelector('.state-outlook-dot');
-  const text = box.querySelector('.state-outlook-text');
-  if (!dot || !text) return;
-  const code = wrap.dataset.code;
-  const detail = detailCache[code];
-  const list = (detail && detail.stateOutlook) || [];
-  if (!stateCode) {
-    dot.dataset.variant = 'idle';
-    text.textContent = 'Pick a state to see its outlook.';
-    return;
-  }
-  const s = list.find(x => x.code === stateCode);
-  if (!s) {
-    dot.dataset.variant = 'idle';
-    text.textContent = 'No data available for that state.';
-    return;
-  }
-  // Green dot only for above-average; average/below-average share a
-  // muted dot so 'Average' doesn't feel like a warning.
-  let variant = 'muted';
-  if (/above average/i.test(s.job_outlook)) variant = 'good';
-  dot.dataset.variant = variant;
-  text.innerHTML = `<strong>${s.name}:</strong> ${s.job_outlook}`;
-  // Keep the <select> in sync when a chip fired this.
-  const sel = wrap.querySelector('[data-state-select]');
-  if (sel && sel.value !== stateCode) sel.value = stateCode;
-}
 /* ══ O*NET PROXY (Cloudflare Worker) ══ */
 const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
 async function onetGet(path) {
@@ -1976,31 +1927,50 @@ function buildModalDetail(d, code) {
         <div class="cmodal-stat" style="max-width:380px"><div class="cmodal-stat-label">Outlook</div><div class="cmodal-stat-value">${out.growth}</div>${out.descriptor ? `<div class="cmodal-stat-foot">${out.descriptor}</div>` : ''}</div>
       </div>` : ''}
       ${(() => {
-        const states = (d.stateOutlook || []).filter(s => s.job_outlook && s.job_outlook !== 'No data available');
-        if (!states.length) return '';
-        // Alphabetize for the selector.
-        const sorted = states.slice().sort((a, b) => a.name.localeCompare(b.name));
-        // Best-opportunity states — the "Above average" tier — as a chip
-        // row so students can eyeball the strong markets at a glance.
-        const above = sorted.filter(s => /above average/i.test(s.job_outlook));
+        const list = (d.stateOutlook || []).filter(s => s && s.code && s.name);
+        if (!list.length) return '';
+        // Fast lookup for the tilegram render pass.
+        const byCode = Object.create(null);
+        for (const s of list) byCode[s.code] = s;
+        // Bucket each state's outlook into a color variant. 3-step
+        // sequential green so the picture reads like a real heatmap:
+        // brighter green = more opportunity.
+        const variantFor = (out) => {
+          if (!out || /no data/i.test(out)) return 'none';
+          if (/above average/i.test(out))   return 'good';
+          if (/below average/i.test(out))   return 'low';
+          return 'ok';
+        };
+        // Approximate US-shape tilegram. All 50 states + DC positioned
+        // on an 11-wide grid; empty strings are gaps.
+        const GRID = [
+          ['', '', '', '', '', '', '', '', '', '', 'ME'],
+          ['', '', '', '', '', '', '', '', 'VT', 'NH', ''],
+          ['WA', 'ID', 'MT', 'ND', 'MN', '', 'WI', 'MI', '', 'NY', 'MA'],
+          ['OR', 'NV', 'WY', 'SD', 'IA', 'IL', 'IN', 'OH', 'PA', 'CT', 'RI'],
+          ['CA', 'UT', 'CO', 'NE', 'MO', 'KY', 'WV', 'VA', 'NJ', 'DE', ''],
+          ['', 'AZ', 'NM', 'KS', 'AR', 'TN', 'NC', 'MD', 'DC', '', ''],
+          ['', '', '', 'OK', 'LA', 'MS', 'AL', 'GA', 'SC', '', ''],
+          ['HI', '', '', 'TX', '', '', '', '', 'FL', '', ''],
+          ['AK', '', '', '', '', '', '', '', '', '', ''],
+        ];
+        const tilesHtml = GRID.map(row => row.map(sc => {
+          if (!sc) return `<div class="state-tile" data-empty></div>`;
+          const s = byCode[sc];
+          const outlook = s ? s.job_outlook : 'No data available';
+          const v = variantFor(outlook);
+          const name = s ? s.name : sc;
+          return `<div class="state-tile" data-variant="${v}" title="${name} — ${outlook}">${sc}</div>`;
+        }).join('')).join('');
         return `<div class="cmodal-section state-outlook" data-code="${code}">
           <div class="cmodal-section-title">Job Opportunities By State</div>
-          <div class="state-outlook-row">
-            <select class="state-outlook-select" id="state-outlook-select-${code}" data-state-select aria-label="Select a state">
-              <option value="">Select a state</option>
-              ${sorted.map(s => `<option value="${s.code}">${s.name}</option>`).join('')}
-            </select>
-            <div class="state-outlook-result" data-state-result>
-              <span class="state-outlook-dot" data-variant="idle"></span>
-              <span class="state-outlook-text">Pick a state to see its outlook.</span>
-            </div>
+          <div class="state-map">${tilesHtml}</div>
+          <div class="state-map-legend">
+            <span><span class="state-tile-mini" data-variant="good"></span>Above average</span>
+            <span><span class="state-tile-mini" data-variant="ok"></span>Average</span>
+            <span><span class="state-tile-mini" data-variant="low"></span>Below average</span>
+            <span><span class="state-tile-mini" data-variant="none"></span>No data</span>
           </div>
-          ${above.length ? `<div class="state-outlook-above">
-            <div class="state-outlook-above-label">Above-average opportunities in</div>
-            <div class="cmodal-chips state-outlook-chips">
-              ${above.map(s => `<button class="cmodal-chip state-outlook-chip" type="button" data-state-chip="${s.code}">${s.name}</button>`).join('')}
-            </div>
-          </div>` : ''}
           <p class="state-outlook-foot">Salary shown above is national — O*NET doesn't expose state-level wages.</p>
         </div>`;
       })()}

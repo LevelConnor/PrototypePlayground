@@ -704,22 +704,26 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 @media (max-width:640px){.cmodal-tab{padding:8px 14px;font-size:13px}}
 .cmodal-pane[hidden]{display:none}
 .cmodal-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
-/* State-outlook — single-row control + result, chips below, footnote
-   at the bottom. Uses .cmodal-chip styling for the chips + shared
-   modal typography for the label so it reads as part of the modal. */
-.state-outlook-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.state-outlook-select{flex:0 0 auto;width:220px;max-width:100%;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:9px 38px 9px 16px;font-size:14px;font-weight:500;color:var(--navy);cursor:pointer;font-family:inherit;transition:border-color .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230083FF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 14px center}
-.state-outlook-select:focus{border-color:var(--blue);outline:none}
-.state-outlook-result{flex:1 1 200px;display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--ts);min-height:36px}
-.state-outlook-result strong{color:var(--navy);font-weight:900;letter-spacing:-.01em}
-.state-outlook-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:transparent;border:1.5px solid var(--mg)}
-.state-outlook-dot[data-variant="good"]{background:#68F4B8;border-color:#68F4B8}
-.state-outlook-dot[data-variant="muted"]{background:var(--mg);border-color:var(--mg)}
-.state-outlook-above{margin-top:14px}
-.state-outlook-above-label{font-size:13px;font-weight:700;color:var(--ts);margin-bottom:8px}
-.state-outlook-chip{background:var(--white);border:1px solid var(--mg);color:var(--navy);cursor:pointer;font-family:inherit;transition:border-color .15s, background .15s}
-.state-outlook-chip:hover{border-color:var(--blue);background:var(--off)}
-.state-outlook-foot{font-size:12px;color:var(--ts);line-height:1.5;margin:14px 0 0}
+/* Job Opportunities By State — tilegram heatmap. Each tile is one
+   state, colored by O*NET's outlook category. 3-step sequential
+   green so brighter = more opportunity. Hover title reveals the
+   full state name + outlook label. */
+.state-map{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;max-width:520px;margin:6px 0 14px}
+.state-tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--navy);background:transparent;border-radius:6px;user-select:none;transition:transform .12s ease}
+.state-tile[data-empty]{visibility:hidden}
+.state-tile[data-variant="good"]{background:#68F4B8;color:var(--ink)}
+.state-tile[data-variant="ok"]{background:rgba(104,244,184,.30);color:var(--ink)}
+.state-tile[data-variant="low"]{background:rgba(104,244,184,.10);color:var(--ts)}
+.state-tile[data-variant="none"]{background:var(--off);color:var(--ts);border:1px dashed var(--mg)}
+.state-tile:not([data-empty]):hover{transform:scale(1.15);z-index:2;cursor:default}
+.state-map-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ts);margin:0 0 10px}
+.state-map-legend span{display:inline-flex;align-items:center;gap:6px}
+.state-tile-mini{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.state-tile-mini[data-variant="good"]{background:#68F4B8}
+.state-tile-mini[data-variant="ok"]{background:rgba(104,244,184,.30)}
+.state-tile-mini[data-variant="low"]{background:rgba(104,244,184,.10)}
+.state-tile-mini[data-variant="none"]{background:var(--off);border:1px dashed var(--mg)}
+.state-outlook-foot{font-size:12px;color:var(--ts);line-height:1.5;margin:8px 0 0}
 .cmodal-stat{background:#7FE7B8;border-radius:18px;padding:22px 24px;color:var(--ink)}
 .cmodal-stat--white{background:var(--white);color:var(--navy)}
 .cmodal-stat-label{font-size:14px;font-weight:700;margin-bottom:6px;opacity:.92}
@@ -1160,6 +1164,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06z"></script>
+<script src="app.js?v=2026-06-07a"></script>
 </body>
 </html>
