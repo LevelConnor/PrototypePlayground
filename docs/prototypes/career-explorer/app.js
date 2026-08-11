@@ -1684,6 +1684,12 @@ function openModal() {
 function closeModal() {
   const o = document.getElementById('cmodal-overlay');
   if (!o) return;
+  // Stop any playing career video — otherwise audio keeps running
+  // after the modal closes.
+  o.querySelectorAll('video').forEach(v => {
+    try { v.pause(); } catch (e) {}
+    try { v.currentTime = 0; } catch (e) {}
+  });
   o.classList.remove('open');
   document.body.style.overflow = '';
   openModalCode = null;

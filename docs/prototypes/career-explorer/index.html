@@ -662,6 +662,12 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    .cmodal-head-img--fallback via wireHeadMedia() when no video exists. */
 .cmodal-head-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#0A0F2E}
 .cmodal-head-img--fallback{background:var(--mg)}
+/* .cmodal-head-img{display:block} and .cmodal-head-video{display:block}
+   both override the HTML [hidden] attribute (same or lower specificity
+   than the class rules), so we need explicit [hidden] overrides — else
+   the fallback img sits over the playing video. */
+.cmodal-head-img[hidden],
+.cmodal-head-video[hidden]{display:none}
 /* Explicit ▶ affordance — the native controls only show on hover, so
    without this the poster reads as a static image. Hides itself once
    playback starts (wireHeadMedia). */
@@ -1209,6 +1215,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07k"></script>
+<script src="app.js?v=2026-06-07l"></script>
 </body>
 </html>
