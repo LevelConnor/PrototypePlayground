@@ -662,6 +662,14 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    .cmodal-head-img--fallback via wireHeadMedia() when no video exists. */
 .cmodal-head-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#0A0F2E}
 .cmodal-head-img--fallback{background:var(--mg)}
+/* Explicit ▶ affordance — the native controls only show on hover, so
+   without this the poster reads as a static image. Hides itself once
+   playback starts (wireHeadMedia). */
+.cmodal-head-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;display:inline-flex;align-items:center;gap:10px;padding:14px 22px 14px 18px;font-family:inherit;font-size:15px;font-weight:800;color:#0A0F2E;background:rgba(255,255,255,.94);border:none;border-radius:99px;cursor:pointer;box-shadow:0 6px 22px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
+.cmodal-head-play:hover{background:#fff;transform:translate(-50%,-50%) scale(1.04)}
+.cmodal-head-play:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.cmodal-head-play svg{color:var(--blue)}
+.cmodal-head-play[hidden]{display:none}
 /* Overlay is now a no-op — kept in the DOM for markup-stability during
    the loading skeleton, hidden here. */
 .cmodal-head-overlay{display:none}
@@ -1201,6 +1209,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07j"></script>
+<script src="app.js?v=2026-06-07k"></script>
 </body>
 </html>

@@ -1916,15 +1916,17 @@ function wireHeadMedia(root) {
   if (!wrap) return;
   const video = wrap.querySelector('video[data-video-src]');
   const img = wrap.querySelector('.cmodal-head-img--fallback');
+  const playBtn = wrap.querySelector('[data-head-play]');
   if (!video || !img) return;
   const src = video.dataset.videoSrc;
-  if (!src) { video.hidden = true; img.hidden = false; return; }
   const swapToImg = () => {
     if (video.dataset.swapped) return;
     video.dataset.swapped = '1';
     video.hidden = true;
+    if (playBtn) playBtn.hidden = true;
     img.hidden = false;
   };
+  if (!src) { swapToImg(); return; }
   // Both the <video> element and the <source> can fire 'error' when
   // the media fails to load — cover both paths.
   video.addEventListener('error', swapToImg);
@@ -1934,6 +1936,21 @@ function wireHeadMedia(root) {
   source.addEventListener('error', swapToImg);
   video.appendChild(source);
   video.load();
+  // The native play affordance only appears on hover, so the poster
+  // reads as a static image. Overlay an explicit ▶ button that hides
+  // itself once the video is playing, and reappears when paused.
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      video.play().catch(() => {});
+    });
+    video.addEventListener('play',  () => { playBtn.hidden = true; });
+    video.addEventListener('pause', () => {
+      // Keep the overlay hidden once playback has started so we don't
+      // cover the native controls on every scrub. Only show it before
+      // the very first play.
+      if (video.currentTime === 0) playBtn.hidden = false;
+    });
+  }
 }
 
 async function hydrateStateMap(code) {
@@ -2026,6 +2043,10 @@ function buildModalDetail(d, code) {
              data-video-src="${videoUrl}"
              aria-label="Career video for ${d.title || code}">
       </video>
+      <button class="cmodal-head-play" type="button" data-head-play aria-label="Play career video">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+        <span>Watch video</span>
+      </button>
       <img class="cmodal-head-img cmodal-head-img--fallback" src="${imgUrl}"
            alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}" hidden>
     </div>
