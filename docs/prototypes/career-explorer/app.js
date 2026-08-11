@@ -1690,16 +1690,18 @@ async function openLiveDetail(code, prefix) {
     return;
   }
 
-  // Skeleton while loading. We don't yet know if it's Bright Outlook until
-  // the fetch lands, so use the default (blue) gradient here.
+  // Skeleton while loading. Matches the two-panel header shape so the
+  // layout doesn't jump when the real content lands.
   modal.innerHTML = `
     <div class="cmodal-head">
-      <div class="cmodal-head-overlay"></div>
-      <div class="cmodal-head-top">
-        <div></div>
-        <div class="cmodal-actions">
-          <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
-        </div>
+      <div class="cmodal-head-left">
+        <div style="height:32px;width:65%;background:rgba(255,255,255,.22);border-radius:6px;animation:pulse 1.2s ease-in-out infinite"></div>
+        <div style="height:14px;width:90%;background:rgba(255,255,255,.16);border-radius:4px;animation:pulse 1.2s ease-in-out infinite;margin-top:14px"></div>
+        <div style="height:14px;width:70%;background:rgba(255,255,255,.16);border-radius:4px;animation:pulse 1.2s ease-in-out infinite"></div>
+      </div>
+      <div class="cmodal-head-right"></div>
+      <div class="cmodal-actions">
+        <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
       </div>
     </div>
     <div class="cmodal-body" style="display:flex;flex-direction:column;gap:12px">
@@ -1812,7 +1814,7 @@ async function openLiveDetail(code, prefix) {
   } catch (err) {
     console.error('Detail error:', err);
     if (openModalCode === code) {
-      modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. Try again in a moment.</p></div>`;
+      modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-left"><h2 class="cmodal-title">Couldn't load</h2></div><div class="cmodal-head-right"></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. Try again in a moment.</p></div>`;
     }
   }
 }
@@ -1835,25 +1837,30 @@ function buildModalDetail(d, code) {
   // card. (Old logic derived a badge from bright-outlook, which is a
   // separate signal — it caused the modal and card to disagree.)
   const grade = d.fitGrade || '';
-  let fitBadgeModal = '<div></div>';
+  let fitBadgeModal = '';
   if (grade === 'Best')  fitBadgeModal = `<div class="cmodal-match cmodal-match--best">Best Fit</div>`;
   else if (grade === 'Great') fitBadgeModal = `<div class="cmodal-match cmodal-match--great">Great Fit</div>`;
   else if (grade === 'Good')  fitBadgeModal = `<div class="cmodal-match cmodal-match--good">Good Fit</div>`;
 
-  const brightCls = d.tags?.brightOutlook ? ' bright' : '';
-  return `<div class="cmodal-head${brightCls}">
-    <div class="cmodal-head-overlay"></div>
-    <div class="cmodal-head-top">
+  // Two-panel header: solid-blue title panel on the left, career photo
+  // on the right. Actions (save + close) pinned to the top-right of the
+  // whole header so they're accessible even when the two panels stack.
+  const imgUrl = careerImageUrl(code, d.title);
+  const imgFb  = careerImageFallback(code);
+  const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
+  return `<div class="cmodal-head">
+    <div class="cmodal-head-left">
       ${fitBadgeModal}
-      <div class="cmodal-actions">
-        <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
-        <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
-      </div>
-    </div>
-    <div class="cmodal-head-bottom">
       <h2 class="cmodal-title" id="cmodal-title">${d.title || code}</h2>
       ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
       <div class="cmodal-head-pills">${salPill}${boPill}</div>
+    </div>
+    <div class="cmodal-head-right">
+      <img class="cmodal-head-img" src="${imgUrl}" alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}">
+    </div>
+    <div class="cmodal-actions">
+      <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
+      <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>
     </div>
   </div>
   <div class="cmodal-body">

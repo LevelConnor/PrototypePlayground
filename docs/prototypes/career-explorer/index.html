@@ -649,27 +649,50 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .cmodal-overlay.open{display:flex}
 .cmodal{background:var(--off);color:var(--navy);border:2px solid var(--mg);border-radius:24px;max-width:880px;width:100%;overflow:hidden;box-shadow:0 24px 60px rgba(10,15,46,.32);position:relative;animation:cmFadeIn .22s ease}
 @keyframes cmFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.cmodal-head{position:relative;min-height:300px;padding:22px 28px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,#1F73E8 0%,#0083FF 50%,#2A8AFF 100%);overflow:hidden}
-.cmodal-head.bright{background:linear-gradient(180deg,#5C9CE8 0%,#9C8AD0 28%,#D896B9 55%,#E89D8C 76%,#F2BB7A 92%,#F5D182 100%)}
-.cmodal-head-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 30%,rgba(10,15,46,.45) 100%);pointer-events:none}
+/* Two-panel header: solid-blue title panel on the left, photo panel on
+   the right, action buttons pinned to the top-right corner of the whole
+   header. */
+.cmodal-head{position:relative;padding:20px;background:transparent;display:flex;gap:16px;flex-wrap:wrap}
+.cmodal-head-left{flex:1 1 55%;min-width:0;background:var(--blue);color:#fff;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px}
+.cmodal-head-right{flex:1 1 40%;min-width:0;position:relative;border-radius:16px;overflow:hidden;min-height:280px;background:var(--mg)}
+.cmodal-head-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* Overlay is now a no-op — kept in the DOM for markup-stability during
+   the loading skeleton, hidden here. */
+.cmodal-head-overlay{display:none}
 .cmodal-head-top,.cmodal-head-bottom{position:relative;z-index:1}
-.cmodal-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.cmodal-match{padding:5px 12px;border-radius:var(--rf);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--ink)}
+/* fit badge sits at the top of the left panel; other actions pin to the
+   top-right of the whole header. */
+.cmodal-head-top{display:contents}
+.cmodal-match{padding:5px 12px;border-radius:var(--rf);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--ink);align-self:flex-start;order:-1}
 /* Fit-grade variants — match the .ccard-match--best/great/good scheme
    on the grid cards so the modal and card badge always agree. */
 .cmodal-match--best{background:var(--yellow);color:var(--ink)}
 .cmodal-match--great,
 .cmodal-match--good{background:var(--blue);color:#fff}
-.cmodal-actions{display:flex;gap:8px;margin-left:auto}
+/* Heart + close pinned to the top-right corner of the whole header
+   (not inside either panel), so they stay accessible even when the
+   two panels stack on mobile. */
+.cmodal-actions{position:absolute;top:32px;right:32px;display:flex;gap:8px;z-index:3}
 .cmodal-actions button,
 .cmodal-close{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .15s,border-color .15s}
 .cmodal-actions button:hover,
 .cmodal-close:hover{background:#fff}
 .cmodal-actions button.saved{background:var(--yellow);color:var(--ink)}
-.cmodal-title{font-size:30px;font-weight:900;color:#fff;line-height:1.1;margin:24px 0 10px}
-.cmodal-desc{font-size:15px;color:rgba(255,255,255,.88);line-height:1.5;margin:0 0 14px;max-width:60ch}
-.cmodal-head-pills{display:flex;flex-wrap:wrap;gap:6px}
+.cmodal-title{font-size:32px;font-weight:900;color:#fff;line-height:1.15;margin:0;letter-spacing:-.01em}
+.cmodal-desc{font-size:15px;color:rgba(255,255,255,.92);line-height:1.55;margin:0}
+/* Pills anchor to the bottom of the left panel — margin-top:auto in the
+   flex column pushes them down whether the description is short or long. */
+.cmodal-head-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:12px}
 .cmodal-head-pills .ccard-pill{font-size:12px}
+/* Actions on a light image bg need contrast — keep the glass fill. */
+.cmodal-actions button{background:rgba(255,255,255,.92)}
+@media (max-width:720px){
+  .cmodal-head{padding:16px;gap:12px}
+  .cmodal-head-left{padding:24px;flex:1 1 100%}
+  .cmodal-head-right{flex:1 1 100%;min-height:180px}
+  .cmodal-actions{top:26px;right:26px}
+  .cmodal-title{font-size:26px}
+}
 
 .cmodal-body{padding:22px 28px 28px}
 .cmodal-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px}
@@ -1118,6 +1141,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06v"></script>
+<script src="app.js?v=2026-06-06w"></script>
 </body>
 </html>
