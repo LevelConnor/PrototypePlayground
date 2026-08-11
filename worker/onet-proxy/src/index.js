@@ -131,6 +131,70 @@ export default {
       );
     }
 
+    // /image?q=<keywords>&seed=<code> — proxies a keyword-based photo
+    // pick from Unsplash Search. Returns a 302 to the actual CDN URL
+    // (images.unsplash.com/photo-...) so the browser fetches the image
+    // bytes directly. Long edge-cache TTL means the same (q, seed)
+    // combo only ever hits the Unsplash API once. Requires the
+    // UNSPLASH_ACCESS_KEY secret; without it the route errors out and
+    // the client falls back to the cluster image via <img onerror>.
+    if (parts[0] === 'image' && parts.length === 1) {
+      if (!env.UNSPLASH_ACCESS_KEY) {
+        return jsonResponse(request, { error: 'Unsplash not configured' }, 503);
+      }
+      const q = (url.searchParams.get('q') || '').trim();
+      if (!q) return jsonResponse(request, { error: 'Missing q' }, 400);
+      const seed = url.searchParams.get('seed') || '';
+      const searchUrl =
+        'https://api.unsplash.com/search/photos' +
+        '?query=' + encodeURIComponent(q) +
+        '&per_page=10&orientation=landscape&content_filter=high';
+      let searchResp;
+      try {
+        searchResp = await fetch(searchUrl, {
+          headers: {
+            'Authorization': 'Client-ID ' + env.UNSPLASH_ACCESS_KEY,
+            'Accept-Version': 'v1',
+          },
+          cf: { cacheTtl: 2592000, cacheEverything: true }, // 30 days
+        });
+      } catch (e) {
+        return jsonResponse(request, { error: 'Unsplash fetch failed', detail: e.message }, 502);
+      }
+      if (!searchResp.ok) {
+        return jsonResponse(request, { error: 'Unsplash returned ' + searchResp.status }, 502);
+      }
+      let data;
+      try { data = await searchResp.json(); } catch (e) {
+        return jsonResponse(request, { error: 'Bad Unsplash JSON' }, 502);
+      }
+      const results = (data && data.results) || [];
+      if (!results.length) {
+        return jsonResponse(request, { error: 'No results for query' }, 404);
+      }
+      // Deterministic pick from the first 10 results using the seed.
+      // Same seed + same query -> same photo across every session.
+      let h = 5381;
+      for (let i = 0; i < seed.length; i++) h = ((h << 5) + h + seed.charCodeAt(i)) | 0;
+      const idx = Math.abs(h) % results.length;
+      const chosen = results[idx];
+      const imgUrl =
+        (chosen.urls && (chosen.urls.small || chosen.urls.regular || chosen.urls.raw)) || '';
+      if (!imgUrl) {
+        return jsonResponse(request, { error: 'No usable image URL' }, 502);
+      }
+      // 302 to the actual CDN URL. Long Cache-Control so Cloudflare
+      // caches this redirect at the edge for repeat card renders.
+      return new Response(null, {
+        status: 302,
+        headers: {
+          'Location': imgUrl,
+          'Cache-Control': 'public, max-age=2592000',
+          ...corsHeaders(request),
+        },
+      });
+    }
+
     if (parts[0] === 'search' && parts.length === 1) {
       const keyword = (url.searchParams.get('keyword') || '').trim();
       if (!keyword) return jsonResponse(request, { error: 'Missing keyword' }, 400);

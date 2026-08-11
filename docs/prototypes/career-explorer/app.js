@@ -1393,9 +1393,13 @@ function careerImageKeywords(code, title) {
 }
 
 function careerImageUrl(code, title) {
+  // Hits the Worker's /image route which proxies Unsplash Search and
+  // 302-redirects to a deterministic Unsplash CDN photo. Same career
+  // code + keywords always resolve to the same photo; the Worker + edge
+  // cache the redirect for 30 days so we don't burn Unsplash rate.
   const seed = String(code || 'x').replace(/[^0-9a-zA-Z]/g, '');
   const kw = careerImageKeywords(code, title);
-  return `https://loremflickr.com/800/600/${encodeURIComponent(kw)}?lock=${seed}`;
+  return `${ONET_PROXY}/image?q=${encodeURIComponent(kw)}&seed=${seed}`;
 }
 
 // URL used by the <img>'s onerror handler when LoremFlickr fails.
