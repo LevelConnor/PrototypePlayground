@@ -1971,7 +1971,6 @@ function buildModalDetail(d, code) {
             <span><span class="state-tile-mini" data-variant="low"></span>Below average</span>
             <span><span class="state-tile-mini" data-variant="none"></span>No data</span>
           </div>
-          <p class="state-outlook-foot">Salary shown above is national — O*NET doesn't expose state-level wages.</p>
         </div>`;
       })()}
     </div>
