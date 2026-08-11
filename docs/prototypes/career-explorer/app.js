@@ -564,11 +564,14 @@ function renderInterestProfile(sorted) {
 // Show all 6 rows or just the top 3, with a max-height collapse on rows 4-6.
 function applyIpVisibility() {
   if (!ipSorted) return;
-  const rows = document.querySelectorAll('.ip-stack .ip-row');
-  if (!rows.length) return;
-  rows.forEach((r, i) => {
-    if (ipShowAll || i < 3) r.classList.remove('ip-row--hidden');
-    else r.classList.add('ip-row--hidden');
+  // Iterate PER stack — a flat querySelectorAll across .ip-row would treat
+  // Home + Explore Careers stacks as one 12-row list, hiding every row of
+  // the second stack. Each .ip-stack keeps its own top-3 visible.
+  document.querySelectorAll('.ip-stack').forEach(stack => {
+    stack.querySelectorAll('.ip-row').forEach((r, i) => {
+      if (ipShowAll || i < 3) r.classList.remove('ip-row--hidden');
+      else r.classList.add('ip-row--hidden');
+    });
   });
 }
 
