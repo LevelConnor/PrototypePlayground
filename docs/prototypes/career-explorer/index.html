@@ -224,18 +224,35 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    the description). The numeric score sits OUTSIDE the pill on the
    right. Toggling "Show All" off collapses rows 4-6. */
 .ip-stack{display:flex;flex-direction:column;gap:6px}
-/* Personalized interpretation blurb — sits between the RIASEC pills and
-   the score explainer. Templated from the user's top-3 areas. Framed
-   with a two-tone blue gradient border via the double-background /
-   border-box trick: inner tinted fill on padding-box, gradient on
-   border-box, with a transparent border revealing the gradient. */
+/* Personalized interpretation blurb — sits between the RIASEC pills
+   and the score explainer, in a native <details> accordion so users
+   can collapse it. Framed with a two-tone blue gradient border via
+   the double-background / border-box trick. */
 .ip-blurb{
-  font-size:15px;color:var(--navy);line-height:1.55;margin:20px 0 0;
-  padding:18px 20px;border-radius:16px;
+  margin:20px 0 0;border-radius:16px;
   border:2px solid transparent;
   background:
     linear-gradient(var(--off), var(--off)) padding-box,
     linear-gradient(135deg, #0083FF 0%, #93C5FD 100%) border-box;
+  overflow:hidden;
+}
+.ip-blurb > summary{
+  list-style:none;cursor:pointer;user-select:none;
+  padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-size:15px;font-weight:900;color:var(--navy);
+}
+.ip-blurb > summary::-webkit-details-marker{display:none}
+.ip-blurb > summary::after{
+  content:'';width:9px;height:9px;flex-shrink:0;
+  border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);
+  transform:rotate(45deg);
+  transition:transform .2s ease;
+  margin-top:-4px;
+}
+.ip-blurb[open] > summary::after{transform:rotate(-135deg);margin-top:2px}
+.ip-blurb-body{
+  padding:0 18px 16px;font-size:15px;line-height:1.55;color:var(--navy);
 }
 .ip-blurb strong{color:var(--navy);font-weight:900}
 .ip-score-note{font-size:12px;color:var(--ts);line-height:1.5;margin:14px 0 0;text-align:left}
@@ -980,6 +997,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05y"></script>
+<script src="app.js?v=2026-06-05z"></script>
 </body>
 </html>

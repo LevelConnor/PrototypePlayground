@@ -283,7 +283,12 @@ function ipBlurb(sorted) {
   );
   const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
   const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
-  return `<p class="ip-blurb">Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.</p>`;
+  return `<details class="ip-blurb" open>
+    <summary>Explain My Results</summary>
+    <div class="ip-blurb-body">
+      Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.
+    </div>
+  </details>`;
 }
 
 /* ══ TOAST ══ */
