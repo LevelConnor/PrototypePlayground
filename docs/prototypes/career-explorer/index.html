@@ -696,12 +696,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <span class="home-card-cta">Take the quiz →</span>
     </button>
   </div>
-  <!-- Home-side interest-profile slot. Only visible AFTER the quiz —
-       hide-when-empty tells syncProfileUI not to render the small
-       fallback CTA card here (the Get-Matched home-card above already
-       serves that role). -->
-  <div id="interest-profile" class="interest-profile" data-hide-when-empty style="display:none"></div>
-
   <button class="home-card" data-tab-target="search" type="button">
     <div class="home-card-icon home-icon-explore" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
@@ -723,6 +717,12 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
     </div>
     <span class="home-card-cta">Browse clusters →</span>
   </button>
+
+  <!-- Home-side interest-profile slot. Only visible AFTER the quiz.
+       Positioned below the two nav cards so Search + Clusters remain
+       the primary calls-to-action; the results card sits above the
+       user's saved careers + next-moves as a running reference. -->
+  <div id="interest-profile" class="interest-profile" data-hide-when-empty style="display:none;margin-top:20px"></div>
 
   <div class="home-section">
     <h2 class="home-section-heading">Saved Careers</h2>
@@ -1003,6 +1003,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06c"></script>
+<script src="app.js?v=2026-06-06d"></script>
 </body>
 </html>
