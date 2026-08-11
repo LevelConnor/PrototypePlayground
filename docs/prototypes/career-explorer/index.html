@@ -159,17 +159,27 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    .ip-card so both themes read as one visual family.
    ───────────────────────────────────────────────────────────── */
 .pt-eyebrow{font-size:12px;font-weight:900;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
-.home-card{display:flex;align-items:center;gap:20px;width:100%;text-align:left;background:var(--white);border:1.5px solid var(--mg);border-radius:22px;padding:22px 24px;margin:0 0 14px;box-shadow:0 4px 14px rgba(10,15,46,.06);cursor:pointer;transition:transform .15s ease, box-shadow .2s ease, border-color .15s ease;font-family:inherit;color:inherit}
+.home-card{display:flex;align-items:center;gap:22px;width:100%;text-align:left;background:var(--white);border:1.5px solid var(--mg);border-radius:20px;padding:22px 22px 22px 24px;margin:0 0 14px;box-shadow:0 4px 14px rgba(10,15,46,.06);cursor:pointer;transition:transform .15s ease, box-shadow .2s ease, border-color .15s ease;font-family:inherit;color:inherit}
 .home-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,15,46,.10);border-color:var(--blue)}
 .home-card:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.home-card-icon{width:56px;height:56px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(10,15,46,.14)}
-.home-icon-quiz{background:linear-gradient(135deg,#0083FF 0%,#5C9CE8 100%)}
-.home-icon-explore{background:linear-gradient(135deg,#F49FFB 0%,#A78BFA 100%)}
-.home-icon-clusters{background:linear-gradient(135deg,#68F4B8 0%,#0083FF 100%);color:var(--ink)}
+/* Icon: subtle blue-tinted inset with the mark drawn in primary blue.
+   Same look for every card — no gradient, no color-per-card variant. */
+.home-card-icon{width:52px;height:52px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;color:var(--blue);background:rgba(0,131,255,.10);border:1px solid rgba(0,131,255,.18);flex-shrink:0}
+.home-icon-quiz,.home-icon-explore,.home-icon-clusters{background:rgba(0,131,255,.10);color:var(--blue)}
 .home-card-body{flex:1;min-width:0}
 .home-card-title{font-size:20px;font-weight:900;color:var(--navy);margin:0 0 4px;line-height:1.25;letter-spacing:-.01em}
 .home-card-desc{font-size:14px;color:var(--ts);line-height:1.5;margin:0}
-.home-card-cta{flex-shrink:0;font-size:13px;font-weight:900;letter-spacing:.02em;color:var(--blue);white-space:nowrap;padding-left:8px}
+/* Right-side pill styled like the primary CTA: solid blue, white text,
+   arrow icon. Whole card still routes via data-tab-target so the pill
+   is decorative — but it reads as a real button. */
+.home-card-cta{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border-radius:100px;padding:11px 20px;font-size:13px;font-weight:900;letter-spacing:.02em;white-space:nowrap;transition:filter .15s ease}
+.home-card-cta svg{width:14px;height:14px;flex-shrink:0}
+.home-card:hover .home-card-cta{filter:brightness(1.08)}
+@media (max-width:640px){
+  .home-card{padding:18px 20px;gap:16px}
+  .home-card-icon{width:44px;height:44px;border-radius:12px}
+  .home-card-cta{padding:9px 16px}
+}
 
 .home-section{margin:36px 0 0}
 .home-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 16px}
@@ -754,35 +764,35 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   <div id="home-quiz-cta">
     <button class="home-card" data-tab-target="assessment" type="button">
       <div class="home-card-icon home-icon-quiz" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06L2.36 12.48a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/></svg>
       </div>
       <div class="home-card-body">
         <h2 class="home-card-title">Take The Interests Assessment</h2>
         <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
       </div>
-      <span class="home-card-cta">Take the quiz →</span>
+      <span class="home-card-cta">Take The Quiz <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
     </button>
   </div>
   <button class="home-card" data-tab-target="search" type="button">
     <div class="home-card-icon home-icon-explore" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
     </div>
     <div class="home-card-body">
       <h2 class="home-card-title">Search Careers</h2>
       <p class="home-card-desc">Search 900+ occupations by keyword, or filter by work style, education, and pay.</p>
     </div>
-    <span class="home-card-cta">Explore →</span>
+    <span class="home-card-cta">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
   </button>
 
   <button class="home-card" data-tab-target="clusters" type="button">
     <div class="home-card-icon home-icon-clusters" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     </div>
     <div class="home-card-body">
       <h2 class="home-card-title">Explore Career Clusters</h2>
       <p class="home-card-desc">Browse 14 industries  and see the careers inside.</p>
     </div>
-    <span class="home-card-cta">Browse clusters →</span>
+    <span class="home-card-cta">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
   </button>
 
   <!-- Home-side interest-profile slot. Only visible AFTER the quiz.
@@ -1092,6 +1102,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06s"></script>
+<script src="app.js?v=2026-06-06t"></script>
 </body>
 </html>
