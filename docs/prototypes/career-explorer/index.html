@@ -654,8 +654,14 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    header. */
 .cmodal-head{position:relative;padding:20px;background:transparent;display:flex;gap:16px;flex-wrap:wrap}
 .cmodal-head-left{flex:1 1 55%;min-width:0;background:var(--blue);color:#fff;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px}
-.cmodal-head-right{flex:1 1 40%;min-width:0;position:relative;border-radius:16px;overflow:hidden;min-height:280px;background:var(--mg)}
+.cmodal-head-right{flex:1 1 40%;min-width:0;position:relative;border-radius:16px;overflow:hidden;min-height:280px;background:#0A0F2E}
 .cmodal-head-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* Career video plays inline in the hero. object-fit:contain preserves
+   the video's own aspect ratio (CareerOneStop mixes 16:9 and 4:3) with
+   the dark panel bg acting as intentional letterboxing. Falls back to
+   .cmodal-head-img--fallback via wireHeadMedia() when no video exists. */
+.cmodal-head-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#0A0F2E}
+.cmodal-head-img--fallback{background:var(--mg)}
 /* Overlay is now a no-op — kept in the DOM for markup-stability during
    the loading skeleton, hidden here. */
 .cmodal-head-overlay{display:none}
@@ -1195,6 +1201,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07h"></script>
+<script src="app.js?v=2026-06-07i"></script>
 </body>
 </html>

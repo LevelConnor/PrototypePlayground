@@ -1857,6 +1857,7 @@ async function openLiveDetail(code, prefix) {
       modal.scrollTop = 0;
       enrichRelatedCards(relatedList);
       hydrateStateMap(code);
+      wireHeadMedia(modal);
     }
 
   } catch (err) {
@@ -1906,6 +1907,35 @@ async function getUsMapSvg() {
 // Inject the geographic SVG into the placeholder container, then set
 // each state's fill from the career's stateOutlook list. Called from
 // openLiveDetail after modal.innerHTML has been set.
+// Wire the career-video/image swap in the modal hero. The <video>
+// element is emitted without a <source>; we add it here and listen for
+// load errors — if the CareerOneStop CDN doesn't have a video for this
+// O*NET code, we hide the player and show the poster image instead.
+function wireHeadMedia(root) {
+  const wrap = root && root.querySelector('[data-head-media]');
+  if (!wrap) return;
+  const video = wrap.querySelector('video[data-video-src]');
+  const img = wrap.querySelector('.cmodal-head-img--fallback');
+  if (!video || !img) return;
+  const src = video.dataset.videoSrc;
+  if (!src) { video.hidden = true; img.hidden = false; return; }
+  const swapToImg = () => {
+    if (video.dataset.swapped) return;
+    video.dataset.swapped = '1';
+    video.hidden = true;
+    img.hidden = false;
+  };
+  // Both the <video> element and the <source> can fire 'error' when
+  // the media fails to load — cover both paths.
+  video.addEventListener('error', swapToImg);
+  const source = document.createElement('source');
+  source.type = 'video/mp4';
+  source.src = src;
+  source.addEventListener('error', swapToImg);
+  video.appendChild(source);
+  video.load();
+}
+
 async function hydrateStateMap(code) {
   const host = document.querySelector('.state-map[data-code="' + code + '"]');
   if (!host) return;
@@ -1970,12 +2000,19 @@ function buildModalDetail(d, code) {
   else if (grade === 'Great') fitBadgeModal = `<div class="cmodal-match cmodal-match--great">Great Fit</div>`;
   else if (grade === 'Good')  fitBadgeModal = `<div class="cmodal-match cmodal-match--good">Good Fit</div>`;
 
-  // Two-panel header: solid-blue title panel on the left, career photo
-  // on the right. Actions (save + close) pinned to the top-right of the
-  // whole header so they're accessible even when the two panels stack.
+  // Two-panel header: solid-blue title panel on the left, career video
+  // (or photo, if no video available) on the right. Actions (save +
+  // close) pinned to the top-right of the whole header so they're
+  // accessible even when the two panels stack.
+  //
+  // CareerOneStop hosts ~1-minute career videos at a predictable URL,
+  // keyed by O*NET-SOC code — coverage is high but not universal.
+  // Render both a <video> and a fallback <img>: wireHeadMedia() below
+  // swaps to the image if the video can't load.
   const imgUrl = careerImageUrl(code, d.title);
   const imgFb  = careerImageFallback(code);
   const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
+  const videoUrl = `https://cdn.careeronestop.org/OccVids/OccupationVideos/${encodeURIComponent(code)}.mp4`;
   return `<div class="cmodal-head">
     <div class="cmodal-head-left">
       ${fitBadgeModal}
@@ -1983,8 +2020,14 @@ function buildModalDetail(d, code) {
       ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
       <div class="cmodal-head-pills">${salPill}${boPill}</div>
     </div>
-    <div class="cmodal-head-right">
-      <img class="cmodal-head-img" src="${imgUrl}" alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}">
+    <div class="cmodal-head-right" data-head-media>
+      <video class="cmodal-head-video" controls preload="metadata" playsinline
+             poster="${imgUrl}"
+             data-video-src="${videoUrl}"
+             aria-label="Career video for ${d.title || code}">
+      </video>
+      <img class="cmodal-head-img cmodal-head-img--fallback" src="${imgUrl}"
+           alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}" hidden>
     </div>
     <div class="cmodal-actions">
       <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
