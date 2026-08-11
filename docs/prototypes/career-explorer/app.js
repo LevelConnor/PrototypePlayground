@@ -558,10 +558,7 @@ function renderInterestProfile(sorted) {
     </div>`;
   };
 
-  // Inline SVG icons for the action buttons.
-  const iconLink   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
-  const iconMail   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>`;
-  const iconDown   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>`;
+  // Retake icon — the only footer action still on the card.
   const iconRetake = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>`;
 
   const cardHtml = `
@@ -583,10 +580,7 @@ function renderInterestProfile(sorted) {
             </button>
           </div>
           <div class="ip-foot-r">
-            <button class="ip-action-btn" id="btn-print" title="Download" aria-label="Download">${iconDown}</button>
-            <button class="ip-action-btn" id="btn-copy-link" title="Copy link" aria-label="Copy link">${iconLink}</button>
-            <button class="ip-action-btn" id="btn-email" title="Email" aria-label="Email">${iconMail}</button>
-            <button class="ip-action-pill" id="btn-retake">Retake ${iconRetake}</button>
+            <button class="ip-action-pill" id="btn-retake">Retake Quiz ${iconRetake}</button>
           </div>
         </div>
       </div>
