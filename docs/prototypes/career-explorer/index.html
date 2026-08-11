@@ -96,15 +96,35 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .pw{background:var(--mg);border-radius:var(--rf);height:6px;margin-bottom:24px}
 .pf{height:6px;border-radius:var(--rf);background:var(--blue);transition:width .3s}
 /* Quiz length toggle. Segmented pill above the questions. */
-.q-mode-row{display:flex;justify-content:center;margin:0 0 24px}
-.q-mode-pill{display:inline-flex;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:4px;gap:2px}
-.q-mode-opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 22px;border:none;background:transparent;border-radius:var(--rf);cursor:pointer;color:var(--ts);transition:background .15s, color .15s}
-.q-mode-opt .q-mode-label{font-size:14px;font-weight:900;line-height:1}
-.q-mode-opt .q-mode-sub{font-size:11px;font-weight:500;line-height:1.2;opacity:.85}
-.q-mode-opt:hover:not(.active){color:var(--navy)}
-.q-mode-opt.active{background:var(--blue);color:#fff}
-.q-mode-opt.active .q-mode-sub{opacity:.9}
-@media (max-width:520px){.q-mode-opt{padding:8px 14px}.q-mode-opt .q-mode-label{font-size:13px}.q-mode-opt .q-mode-sub{font-size:10px}}
+/* 30/60 quiz-length toggle. Two full-width, side-by-side cards; the
+   active one fills with the primary blue, the other sits on the
+   surface color with a subtle border. Text is left-aligned so the
+   title reads first with the descriptor below it. */
+.q-mode-row{display:flex;margin:0 0 24px}
+.q-mode-pill{display:flex;gap:14px;width:100%;background:transparent;border:none;border-radius:0;padding:0}
+.q-mode-opt{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  padding:22px 26px;
+  border:1.5px solid var(--mg);border-radius:20px;
+  background:var(--white);color:var(--ts);
+  cursor:pointer;text-align:left;
+  transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
+}
+.q-mode-opt .q-mode-label{font-size:18px;font-weight:900;line-height:1.15;color:var(--navy)}
+.q-mode-opt .q-mode-sub{font-size:13px;font-weight:500;line-height:1.35;color:var(--ts)}
+.q-mode-opt:hover:not(.active){border-color:var(--blue)}
+.q-mode-opt.active{
+  background:var(--blue);border-color:var(--blue);color:#fff;
+  box-shadow:0 6px 18px rgba(0,131,255,.24);
+}
+.q-mode-opt.active .q-mode-label{color:#fff}
+.q-mode-opt.active .q-mode-sub{color:rgba(255,255,255,.85)}
+@media (max-width:520px){
+  .q-mode-pill{flex-direction:column;gap:10px}
+  .q-mode-opt{padding:18px 20px}
+  .q-mode-opt .q-mode-label{font-size:16px}
+}
 /* Refine-with-full link on the Your Results card. */
 .sdiv{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
 .sdl{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--blue);white-space:nowrap}
@@ -1003,6 +1023,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06i"></script>
+<script src="app.js?v=2026-06-06j"></script>
 </body>
 </html>
