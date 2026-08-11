@@ -42,8 +42,6 @@ document.addEventListener('click', function(e) {
   // t.closest — the button contains an SVG icon whose child <path>
   // becomes the click target, so a strict t.id check would miss those.
   if (t.closest('#btn-retake')) { resetAssessment(); return; }
-  const modeBtn = t.closest('.q-mode-opt');
-  if (modeBtn && modeBtn.dataset.mode) { setQuizMode(modeBtn.dataset.mode); return; }
   if (t.id === 'btn-explore-matches') { goToSearch(); return; }
   if (t.id === 'btn-go-assess') { goToAssessment(); return; }
 
@@ -240,8 +238,6 @@ const AREA_SECTIONS = [
   { key:'enterprising',  letter:'E', label:'Section 5 — Leading & Persuading' },
   { key:'conventional',  letter:'C', label:'Section 6 — Organizing & Managing' },
 ];
-// 'quick' = 30 items (every other O*NET item, 5 per area). 'full' = all 60.
-let quizMode = 'quick';
 let lastResults = null;
 // O*NET-style 0-40 scores per RIASEC dimension, computed from the same
 // answers as lastResults. O*NET's Mini Interest Profiler convention:
@@ -350,7 +346,7 @@ function ipBlurb(sorted) {
   );
   const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
   const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
-  return `<details class="ip-blurb">
+  return `<details class="ip-blurb" open>
     <summary>Explain My Results</summary>
     <div class="ip-blurb-body">
       Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.
@@ -386,14 +382,10 @@ function goToSearch() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 /* ══ ASSESSMENT ══ */
-// Items currently in play for the active quiz mode.
+// The whole O*NET Interest Profiler item bank (60 items). The quiz-
+// mode toggle is gone — every user takes the full assessment.
 function activeItems() {
-  if (!IP_QUESTIONS.length) return [];
-  if (quizMode === 'full') return IP_QUESTIONS;
-  // Quick mode: every other item (5 per area, 30 total). O*NET lists items
-  // in r,r,i,i,a,a,s,s,e,e,c,c cycles so indices 0,2,4,… still cover all
-  // 6 areas evenly.
-  return IP_QUESTIONS.filter((_, i) => i % 2 === 0);
+  return IP_QUESTIONS;
 }
 
 // Update the "N of X answered" caption and the top progress bar based on
@@ -462,17 +454,6 @@ async function initQuiz() {
       '<div style="text-align:center;padding:60px 20px;color:var(--ts);font-size:15px">Couldn\'t load questions. Try again later.</div>';
     return;
   }
-  renderQuiz();
-}
-
-// Quiz-length pill click handler.
-function setQuizMode(mode) {
-  if (mode !== 'quick' && mode !== 'full') return;
-  if (quizMode === mode) return;
-  quizMode = mode;
-  document.querySelectorAll('.q-mode-opt').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === mode);
-  });
   renderQuiz();
 }
 
@@ -557,7 +538,7 @@ function syncProfileUI() {
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
         </div>
         <div class="home-card-body">
-          <h2 class="home-card-title">Get Matched With Careers</h2>
+          <h2 class="home-card-title">Take The Interests Assessment</h2>
           <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
         </div>
         <span class="home-card-cta">Take the quiz →</span>

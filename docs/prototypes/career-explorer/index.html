@@ -122,35 +122,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .pw{background:var(--mg);border-radius:var(--rf);height:6px;margin-bottom:24px}
 .pf{height:6px;border-radius:var(--rf);background:var(--blue);transition:width .3s}
 /* Quiz length toggle. Segmented pill above the questions. */
-/* 30/60 quiz-length toggle. Two full-width, side-by-side cards; the
-   active one fills with the primary blue, the other sits on the
-   surface color with a subtle border. Text is left-aligned so the
-   title reads first with the descriptor below it. */
-.q-mode-row{display:flex;margin:0 0 24px}
-.q-mode-pill{display:flex;gap:14px;width:100%;background:transparent;border:none;border-radius:0;padding:0}
-.q-mode-opt{
-  flex:1;min-width:0;
-  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
-  padding:22px 26px;
-  border:1.5px solid var(--mg);border-radius:20px;
-  background:var(--white);color:var(--ts);
-  cursor:pointer;text-align:left;
-  transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
-}
-.q-mode-opt .q-mode-label{font-size:18px;font-weight:900;line-height:1.15;color:var(--navy)}
-.q-mode-opt .q-mode-sub{font-size:13px;font-weight:500;line-height:1.35;color:var(--ts)}
-.q-mode-opt:hover:not(.active){border-color:var(--blue)}
-.q-mode-opt.active{
-  background:var(--blue);border-color:var(--blue);color:#fff;
-  box-shadow:0 6px 18px rgba(0,131,255,.24);
-}
-.q-mode-opt.active .q-mode-label{color:#fff}
-.q-mode-opt.active .q-mode-sub{color:rgba(255,255,255,.85)}
-@media (max-width:520px){
-  .q-mode-pill{flex-direction:column;gap:10px}
-  .q-mode-opt{padding:18px 20px}
-  .q-mode-opt .q-mode-label{font-size:16px}
-}
 /* Refine-with-full link on the Your Results card. */
 .sdiv{display:flex;align-items:center;gap:12px;margin:28px 0 16px}
 .sdl{font-size:16px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--blue);white-space:nowrap}
@@ -781,7 +752,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
         <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
       </div>
       <div class="home-card-body">
-        <h2 class="home-card-title">Get Matched With Careers</h2>
+        <h2 class="home-card-title">Take The Interests Assessment</h2>
         <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
       </div>
       <span class="home-card-cta">Take the quiz →</span>
@@ -866,22 +837,9 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
     Back to Home
   </button>
   <div id="afw">
-    <div class="pt">Get Matched With Careers</div>
+    <div class="pt">Take The Interests Assessment</div>
     <p class="ps">Rate how much you'd enjoy each activity. There are no right or wrong answers.</p>
     <div class="pw"><div class="pf" id="pf" style="width:0%"></div></div>
-    <!-- Length toggle. Quick = 30 items (curated subset), Full = 60 items
-         (O*NET's complete Interest Profiler). Preserves answers between
-         modes so switching mid-quiz doesn't wipe progress. -->
-    <div class="q-mode-row" id="q-mode-row">
-      <div class="q-mode-pill" role="group" aria-label="Quiz length">
-        <button class="q-mode-opt active" data-mode="quick" type="button">
-          <span class="q-mode-label">30 Questions</span><span class="q-mode-sub">About 5 minutes • quick profile</span>
-        </button>
-        <button class="q-mode-opt" data-mode="full" type="button">
-          <span class="q-mode-label">60 Questions</span><span class="q-mode-sub">About 10 minutes • sharper matches</span>
-        </button>
-      </div>
-    </div>
     <div id="qwrap">
       <div style="text-align:center;padding:60px 20px;color:var(--ts);font-size:15px">
         Loading questions from O*NET…
@@ -1113,6 +1071,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06q"></script>
+<script src="app.js?v=2026-06-06r"></script>
 </body>
 </html>
