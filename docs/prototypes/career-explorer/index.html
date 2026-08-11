@@ -224,6 +224,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    the description). The numeric score sits OUTSIDE the pill on the
    right. Toggling "Show All" off collapses rows 4-6. */
 .ip-stack{display:flex;flex-direction:column;gap:6px}
+/* Personalized interpretation blurb — sits between the RIASEC pills and
+   the score explainer. Templated from the user's top-3 areas. */
+.ip-blurb{font-size:15px;color:var(--navy);line-height:1.55;margin:18px 0 0}
+.ip-blurb strong{color:var(--navy);font-weight:900}
 .ip-score-note{font-size:12px;color:var(--ts);line-height:1.5;margin:14px 0 0;text-align:left}
 .ip-row{display:flex;align-items:center;gap:16px;overflow:hidden;cursor:default;
   max-height:120px;opacity:1;
@@ -966,6 +970,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05v"></script>
+<script src="app.js?v=2026-06-05w"></script>
 </body>
 </html>

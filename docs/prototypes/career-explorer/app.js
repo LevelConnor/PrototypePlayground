@@ -253,13 +253,38 @@ const BC = {R:'#0083FF',I:'#FF7A1A',A:'#FFD810',S:'#68F4B8',E:'#A78BFA',C:'#F49F
 // Short descriptions tuned to fit on a single line inside the result pill
 // at its minimum width (~440px). Don't extend these without re-tuning min.
 const RI = {
-  R:{name:'Realistic — The Builder',short:'Realistic',desc:'Hands-on work, tools, and physical tasks.'},
-  I:{name:'Investigative — The Thinker',short:'Investigative',desc:'Research, analysis, and complex problem-solving.'},
-  A:{name:'Artistic — The Creator',short:'Artistic',desc:'Design, writing, and creative expression.'},
-  S:{name:'Social — The Helper',short:'Social',desc:'Teaching, healthcare, and supporting others.'},
-  E:{name:'Enterprising — The Leader',short:'Enterprising',desc:'Business, sales, and persuading others.'},
-  C:{name:'Conventional — The Organizer',short:'Conventional',desc:'Data, finance, and structured processes.'}
+  R:{name:'Realistic — The Builder',       short:'Realistic',     desc:'Hands-on work, tools, and physical tasks.',
+     draw:'solving practical, hands-on problems',                 look:'hands-on work you can see and touch'},
+  I:{name:'Investigative — The Thinker',   short:'Investigative', desc:'Research, analysis, and complex problem-solving.',
+     draw:'digging into ideas, research, and analysis',           look:'intellectual challenges you can go deep on'},
+  A:{name:'Artistic — The Creator',        short:'Artistic',      desc:'Design, writing, and creative expression.',
+     draw:'creative expression and original design',              look:'creative freedom and room for original ideas'},
+  S:{name:'Social — The Helper',           short:'Social',        desc:'Teaching, healthcare, and supporting others.',
+     draw:"working closely with — and helping — other people",    look:'real connection with the people you serve'},
+  E:{name:'Enterprising — The Leader',     short:'Enterprising',  desc:'Business, sales, and persuading others.',
+     draw:'leading, persuading, and driving outcomes',            look:'influence, ownership, and space to lead'},
+  C:{name:'Conventional — The Organizer',  short:'Conventional',  desc:'Data, finance, and structured processes.',
+     draw:'organizing information and doing precise, methodical work',
+     look:'clear structure, accuracy, and reliable systems'},
 };
+
+// Compose a personalized blurb from the top-3 RIASEC areas. Returns raw
+// HTML — inserted directly into the results card. `sorted` is the same
+// [[letter, score]] array renderInterestProfile receives.
+function ipBlurb(sorted) {
+  const top = sorted.slice(0, 3).map(([k]) => k);
+  if (top.length < 3) return '';
+  const [k1, k2, k3] = top;
+  const oxford = (a, b, c) => `${a}, ${b}, and ${c}`;
+  const areas = oxford(
+    `<strong>${RI[k1].short}</strong>`,
+    `<strong>${RI[k2].short}</strong>`,
+    `<strong>${RI[k3].short}</strong>`
+  );
+  const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
+  const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
+  return `<p class="ip-blurb">Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.</p>`;
+}
 
 /* ══ TOAST ══ */
 function toast(m) {
@@ -535,6 +560,7 @@ function renderInterestProfile(sorted) {
         <div class="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
+        ${ipBlurb(sorted)}
         <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.${
           quizMode === 'quick'
             ? ` <button class="ip-refine" id="btn-refine-quiz" type="button">Take the full 60-question quiz for sharper matches →</button>`
