@@ -1668,7 +1668,7 @@ async function openLiveDetail(code, prefix) {
   } catch (err) {
     console.error('Detail error:', err);
     if (openModalCode === code) {
-      modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" style="color:var(--blue)">View on O*NET →</a></p></div>`;
+      modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-overlay"></div><div class="cmodal-head-top"><div></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. Try again in a moment.</p></div>`;
     }
   }
 }
@@ -1796,9 +1796,6 @@ function buildModalDetail(d, code) {
       </div>
     </div>
 
-    <div class="cmodal-footer">
-      <a href="https://www.onetonline.org/link/summary/${code}" target="_blank" rel="noopener">View on O*NET →</a>
-    </div>
   </div>`;
 }
 
@@ -2098,10 +2095,11 @@ async function nmFillPathways(code) {
   if (badges.length) {
     parts.push(`<div class="nm-subhead">Signals</div><div class="nm-tags">${badges.join('')}</div>`);
   }
-  parts.push(`<div class="nm-actions">
-    <a href="https://www.onetonline.org/link/summary/${nmEsc(code)}" target="_blank" rel="noopener">View on O*NET →</a>
-    ${tags.apprenticeship ? `<a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${nmEsc(code)}" target="_blank" rel="noopener">Find apprenticeships →</a>` : ''}
-  </div>`);
+  if (tags.apprenticeship) {
+    parts.push(`<div class="nm-actions">
+      <a href="https://www.apprenticeship.gov/apprenticeship-job-finder?onetCode=${nmEsc(code)}" target="_blank" rel="noopener">Find apprenticeships →</a>
+    </div>`);
+  }
   slot.innerHTML = parts.join('');
 }
 
