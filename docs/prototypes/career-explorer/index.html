@@ -730,13 +730,13 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .state-map{position:relative}
 .state-map-loading{padding:24px 20px;text-align:center;color:var(--ts);font-size:14px}
 .state-map svg{width:100%;height:auto;display:block}
-.state-map svg path[data-state]{stroke:var(--mg);stroke-width:.6;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
+.state-map svg path[data-state]{stroke:var(--mg);stroke-width:1.2;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
 /* The Wikimedia SVG carries a separate <g class="borders"> layer of
    between-state lines with an inline stroke:#FFFFFF. Repaint those to
-   match the card border. */
+   match the card border, and bump the width so they don't get lost. */
 .state-map svg g.borders,
 .state-map svg g.borders path,
-.state-map svg .separator1{stroke:var(--mg)}
+.state-map svg .separator1{stroke:var(--mg);stroke-width:1.6}
 /* Solid palette so the map reads the same on light + dark backgrounds
    (alpha overlays disappeared into the dark modal surface). Sequential
    green: brighter = more opportunity. */
