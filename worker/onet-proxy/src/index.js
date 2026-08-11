@@ -134,6 +134,29 @@ export default {
       );
     }
 
+    // TEMPORARY diagnostic passthrough for O*NET endpoint exploration.
+    // Accepts only /online/ or /mnm/ path prefixes. REMOVE after use.
+    if (parts[0] === '__probe' && url.searchParams.has('path')) {
+      const raw = url.searchParams.get('path') || '';
+      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
+        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
+      }
+      try {
+        const res = await onetFetch(raw, env);
+        const body = await res.text();
+        return new Response(body, {
+          status: res.status,
+          headers: {
+            'Content-Type': res.headers.get('Content-Type') || 'application/json',
+            'Cache-Control': 'no-store',
+            ...corsHeaders(request),
+          },
+        });
+      } catch (err) {
+        return jsonResponse(request, { error: 'Upstream fetch failed', detail: err.message }, 502);
+      }
+    }
+
     // /image?q=<keywords>&seed=<code> — proxies a keyword-based photo
     // pick from Unsplash Search. Returns a 302 to the actual CDN URL
     // (images.unsplash.com/photo-...) so the browser fetches the image
