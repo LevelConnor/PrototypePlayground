@@ -568,7 +568,12 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .ccard-pill{padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;line-height:1.2;background:#7FE7B8;color:var(--ink);white-space:nowrap}
 .ccard-pill.bo{background:var(--yellow)}
 .ccard-pill.match{background:#FF96E3}
-.ccard-match{position:absolute;top:14px;left:14px;background:#FF96E3;color:var(--ink);padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;z-index:3}
+.ccard-match{position:absolute;top:14px;left:14px;padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;z-index:3;background:#FF96E3;color:var(--ink)}
+/* Fit-grade variants. Best Fit stands out in yellow; Great and Good
+   share the primary blue so 'Best' remains the visual peak. */
+.ccard-match--best{background:var(--yellow);color:var(--ink)}
+.ccard-match--great,
+.ccard-match--good{background:var(--blue);color:#fff}
 .ccard-bm{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s, background .15s;z-index:3}
 .ccard-bm:hover{background:#fff;transform:scale(1.05)}
 .ccard-bm.saved{background:var(--yellow);color:var(--ink)}
@@ -997,6 +1002,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05z"></script>
+<script src="app.js?v=2026-06-06a"></script>
 </body>
 </html>

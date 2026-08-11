@@ -1419,9 +1419,9 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   // updated to pass c.fitGrade.
   const grade = c.fitGrade || (c.isMatch ? 'Best' : '');
   let fitBadge = '';
-  if (grade === 'Best')  fitBadge = `<div class="ccard-match">Best Fit</div>`;
-  else if (grade === 'Great') fitBadge = `<div class="ccard-match">Great Fit</div>`;
-  else if (grade === 'Good')  fitBadge = `<div class="ccard-match">Good Fit</div>`;
+  if (grade === 'Best')  fitBadge = `<div class="ccard-match ccard-match--best">Best Fit</div>`;
+  else if (grade === 'Great') fitBadge = `<div class="ccard-match ccard-match--great">Great Fit</div>`;
+  else if (grade === 'Good')  fitBadge = `<div class="ccard-match ccard-match--good">Good Fit</div>`;
   // onerror: try the cluster fallback URL once; on second failure hide.
   const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
   return `<div class="ccard has-image${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
