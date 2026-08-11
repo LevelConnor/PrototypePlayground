@@ -1041,6 +1041,16 @@ async function renderRiasecIntoSlist() {
   // the Education filter. /fit responses don't include job_zone, so the
   // Education filter on those is best-effort — values fill in as cards
   // get opened (which triggers the full detail fetch).
+  //
+  // Also stash the fit grade on the cache so the career-details modal
+  // reads the same value the card shows — otherwise the modal badge
+  // (which used to be derived from bright-outlook) can disagree with
+  // the card badge.
+  list.forEach(item => {
+    if (!item.fitGrade) return;
+    detailCache[item.code] = detailCache[item.code] || { _partial: true };
+    detailCache[item.code].fitGrade = item.fitGrade;
+  });
   careers.forEach(c => {
     if (c.job_zone && c.job_zone.code) {
       detailCache[c.code] = detailCache[c.code] || { _partial: true };
@@ -1686,13 +1696,21 @@ function buildModalDetail(d, code) {
   const shi = sal.high || 0;
   const salPill = sal.median ? `<span class="ccard-pill">$${sal.median.toLocaleString()}/yr</span>` : '';
   const boPill  = d.tags?.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
-  const isGreatMatch = lastResults && !!d.tags?.brightOutlook;
+  // Fit grade is stashed on detailCache when the render list is built
+  // in renderRiasecIntoSlist so the modal shows the same tier as the
+  // card. (Old logic derived a badge from bright-outlook, which is a
+  // separate signal — it caused the modal and card to disagree.)
+  const grade = d.fitGrade || '';
+  let fitBadgeModal = '<div></div>';
+  if (grade === 'Best')  fitBadgeModal = `<div class="cmodal-match cmodal-match--best">Best Fit</div>`;
+  else if (grade === 'Great') fitBadgeModal = `<div class="cmodal-match cmodal-match--great">Great Fit</div>`;
+  else if (grade === 'Good')  fitBadgeModal = `<div class="cmodal-match cmodal-match--good">Good Fit</div>`;
 
   const brightCls = d.tags?.brightOutlook ? ' bright' : '';
   return `<div class="cmodal-head${brightCls}">
     <div class="cmodal-head-overlay"></div>
     <div class="cmodal-head-top">
-      ${isGreatMatch ? `<div class="cmodal-match">👤 Best Fit</div>` : '<div></div>'}
+      ${fitBadgeModal}
       <div class="cmodal-actions">
         <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
         <button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button>

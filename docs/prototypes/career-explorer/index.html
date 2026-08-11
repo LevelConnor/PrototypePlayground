@@ -614,7 +614,12 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .cmodal-head-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,46,0) 30%,rgba(10,15,46,.45) 100%);pointer-events:none}
 .cmodal-head-top,.cmodal-head-bottom{position:relative;z-index:1}
 .cmodal-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.cmodal-match{background:#FF96E3;color:var(--ink);padding:5px 12px;border-radius:var(--rf);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.cmodal-match{padding:5px 12px;border-radius:var(--rf);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;background:var(--yellow);color:var(--ink)}
+/* Fit-grade variants — match the .ccard-match--best/great/good scheme
+   on the grid cards so the modal and card badge always agree. */
+.cmodal-match--best{background:var(--yellow);color:var(--ink)}
+.cmodal-match--great,
+.cmodal-match--good{background:var(--blue);color:#fff}
 .cmodal-actions{display:flex;gap:8px;margin-left:auto}
 .cmodal-actions button{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .15s}
 .cmodal-actions button:hover{background:#fff}
@@ -1023,6 +1028,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06k"></script>
+<script src="app.js?v=2026-06-06l"></script>
 </body>
 </html>
