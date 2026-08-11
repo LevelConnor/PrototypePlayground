@@ -146,9 +146,16 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // Career card click — opens modal. Bookmark button stops propagation.
+  // Career card click — opens modal. Bookmark + star buttons on the
+  // card stop propagation so they don't also trigger the modal open.
   const ccard = t.closest('.ccard[data-live-code]');
   if (ccard) {
+    const star = t.closest('.ccard-star');
+    if (star) {
+      e.stopPropagation();
+      toggleTopPick(ccard.dataset.liveCode);
+      return;
+    }
     const bm = t.closest('.ccard-bm');
     if (bm) {
       e.stopPropagation();
@@ -207,6 +214,11 @@ function debounce(fn, ms) {
 
 /* ══ STATE ══ */
 const saved = new Set();
+// Top-picks — a promoted subset of `saved`. Bare career codes (not
+// prefixed with 'live-' like `saved` uses). Capped at 5 by
+// toggleTopPick. Persisted alongside saved in the URL restore payload.
+const topPicks = new Set();
+const TOP_PICKS_MAX = 5;
 // Answers keyed by O*NET question index (1..60). Value: {area, val}.
 // Keyed by index (not row position) so switching Quick <-> Full preserves
 // what the user has already answered.
@@ -741,7 +753,11 @@ function autofillAssessment() {
 
 /* ══ SAVE / EMAIL / PRINT ══ */
 function getStateUrl() {
-  const data = btoa(JSON.stringify({results:lastResults, saved:[...saved]}));
+  const data = btoa(JSON.stringify({
+    results:  lastResults,
+    saved:    [...saved],
+    topPicks: [...topPicks],
+  }));
   return location.href.split('?')[0] + '?state=' + data;
 }
 function copyLink() {
@@ -1397,6 +1413,12 @@ function heartIcon(filled, size = 18) {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 }
 
+// Star icon for the Top Picks toggle. Same visual language as the
+// heart: outline = saved-only, filled = promoted to top-pick.
+function starIcon(filled, size = 18) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15 8.8 22.5 9.6 17 14.6 18.4 22 12 18.4 5.6 22 7 14.6 1.5 9.6 9 8.8 12 2"/></svg>`;
+}
+
 // Markup for a single career grid card. Title + bottom-aligned salary +
 // Bright Outlook pills, top-right ♡, optional Best Fit badge top-left.
 // Per-career images come from LoremFlickr (free, keyword-based, no API
@@ -1500,10 +1522,18 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   else if (grade === 'Good')  fitBadge = `<div class="ccard-match ccard-match--good">Good Fit</div>`;
   // onerror: try the cluster fallback URL once; on second failure hide.
   const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
-  return `<div class="ccard has-image${brightCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
+  // Star button — only renders once the career is saved. Filled when
+  // the career has been promoted to a top pick.
+  const isTop = topPicks.has(code);
+  const topPickCls = isTop ? ' is-top-pick' : '';
+  const starBtn = isSaved
+    ? `<button class="ccard-star${isTop?' top':''}" data-live-code="${code}" aria-label="${isTop?'Remove from top picks':'Add to top picks'}" aria-pressed="${isTop}">${starIcon(isTop)}</button>`
+    : '';
+  return `<div class="ccard has-image${brightCls}${topPickCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
     <img class="ccard-img" src="${imgUrl}" alt="${c.title || ''}" loading="lazy" onerror="${imgOnErr}">
     <div class="ccard-overlay"></div>
     ${fitBadge}
+    ${starBtn}
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
@@ -1954,6 +1984,9 @@ function toggleLiveSave(code) {
   if (saved.has(key)) {
     saved.delete(key);
     savedMeta.delete(code);
+    // Unsaving a career also demotes it from top picks — the star can't
+    // outlive the save.
+    topPicks.delete(code);
     toast('Removed from saved careers');
   } else {
     saved.add(key);
@@ -1970,17 +2003,82 @@ function toggleLiveSave(code) {
   // tray triggers all stay in sync.
   document.querySelectorAll('.tc').forEach(el => { el.textContent = saved.size > 0 ? saved.size : ''; });
   if (document.getElementById('tpn').classList.contains('open')) renderTray();
-  // Sync all UI for this code: grid card heart + modal save button.
-  document.querySelectorAll(`.ccard-bm[data-live-code="${code}"]`).forEach(b => {
-    b.classList.toggle('saved', saved.has(key));
-    b.innerHTML = heartIcon(saved.has(key));
-  });
+  // Card re-renders (via renderHomeSaved / renderTray) recreate the
+  // heart + star buttons from scratch, so we don't need to hand-patch
+  // every .ccard-bm here — but keep the modal save button in sync since
+  // it isn't recreated.
   document.querySelectorAll(`.cmodal-save[data-live-code="${code}"]`).forEach(b => {
     b.classList.toggle('saved', saved.has(key));
     b.innerHTML = heartIcon(saved.has(key));
   });
+  // Repaint every grid card carrying this code so the star appears /
+  // disappears next to the heart.
+  repaintCardChrome(code);
   // Keep the Home landing's Saved-Careers strip in sync.
   renderHomeSaved();
+}
+
+// Promote / demote a saved career to Top Picks. Capped at TOP_PICKS_MAX.
+function toggleTopPick(code) {
+  if (!code) return;
+  // Star only ever shows on saved cards, so this guard is defensive.
+  if (!saved.has('live-' + code)) return;
+  if (topPicks.has(code)) {
+    topPicks.delete(code);
+    toast('Removed from top picks');
+  } else {
+    if (topPicks.size >= TOP_PICKS_MAX) {
+      toast(`Top picks capped at ${TOP_PICKS_MAX} — unstar another one first`);
+      return;
+    }
+    topPicks.add(code);
+    toast('★ Added to top picks');
+  }
+  repaintCardChrome(code);
+  renderHomeSaved();
+  if (document.getElementById('tpn').classList.contains('open')) renderTray();
+}
+
+// Sync every grid card that carries this code — repaints the heart,
+// star, and .is-top-pick body class so the card matches current state
+// without a full re-render of the surrounding list.
+function repaintCardChrome(code) {
+  const key = 'live-' + code;
+  const isSaved = saved.has(key);
+  const isTop   = topPicks.has(code);
+  document.querySelectorAll(`.ccard[data-live-code="${code}"]`).forEach(card => {
+    card.classList.toggle('is-top-pick', isTop);
+    const bm = card.querySelector('.ccard-bm');
+    if (bm) {
+      bm.classList.toggle('saved', isSaved);
+      bm.innerHTML = heartIcon(isSaved);
+    }
+    // Ensure the star exists iff saved. Add/remove and update its state.
+    let star = card.querySelector('.ccard-star');
+    if (isSaved && !star) {
+      star = document.createElement('button');
+      star.className = 'ccard-star';
+      star.dataset.liveCode = code;
+      card.appendChild(star);
+    } else if (!isSaved && star) {
+      star.remove();
+      star = null;
+    }
+    if (star) {
+      star.classList.toggle('top', isTop);
+      star.setAttribute('aria-label', isTop ? 'Remove from top picks' : 'Add to top picks');
+      star.setAttribute('aria-pressed', String(isTop));
+      star.innerHTML = starIcon(isTop);
+    }
+  });
+}
+
+// Sort a list of career codes so top picks come first (in insertion
+// order) and the rest follow (also in insertion order).
+function sortByTopPicks(codes) {
+  const top = [], rest = [];
+  for (const c of codes) (topPicks.has(c) ? top : rest).push(c);
+  return top.concat(rest);
 }
 
 // Backfill metadata for any saved careers we don't have details for yet.
@@ -2251,7 +2349,10 @@ function renderHomeSaved() {
   const codes = [...saved]
     .filter(k => typeof k === 'string' && k.startsWith('live-'))
     .map(k => k.slice('live-'.length));
-  if (!codes.length) {
+  // Top picks first, then the rest — insertion order preserved within
+  // each group.
+  const sorted = sortByTopPicks(codes);
+  if (!sorted.length) {
     el.classList.remove('cgrid');
     el.innerHTML = `<div class="home-saved-empty">
       Nothing saved yet. Hit the heart on any career (from your quiz results,
@@ -2259,7 +2360,7 @@ function renderHomeSaved() {
     </div>`;
   } else {
     el.classList.add('cgrid');
-    el.innerHTML = codes.map(code => {
+    el.innerHTML = sorted.map(code => {
       const meta = savedMeta.get(code) || { title: code, salary: null };
       const cached = detailCache[code] || {
         tags: {},
@@ -2276,8 +2377,14 @@ function renderHomeSaved() {
     // Background-backfill titles / outlook for anything we don't have.
     ensureSavedMeta();
   }
+  // 'X of 5 prioritized' chip on the Home Saved section header —
+  // hidden entirely until at least one save exists.
+  const chip = document.getElementById('home-priority-chip');
+  const count = document.getElementById('home-priority-count');
+  if (chip) chip.style.display = sorted.length ? '' : 'none';
+  if (count) count.textContent = topPicks.size;
   const nm = document.getElementById('home-next-moves');
-  if (nm) nm.style.display = codes.length ? '' : 'none';
+  if (nm) nm.style.display = sorted.length ? '' : 'none';
 }
 
 /* ══ TRAY ══ */
@@ -2293,12 +2400,13 @@ function renderTray() {
   const codes = [...saved]
     .filter(k => typeof k === 'string' && k.startsWith('live-'))
     .map(k => k.slice('live-'.length));
+  const sorted = sortByTopPicks(codes); // top picks first, then the rest.
   // Render saved entries with the same .ccard component used everywhere
   // else (Find My Career, Clusters, Bright Outlook, Related). The heart
   // is always 'saved' here; clicking it removes the career. Tapping the
   // card body opens the modal — same as the rest of the app.
   b.classList.add('cgrid');
-  b.innerHTML = codes.map(code => {
+  b.innerHTML = sorted.map(code => {
     const meta = savedMeta.get(code) || { title: code, salary: null };
     // Shape an object that buildLiveCard understands: needs c.title and
     // a cached entry with .tags + .salary.median for the salary pill.
@@ -2342,6 +2450,14 @@ function restoreFromURL() {
     if (Array.isArray(d.saved)) {
       d.saved.forEach(k => {
         if (typeof k === 'string' && k.startsWith('live-')) saved.add(k);
+      });
+    }
+    // Top picks restored alongside the saves. Bare career codes.
+    if (Array.isArray(d.topPicks)) {
+      d.topPicks.forEach(c => {
+        if (typeof c === 'string' && saved.has('live-' + c) && topPicks.size < TOP_PICKS_MAX) {
+          topPicks.add(c);
+        }
       });
     }
     // Every count badge with class .tc gets the number so header + in-page

@@ -201,6 +201,11 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .home-card-cta{flex-shrink:0;font-size:13px;font-weight:900;letter-spacing:.02em;color:var(--blue);white-space:nowrap;padding-left:8px}
 
 .home-section{margin:36px 0 0}
+.home-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 16px}
+.home-section-head .home-section-heading{margin:0 0 4px}
+.home-section-head .home-section-sub{margin:0}
+/* 'X of 5 prioritized' pill on the Saved Careers section header. */
+.home-priority-chip{display:inline-flex;align-items:center;gap:4px;background:var(--yellow);color:var(--ink);padding:6px 12px;border-radius:var(--rf);font-size:12px;font-weight:900;letter-spacing:.02em;white-space:nowrap;flex-shrink:0;text-transform:uppercase}
 .home-section-heading{font-size:24px;font-weight:900;color:var(--navy);margin:0 0 4px;letter-spacing:-.01em}
 .home-section-sub{font-size:14px;color:var(--ts);line-height:1.5;margin:0 0 16px}
 
@@ -624,6 +629,15 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .ccard-match--great,
 .ccard-match--good{background:var(--blue);color:#fff}
 .ccard-bm{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s, background .15s;z-index:3}
+/* Star (Top Picks) button. Sits next to the heart on saved cards.
+   Outline = saved but not a top pick; filled yellow = top pick. */
+.ccard-star{position:absolute;top:12px;right:58px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s, background .15s;z-index:3;padding:0}
+.ccard-star:hover{background:#fff;transform:scale(1.05)}
+.ccard-star.top{background:var(--yellow);color:var(--ink)}
+.ccard-star svg{width:18px;height:18px}
+/* Top-pick card treatment: subtle yellow ring so promoted careers
+   stand out in the Saved grid without a shouty badge. */
+.ccard.is-top-pick{outline:2px solid var(--yellow);outline-offset:2px}
 .ccard-bm:hover{background:#fff;transform:scale(1.05)}
 .ccard-bm.saved{background:var(--yellow);color:var(--ink)}
 
@@ -802,8 +816,15 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   <div id="interest-profile" class="interest-profile" data-hide-when-empty style="display:none;margin-top:20px"></div>
 
   <div class="home-section">
-    <h2 class="home-section-heading">Saved Careers</h2>
-    <p class="home-section-sub">The careers you've bookmarked. Tap any to reopen the details.</p>
+    <div class="home-section-head">
+      <div>
+        <h2 class="home-section-heading">Saved Careers</h2>
+        <p class="home-section-sub">The careers you've bookmarked. Star up to 5 as your top choices.</p>
+      </div>
+      <div class="home-priority-chip" id="home-priority-chip" style="display:none">
+        <span id="home-priority-count">0</span> of 5 prioritized
+      </div>
+    </div>
     <div id="home-saved"></div>
   </div>
 
@@ -1092,6 +1113,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06p"></script>
+<script src="app.js?v=2026-06-06q"></script>
 </body>
 </html>
