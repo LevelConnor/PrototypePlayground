@@ -225,8 +225,18 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    right. Toggling "Show All" off collapses rows 4-6. */
 .ip-stack{display:flex;flex-direction:column;gap:6px}
 /* Personalized interpretation blurb — sits between the RIASEC pills and
-   the score explainer. Templated from the user's top-3 areas. */
-.ip-blurb{font-size:15px;color:var(--navy);line-height:1.55;margin:18px 0 0}
+   the score explainer. Templated from the user's top-3 areas. Framed
+   with a two-tone blue gradient border via the double-background /
+   border-box trick: inner tinted fill on padding-box, gradient on
+   border-box, with a transparent border revealing the gradient. */
+.ip-blurb{
+  font-size:15px;color:var(--navy);line-height:1.55;margin:20px 0 0;
+  padding:18px 20px;border-radius:16px;
+  border:2px solid transparent;
+  background:
+    linear-gradient(var(--off), var(--off)) padding-box,
+    linear-gradient(135deg, #0083FF 0%, #93C5FD 100%) border-box;
+}
 .ip-blurb strong{color:var(--navy);font-weight:900}
 .ip-score-note{font-size:12px;color:var(--ts);line-height:1.5;margin:14px 0 0;text-align:left}
 .ip-row{display:flex;align-items:center;gap:16px;overflow:hidden;cursor:default;
@@ -970,6 +980,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-05x"></script>
+<script src="app.js?v=2026-06-05y"></script>
 </body>
 </html>
