@@ -1866,7 +1866,10 @@ let _usMapSvgCache = null;
 async function getUsMapSvg() {
   if (_usMapSvgCache) return _usMapSvgCache;
   try {
-    const r = await fetch('us-map.svg', { cache: 'force-cache' });
+    // Version bump when the svg changes; the fetch is memoized in-process
+    // by _usMapSvgCache so we don't need force-cache on top of that (which
+    // pins stale copies across reloads).
+    const r = await fetch('us-map.svg?v=2026-06-07f');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     _usMapSvgCache = await r.text();
   } catch (e) {
