@@ -248,6 +248,60 @@ let eduZoneMin = 0;             // 0 = Any. Filters cards client-side by O*NET j
 const BC = {R:'#0083FF',I:'#FF7A1A',A:'#FFD810',S:'#68F4B8',E:'#A78BFA',C:'#F49FFB'};
 // Short descriptions tuned to fit on a single line inside the result pill
 // at its minimum width (~440px). Don't extend these without re-tuning min.
+// Curated typical certifications / licenses per SOC code. Keys are
+// 6-digit (specific occupation), 4-digit (family), or 2-digit (broad
+// category). Longest-prefix wins. Each entry is a list because some
+// careers have multiple canonical credentials. Not exhaustive by
+// design — real coverage would come from CareerOneStop's cert API.
+const CERT_MAP = {
+  // Healthcare
+  '29-1141': [{ name:'Registered Nurse (RN) License',                 issuer:'State Board of Nursing (NCLEX-RN via NCSBN)',           notes:'Required in every US state before practicing.' }],
+  '29-2061': [{ name:'LPN / LVN License',                             issuer:'State Board of Nursing (NCLEX-PN)',                     notes:'Complete an accredited practical nursing program to sit for the exam.' }],
+  '29-1216': [{ name:'State Medical License',                         issuer:'State Medical Board (USMLE or COMLEX)',                 notes:'MD or DO degree + residency + all three USMLE steps typical.' }],
+  '29-1051': [{ name:'Pharmacist License',                            issuer:'State Board of Pharmacy (NAPLEX + MPJE)',               notes:'Pharm.D. degree required for exam eligibility.' }],
+  '29-1071': [{ name:'Physician Assistant Certification (PA-C)',      issuer:'NCCPA (PANCE exam)',                                    notes:'Master\'s from an ARC-PA accredited program required.' }],
+  '29-1123': [{ name:'Physical Therapy License',                      issuer:'State Board of Physical Therapy (NPTE)',                notes:'Doctor of Physical Therapy (DPT) degree required.' }],
+  '29-1122': [{ name:'Occupational Therapy License + NBCOT',          issuer:'State licensing board + NBCOT',                         notes:'Master\'s or doctoral OT degree required.' }],
+  '29-1131': [{ name:'State Veterinary License',                      issuer:'State Veterinary Board (NAVLE)',                        notes:'DVM degree required.' }],
+  '29-1021': [{ name:'State Dental License',                          issuer:'State Dental Board (INBDE)',                            notes:'DDS or DMD degree required.' }],
+  '29-2011': [{ name:'ASCP Board of Certification (MLS or MLT)',      issuer:'American Society for Clinical Pathology',               notes:'Some states also require a separate license.' }],
+  '29-2034': [{ name:'ARRT Registration',                             issuer:'American Registry of Radiologic Technologists',         notes:'Most states require an ARRT-registered credential.' }],
+  '29-2055': [{ name:'Certified Surgical Technologist (CST)',         issuer:'NBSTSA',                                                notes:'Required in some states; strongly recommended elsewhere.' }],
+  // Legal
+  '23-1011': [{ name:'State Bar License',                             issuer:'State Bar (Bar Exam + character review)',               notes:'JD from an ABA-accredited law school typically required.' }],
+  // Finance
+  '13-2011': [{ name:'Certified Public Accountant (CPA)',             issuer:'State Board of Accountancy (Uniform CPA Exam)',         notes:'Required to sign audit reports and for many senior roles.' }],
+  '13-2051': [{ name:'FINRA Series 7 (for broker-dealer roles)',      issuer:'FINRA',                                                 notes:'CFA is a common voluntary credential for buy-side / research roles.' }],
+  // Education
+  '25-2':   [{ name:'State Teaching License / Certification',        issuer:'State Department of Education',                         notes:'Bachelor\'s degree + student teaching + state exams (Praxis or state equivalent) typical.' }],
+  // Skilled trades
+  '47-2111':[{ name:'Journeyman / Master Electrician License',        issuer:'State Licensing Board',                                 notes:'Apprenticeship hours + a state exam.' }],
+  '47-2152':[{ name:'State Plumber License',                          issuer:'State Plumbing Board',                                  notes:'Apprenticeship hours + a state exam.' }],
+  '49-9021':[{ name:'EPA Section 608 Certification',                  issuer:'US EPA (approved testing organizations)',               notes:'Required to handle refrigerants. Many states also license HVAC techs.' }],
+  // Public safety
+  '33-3051':[{ name:'State POST Certification',                       issuer:'State Peace Officer Standards and Training board',      notes:'Complete a state-approved police academy.' }],
+  '33-2011':[{ name:'Firefighter I / II Certification',               issuer:'IFSAC or Pro Board accredited program',                 notes:'EMT certification is also commonly required.' }],
+  // Transportation
+  '53-3032':[{ name:'Commercial Driver License (CDL)',                issuer:'State DMV (CDL knowledge + skills tests)',              notes:'Class A CDL for most tractor-trailer roles; Class B for straight trucks.' }],
+  '53-2020':[{ name:'FAA Airline Transport Pilot (ATP) Certificate',  issuer:'Federal Aviation Administration',                       notes:'Requires 1,500 flight hours + a type rating.' }],
+  '53-2011':[{ name:'FAA Commercial Pilot Certificate',               issuer:'Federal Aviation Administration',                       notes:'ATP required for airline captain roles.' }],
+  // Real estate
+  '41-9022':[{ name:'State Real Estate Sales License',                issuer:'State Real Estate Commission',                          notes:'Pre-licensing coursework + a state exam.' }],
+  '41-9021':[{ name:'State Real Estate Broker License',               issuer:'State Real Estate Commission',                          notes:'Typically 2+ years as a sales agent before qualifying.' }],
+  // Personal services
+  '39-5012':[{ name:'State Cosmetology License',                      issuer:'State Board of Cosmetology',                            notes:'Accredited cosmetology program + a state exam.' }],
+  // Computing (typically no license — surface the common voluntary certs)
+  '15-12':  [{ name:'No license required',                            issuer:'Common voluntary certs (AWS, Azure, GCP, CompTIA, CISSP, PMP)', notes:'Not legally required — used to demonstrate competency to employers.' }],
+};
+
+function certsForCode(code) {
+  if (!code) return [];
+  const c6 = code.slice(0, 7);   // '29-1141'
+  const c4 = code.slice(0, 5);   // '29-11'
+  const c2 = code.slice(0, 2);   // '29'
+  return CERT_MAP[c6] || CERT_MAP[c4] || CERT_MAP[c2] || [];
+}
+
 const RI = {
   R:{name:'Realistic — The Builder',       short:'Realistic',     desc:'Hands-on work, tools, and physical tasks.',
      draw:'solving practical, hands-on problems',                 look:'hands-on work you can see and touch'},
@@ -1595,12 +1649,15 @@ async function openLiveDetail(code, prefix) {
   try {
     // Fetch live data from O*NET in parallel: basic info, outlook+wages,
     // related occupations, education breakdown, and the full task list.
-    const [info, outlook, related, eduRes, tasksRes] = await Promise.all([
+    const [info, outlook, related, eduRes, tasksRes, knowledgeRes] = await Promise.all([
       onetGet(`/career/${code}`).catch(() => null),
       onetGet(`/career/${code}/outlook`).catch(() => null),
       onetGet(`/career/${code}/details/related_occupations`).catch(() => null),
       onetGet(`/career/${code}/details/education`).catch(() => null),
       onetGet(`/career/${code}/details/tasks?end=8`).catch(() => null),
+      // Knowledge feeds the new "Ways To Prepare" tab (Suggested Courses).
+      // Same slice the Home "Courses To Take" modal uses.
+      onetGet(`/career/${code}/details/knowledge`).catch(() => null),
     ]);
     if (!info && !outlook) throw new Error('O*NET returned no data');
 
@@ -1653,7 +1710,22 @@ async function openLiveDetail(code, prefix) {
       cluster:  '',
       riasec:   [],
       related:  relatedList,
+      // Top academic subjects for Ways To Prepare. Filter to entries with
+      // usable importance + name, sort desc, keep the top ~6.
+      knowledge: (
+        ((knowledgeRes && knowledgeRes.element) || [])
+          .filter(e => e && e.name && (e.importance == null || e.importance > 0))
+          .sort((a, b) => (b.importance || 0) - (a.importance || 0))
+          .slice(0, 6)
+          .map(e => ({ name: e.name, description: e.description || '' }))
+      ),
     };
+    // Preserve prior cache fields (fitGrade + jobZone stashed during the
+    // grid render pass) — otherwise a fresh modal fetch would overwrite
+    // them and the modal fit badge would lose its grade.
+    const prior = detailCache[code] || {};
+    if (prior.fitGrade && !detail.fitGrade) detail.fitGrade = prior.fitGrade;
+    if (prior.jobZone  && !detail.jobZone)  detail.jobZone  = prior.jobZone;
     detailCache[code] = detail;
 
     // Update the card pills now that we have real data
@@ -1727,6 +1799,7 @@ function buildModalDetail(d, code) {
       <button class="cmodal-tab active" data-mtab="ov">Overview</button>
       <button class="cmodal-tab" data-mtab="ih">Income &amp; Outlook</button>
       <button class="cmodal-tab" data-mtab="ed">Education</button>
+      <button class="cmodal-tab" data-mtab="wp">Ways To Prepare</button>
       <button class="cmodal-tab" data-mtab="rc">Related Careers</button>
     </div>
 
@@ -1801,6 +1874,38 @@ function buildModalDetail(d, code) {
         </div>
       </div>` : ''}
     </div>
+
+    <!-- WAYS TO PREPARE -->
+    ${(() => {
+      const kn = d.knowledge || [];
+      const certs = certsForCode(code);
+      if (!kn.length && !certs.length) {
+        return `<div class="cmodal-pane" data-mpane="wp" hidden>
+          <p style="font-size:15px;color:var(--ts);margin:0">O*NET didn't return preparation guidance for this career.</p>
+        </div>`;
+      }
+      const coursesHtml = kn.length ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Suggested Courses to Take</div>
+        <p style="font-size:14px;color:var(--ts);margin:0 0 12px;line-height:1.5">Academic subjects that map to this career, ranked by how important each is to the job.</p>
+        <ul class="wp-list">
+          ${kn.map(e => `<li>
+            <div class="wp-list-title">${e.name}</div>
+            ${e.description ? `<div class="wp-list-sub">${e.description}</div>` : ''}
+          </li>`).join('')}
+        </ul>
+      </div>` : '';
+      const certsHtml = certs.length ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Certifications & Licenses</div>
+        <div class="wp-certs">
+          ${certs.map(c => `<div class="wp-cert">
+            <div class="wp-cert-name">${c.name}</div>
+            <div class="wp-cert-issuer">${c.issuer}</div>
+            ${c.notes ? `<div class="wp-cert-notes">${c.notes}</div>` : ''}
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+      return `<div class="cmodal-pane" data-mpane="wp" hidden>${coursesHtml}${certsHtml}</div>`;
+    })()}
 
     <!-- RELATED -->
     <div class="cmodal-pane" data-mpane="rc" hidden>
