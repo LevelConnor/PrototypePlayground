@@ -58,7 +58,10 @@ document.addEventListener('click', function(e) {
   if (t.id === 'btn-close-hsc') { document.getElementById('hsc-modal').classList.remove('open'); return; }
 
   // TRAY
-  if (t.id === 'open-tray-btn' || t.closest('#open-tray-btn')) { openTray(); return; }
+  // Any element carrying data-open-tray opens the Saved Careers tray.
+  // Lets the header heart + the in-page hearts (Search Careers, Career
+  // Clusters top rows) share a single handler.
+  if (t.closest('[data-open-tray]')) { openTray(); return; }
   if (t.id === 'btn-theme') { toggleTheme(); return; }
   if (t.id === 'btn-close-tray') { closeTray(); return; }
   if (t.id === 'tov') { closeTray(); return; }
@@ -1963,7 +1966,9 @@ function toggleLiveSave(code) {
     });
     toast('♥ Career saved!');
   }
-  document.getElementById('tc').textContent = saved.size > 0 ? saved.size : '';
+  // Every count badge with class .tc gets the number so header + in-page
+  // tray triggers all stay in sync.
+  document.querySelectorAll('.tc').forEach(el => { el.textContent = saved.size > 0 ? saved.size : ''; });
   if (document.getElementById('tpn').classList.contains('open')) renderTray();
   // Sync all UI for this code: grid card heart + modal save button.
   document.querySelectorAll(`.ccard-bm[data-live-code="${code}"]`).forEach(b => {
@@ -2339,7 +2344,9 @@ function restoreFromURL() {
         if (typeof k === 'string' && k.startsWith('live-')) saved.add(k);
       });
     }
-    document.getElementById('tc').textContent = saved.size > 0 ? saved.size : '';
+    // Every count badge with class .tc gets the number so header + in-page
+  // tray triggers all stay in sync.
+  document.querySelectorAll('.tc').forEach(el => { el.textContent = saved.size > 0 ? saved.size : ''; });
     if (d.results) { lastResults = d.results; renderResults(d.results); }
     if (saved.size) ensureSavedMeta();
     toast('✓ Your saved results have been restored!');
