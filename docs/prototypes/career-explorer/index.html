@@ -652,9 +652,12 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 /* Two-panel header: solid-blue title panel on the left, photo panel on
    the right, action buttons pinned to the top-right corner of the whole
    header. */
-.cmodal-head{position:relative;padding:20px;background:transparent;display:flex;gap:16px;flex-wrap:wrap}
-.cmodal-head-left{flex:1 1 55%;min-width:0;background:var(--blue);color:#fff;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:14px}
-.cmodal-head-right{flex:1 1 40%;min-width:0;position:relative;border-radius:16px;overflow:hidden;min-height:280px;background:#0A0F2E}
+.cmodal-head{position:relative;padding:20px;background:transparent}
+/* Single blue rounded container holding both the title panel and the
+   media panel. The media panel sits inset with its own smaller radius. */
+.cmodal-head-body{background:var(--blue);color:#fff;border-radius:20px;padding:20px;display:flex;gap:20px;flex-wrap:wrap;align-items:stretch}
+.cmodal-head-left{flex:1 1 45%;min-width:0;background:transparent;color:#fff;padding:16px 12px;display:flex;flex-direction:column;gap:14px}
+.cmodal-head-right{flex:1 1 50%;min-width:0;position:relative;border-radius:14px;overflow:hidden;min-height:300px;background:#0A0F2E}
 .cmodal-head-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 /* Career video plays inline in the hero. object-fit:contain preserves
    the video's own aspect ratio (CareerOneStop mixes 16:9 and 4:3) with
@@ -707,9 +710,10 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 /* Actions on a light image bg need contrast — keep the glass fill. */
 .cmodal-actions button{background:rgba(255,255,255,.92)}
 @media (max-width:720px){
-  .cmodal-head{padding:16px;gap:12px}
-  .cmodal-head-left{padding:24px;flex:1 1 100%}
-  .cmodal-head-right{flex:1 1 100%;min-height:180px}
+  .cmodal-head{padding:16px}
+  .cmodal-head-body{padding:14px;gap:12px}
+  .cmodal-head-left{padding:12px 8px;flex:1 1 100%}
+  .cmodal-head-right{flex:1 1 100%;min-height:200px}
   .cmodal-actions{top:26px;right:26px}
   .cmodal-title{font-size:26px}
 }
@@ -1215,6 +1219,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07l"></script>
+<script src="app.js?v=2026-06-07m"></script>
 </body>
 </html>

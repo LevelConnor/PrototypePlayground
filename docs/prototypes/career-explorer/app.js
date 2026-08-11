@@ -2037,24 +2037,26 @@ function buildModalDetail(d, code) {
   const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
   const videoUrl = `https://cdn.careeronestop.org/OccVids/OccupationVideos/${encodeURIComponent(code)}.mp4`;
   return `<div class="cmodal-head">
-    <div class="cmodal-head-left">
-      ${fitBadgeModal}
-      <h2 class="cmodal-title" id="cmodal-title">${d.title || code}</h2>
-      ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
-      <div class="cmodal-head-pills">${salPill}${boPill}</div>
-    </div>
-    <div class="cmodal-head-right" data-head-media>
-      <video class="cmodal-head-video" controls preload="metadata" playsinline
-             poster="${imgUrl}"
-             data-video-src="${videoUrl}"
-             aria-label="Career video for ${d.title || code}">
-      </video>
-      <button class="cmodal-head-play" type="button" data-head-play aria-label="Play career video">
-        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-        <span>Watch video</span>
-      </button>
-      <img class="cmodal-head-img cmodal-head-img--fallback" src="${imgUrl}"
-           alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}" hidden>
+    <div class="cmodal-head-body">
+      <div class="cmodal-head-left">
+        ${fitBadgeModal}
+        <h2 class="cmodal-title" id="cmodal-title">${d.title || code}</h2>
+        ${d.description ? `<p class="cmodal-desc">${d.description}</p>` : ''}
+        <div class="cmodal-head-pills">${salPill}${boPill}</div>
+      </div>
+      <div class="cmodal-head-right" data-head-media>
+        <video class="cmodal-head-video" controls preload="metadata" playsinline
+               poster="${imgUrl}"
+               data-video-src="${videoUrl}"
+               aria-label="Career video for ${d.title || code}">
+        </video>
+        <button class="cmodal-head-play" type="button" data-head-play aria-label="Play career video">
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          <span>Watch video</span>
+        </button>
+        <img class="cmodal-head-img cmodal-head-img--fallback" src="${imgUrl}"
+             alt="${d.title || code}" loading="lazy" onerror="${imgOnErr}" hidden>
+      </div>
     </div>
     <div class="cmodal-actions">
       <button class="cmodal-save${isSaved?' saved':''}" data-live-code="${code}" aria-label="Save">${heartIcon(isSaved)}</button>
