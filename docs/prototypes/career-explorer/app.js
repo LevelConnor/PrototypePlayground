@@ -216,6 +216,19 @@ document.addEventListener('input', function(e) {
     repaintCluster();
   }
 });
+// Career-details modal: state selector below the tabs highlights the
+// matching tile on the Income & Outlook heatmap. 'All States' clears
+// the highlight.
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.matches && e.target.matches('[data-modal-state]')) {
+    const code = e.target.value;
+    document.querySelectorAll('.state-tile.selected').forEach(el => el.classList.remove('selected'));
+    if (code) {
+      const tile = document.querySelector(`.state-tile[data-state="${code}"]`);
+      if (tile) tile.classList.add('selected');
+    }
+  }
+});
 /* ══ O*NET PROXY (Cloudflare Worker) ══ */
 const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
 async function onetGet(path) {
@@ -1881,6 +1894,22 @@ function buildModalDetail(d, code) {
       <button class="cmodal-tab" data-mtab="rc">Related Careers</button>
     </div>
 
+    ${(() => {
+      const sList = (d.stateOutlook || []).filter(s => s && s.code && s.name);
+      if (!sList.length) return '';
+      const sorted = sList.slice().sort((a, b) => a.name.localeCompare(b.name));
+      return `<div class="cmodal-state-bar" data-code="${code}">
+        <div class="cmodal-state-bar-l">
+          <svg class="cmodal-state-bar-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Choose a state to see state-specific data</span>
+        </div>
+        <select class="cmodal-state-bar-select" data-modal-state aria-label="Choose a state">
+          <option value="">All States</option>
+          ${sorted.map(s => `<option value="${s.code}">${s.name}</option>`).join('')}
+        </select>
+      </div>`;
+    })()}
+
     <!-- OVERVIEW -->
     <div class="cmodal-pane" data-mpane="ov">
       ${(sal.median || out.growth) ? `<div class="cmodal-stats">
@@ -1960,7 +1989,7 @@ function buildModalDetail(d, code) {
           const outlook = s ? s.job_outlook : 'No data available';
           const v = variantFor(outlook);
           const name = s ? s.name : sc;
-          return `<div class="state-tile" data-variant="${v}" title="${name} — ${outlook}">${sc}</div>`;
+          return `<div class="state-tile" data-state="${sc}" data-variant="${v}" title="${name} — ${outlook}">${sc}</div>`;
         }).join('')).join('');
         return `<div class="cmodal-section state-outlook" data-code="${code}">
           <div class="cmodal-section-title">Job Opportunities By State</div>

@@ -713,6 +713,18 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    shadow so the card reads as a container without competing with
    the page surface. */
 .state-map-card{margin:6px 0 14px;padding:20px;background:transparent;border:1.5px solid var(--mg);border-radius:20px;box-shadow:0 4px 14px rgba(10,15,46,.06)}
+/* Selected-state highlight: bumps the tile forward, outlines it in
+   primary blue, and stops the hover-scale from fighting the outline. */
+.state-tile.selected{outline:3px solid var(--blue);outline-offset:2px;z-index:3;transform:scale(1.12)}
+/* State bar under the tab row — persistent across every tab. Label +
+   pin icon on the left; pill-style <select> on the right. */
+.cmodal-state-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--white);border:1.5px solid var(--mg);border-radius:18px;padding:14px 18px;margin:0 0 22px;flex-wrap:wrap}
+.cmodal-state-bar-l{display:inline-flex;align-items:center;gap:12px;min-width:0}
+.cmodal-state-bar-pin{width:20px;height:20px;color:var(--blue);flex-shrink:0}
+.cmodal-state-bar-l span{font-size:15px;font-weight:700;color:var(--navy);line-height:1.35}
+.cmodal-state-bar-select{background:transparent;border:1.5px solid var(--mg);border-radius:var(--rf);padding:8px 34px 8px 16px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;transition:border-color .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230083FF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;flex-shrink:0}
+.cmodal-state-bar-select:focus{border-color:var(--blue);outline:none}
+@media (max-width:520px){.cmodal-state-bar{padding:12px 14px}.cmodal-state-bar-l span{font-size:14px}}
 .state-map{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
 .state-tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--navy);background:transparent;border-radius:6px;user-select:none;transition:transform .12s ease}
 .state-tile[data-empty]{visibility:hidden}
@@ -1169,6 +1181,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07c"></script>
+<script src="app.js?v=2026-06-07d"></script>
 </body>
 </html>
