@@ -134,29 +134,6 @@ export default {
       );
     }
 
-    // TEMPORARY diagnostic passthrough for O*NET endpoint exploration.
-    // Accepts only /online/ or /mnm/ path prefixes. REMOVE after use.
-    if (parts[0] === '__probe' && url.searchParams.has('path')) {
-      const raw = url.searchParams.get('path') || '';
-      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
-        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
-      }
-      try {
-        const res = await onetFetch(raw, env);
-        const body = await res.text();
-        return new Response(body, {
-          status: res.status,
-          headers: {
-            'Content-Type': res.headers.get('Content-Type') || 'application/json',
-            'Cache-Control': 'no-store',
-            ...corsHeaders(request),
-          },
-        });
-      } catch (err) {
-        return jsonResponse(request, { error: 'Upstream fetch failed', detail: err.message }, 502);
-      }
-    }
-
     // /image?q=<keywords>&seed=<code> — proxies a keyword-based photo
     // pick from Unsplash Search. Returns a 302 to the actual CDN URL
     // (images.unsplash.com/photo-...) so the browser fetches the image
@@ -252,14 +229,6 @@ export default {
       // O*NET Interest Profiler 60-question item bank. Cached edge-side
       // for 24h (the item bank is static).
       onetPath = `/mnm/interestprofiler/questions?end=60`;
-    } else if (parts[0] === '__probe' && url.searchParams.has('path')) {
-      // TEMPORARY diagnostic passthrough for O*NET path exploration.
-      // Restricted to /online/* and /mnm/*. Remove after investigation.
-      const raw = url.searchParams.get('path') || '';
-      if (!raw.startsWith('/online/') && !raw.startsWith('/mnm/')) {
-        return jsonResponse(request, { error: 'Probe path must start with /online/ or /mnm/' }, 400);
-      }
-      onetPath = raw;
     } else if (parts[0] === 'career_cluster' && parts.length === 2 && CLUSTER_CODE_RE.test(parts[1])) {
       // /online/ has richer data than /mnm/ — each occupation carries a
       // sub_cluster: [{code, title}] annotation that lets us filter the
@@ -284,6 +253,12 @@ export default {
         onetPath = `/mnm/careers/${code}/`;
       } else if (parts.length === 3 && parts[2] === 'outlook') {
         onetPath = `/mnm/careers/${code}/job_outlook`;
+      } else if (parts.length === 3 && parts[2] === 'state_outlook') {
+        // Per-state job outlook category (Above average / Average /
+        // Below average / No data) for every US state + territory.
+        // Salary is NOT per-state on O*NET; this endpoint is
+        // outlook-only. Client uses it for the state selector.
+        onetPath = `/mnm/careers/${code}/check_out_my_state`;
       } else if (parts.length === 4 && parts[2] === 'details' && ALLOWED_DETAIL_SLICES.has(parts[3])) {
         onetPath = `/online/occupations/${code}/details/${parts[3]}`;
       } else {

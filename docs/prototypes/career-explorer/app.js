@@ -192,6 +192,12 @@ document.addEventListener('click', function(e) {
     document.querySelectorAll('.cmodal-pane').forEach(p => { p.hidden = (p.dataset.mpane !== mtab.dataset.mtab); });
     return;
   }
+  // Above-average state chip -> selects that state in the outlook UI.
+  const stateChip = t.closest('[data-state-chip]');
+  if (stateChip) {
+    renderStateOutlookResult(stateChip.dataset.stateChip);
+    return;
+  }
 
   // Related-career cards now share the .ccard[data-live-code] markup —
   // the handler above already routes their clicks. No extra wiring needed.
@@ -216,6 +222,50 @@ document.addEventListener('input', function(e) {
     repaintCluster();
   }
 });
+// State-outlook <select> uses the change event (input fires for text
+// inputs; change is what select elements dispatch).
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.matches && e.target.matches('[data-state-select]')) {
+    renderStateOutlookResult(e.target.value);
+  }
+});
+
+// Paint the "outlook for {state}" result panel from a 2-letter state
+// code. Called on <select> change and on chip click. Empty code -> the
+// 'pick a state' hint.
+function renderStateOutlookResult(stateCode) {
+  const wrap = document.querySelector('.state-outlook[data-code]');
+  if (!wrap) return;
+  const box = wrap.querySelector('[data-state-result]');
+  if (!box) return;
+  const code = wrap.dataset.code;
+  const detail = detailCache[code];
+  const list = (detail && detail.stateOutlook) || [];
+  if (!stateCode) {
+    box.innerHTML = 'Pick a state above.';
+    box.className = 'state-outlook-result';
+    return;
+  }
+  const s = list.find(x => x.code === stateCode);
+  if (!s) {
+    box.innerHTML = 'No data available for that state.';
+    box.className = 'state-outlook-result';
+    return;
+  }
+  // Map outlook wording to a color variant so the callout reads at a
+  // glance (green = above average, yellow = average, muted = below).
+  let variant = 'muted';
+  if (/above average/i.test(s.job_outlook)) variant = 'good';
+  else if (/^average/i.test(s.job_outlook))  variant = 'ok';
+  else if (/below average/i.test(s.job_outlook)) variant = 'weak';
+  box.className = 'state-outlook-result has-value state-outlook-result--' + variant;
+  box.innerHTML = `<div class="state-outlook-result-state">${s.name}</div>
+    <div class="state-outlook-result-value">${s.job_outlook}</div>`;
+  // Keep the <select> in sync when a chip fires this (chip -> select
+  // stays showing the state).
+  const sel = wrap.querySelector('[data-state-select]');
+  if (sel && sel.value !== stateCode) sel.value = stateCode;
+}
 /* ══ O*NET PROXY (Cloudflare Worker) ══ */
 const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
 async function onetGet(path) {
@@ -1713,15 +1763,18 @@ async function openLiveDetail(code, prefix) {
   try {
     // Fetch live data from O*NET in parallel: basic info, outlook+wages,
     // related occupations, education breakdown, and the full task list.
-    const [info, outlook, related, eduRes, tasksRes, knowledgeRes] = await Promise.all([
+    const [info, outlook, related, eduRes, tasksRes, knowledgeRes, stateRes] = await Promise.all([
       onetGet(`/career/${code}`).catch(() => null),
       onetGet(`/career/${code}/outlook`).catch(() => null),
       onetGet(`/career/${code}/details/related_occupations`).catch(() => null),
       onetGet(`/career/${code}/details/education`).catch(() => null),
       onetGet(`/career/${code}/details/tasks?end=8`).catch(() => null),
-      // Knowledge feeds the new "Ways To Prepare" tab (Suggested Courses).
-      // Same slice the Home "Courses To Take" modal uses.
+      // Knowledge feeds the "Ways To Prepare" tab (Suggested Courses).
       onetGet(`/career/${code}/details/knowledge`).catch(() => null),
+      // Per-state job outlook (Above/Average/Below/No data) for every
+      // US state + territory. Feeds the state selector on Income &
+      // Outlook.
+      onetGet(`/career/${code}/state_outlook`).catch(() => null),
     ]);
     if (!info && !outlook) throw new Error('O*NET returned no data');
 
@@ -1783,6 +1836,12 @@ async function openLiveDetail(code, prefix) {
           .slice(0, 6)
           .map(e => ({ name: e.name, description: e.description || '' }))
       ),
+      // Per-state outlook categories. Skip US territories that come
+      // back as "No data available" for readability — keep the 50 +
+      // DC. Fall back to whatever came back if the response shape is
+      // different than expected.
+      stateOutlook: (Array.isArray(stateRes) ? stateRes : [])
+        .filter(s => s && s.code && s.name),
     };
     // Preserve prior cache fields (fitGrade + jobZone stashed during the
     // grid render pass) — otherwise a fresh modal fetch would overwrite
@@ -1917,6 +1976,35 @@ function buildModalDetail(d, code) {
         <div class="cmodal-section-title">Projected Growth</div>
         <div class="cmodal-stat" style="max-width:380px"><div class="cmodal-stat-label">Outlook</div><div class="cmodal-stat-value">${out.growth}</div>${out.descriptor ? `<div class="cmodal-stat-foot">${out.descriptor}</div>` : ''}</div>
       </div>` : ''}
+      ${(() => {
+        const states = (d.stateOutlook || []).filter(s => s.job_outlook && s.job_outlook !== 'No data available');
+        if (!states.length) return '';
+        // Alphabetize for the selector.
+        const sorted = states.slice().sort((a, b) => a.name.localeCompare(b.name));
+        // Best-opportunity states — the "Above average" tier — as a chip
+        // row so students can eyeball the strong markets at a glance.
+        const above = sorted.filter(s => /above average/i.test(s.job_outlook));
+        return `<div class="cmodal-section state-outlook" data-code="${code}">
+          <div class="cmodal-section-title">Job Opportunities By State</div>
+          <p style="font-size:14px;color:var(--ts);margin:0 0 12px;line-height:1.5">Pick a state to see O*NET's outlook for this career there. Salary shown above is national — state-level wages aren't available.</p>
+          <div class="state-outlook-row">
+            <label class="state-outlook-select" for="state-outlook-select-${code}">
+              <span class="state-outlook-select-label">State</span>
+              <select id="state-outlook-select-${code}" data-state-select>
+                <option value="">— Select a state —</option>
+                ${sorted.map(s => `<option value="${s.code}">${s.name}</option>`).join('')}
+              </select>
+            </label>
+            <div class="state-outlook-result" data-state-result>Pick a state above.</div>
+          </div>
+          ${above.length ? `<div style="margin-top:16px">
+            <div style="font-size:13px;font-weight:700;color:var(--ts);margin-bottom:8px">States with above-average opportunities</div>
+            <div class="state-outlook-chips">
+              ${above.map(s => `<span class="state-outlook-chip" data-state-chip="${s.code}">${s.name}</span>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>`;
+      })()}
     </div>
 
     <!-- EDUCATION -->

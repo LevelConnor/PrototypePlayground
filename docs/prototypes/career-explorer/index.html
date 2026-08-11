@@ -704,6 +704,22 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 @media (max-width:640px){.cmodal-tab{padding:11px 18px;font-size:13px}}
 .cmodal-pane[hidden]{display:none}
 .cmodal-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+/* State-outlook selector + result — inside the Income & Outlook pane. */
+.state-outlook-row{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+.state-outlook-select{display:flex;flex-direction:column;gap:6px;flex:1 1 240px;min-width:0}
+.state-outlook-select-label{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--ts)}
+.state-outlook-select select{width:100%;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rf);padding:10px 16px;font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;font-family:inherit;transition:border-color .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230083FF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.state-outlook-select select:focus{border-color:var(--blue);outline:none}
+.state-outlook-result{flex:1 1 260px;background:var(--white);border:1.5px solid var(--mg);border-radius:var(--rmd);padding:14px 18px;color:var(--ts);font-size:14px;display:flex;flex-direction:column;justify-content:center;min-height:60px}
+.state-outlook-result.has-value{color:var(--navy)}
+.state-outlook-result-state{font-size:13px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.04em;margin:0 0 4px}
+.state-outlook-result-value{font-size:18px;font-weight:900;color:var(--navy);line-height:1.25;letter-spacing:-.01em}
+.state-outlook-result--good{background:rgba(104,244,184,.20);border-color:rgba(104,244,184,.5)}
+.state-outlook-result--ok{background:rgba(255,216,16,.16);border-color:rgba(255,216,16,.4)}
+.state-outlook-result--weak{background:var(--off)}
+.state-outlook-chips{display:flex;flex-wrap:wrap;gap:6px}
+.state-outlook-chip{display:inline-flex;align-items:center;background:rgba(104,244,184,.22);color:var(--ink);border:1px solid rgba(104,244,184,.5);border-radius:var(--rf);padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s, border-color .15s}
+.state-outlook-chip:hover{background:rgba(104,244,184,.35);border-color:var(--ink)}
 .cmodal-stat{background:#7FE7B8;border-radius:18px;padding:22px 24px;color:var(--ink)}
 .cmodal-stat--white{background:var(--white);color:var(--navy)}
 .cmodal-stat-label{font-size:14px;font-weight:700;margin-bottom:6px;opacity:.92}
@@ -1144,6 +1160,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06w"></script>
+<script src="app.js?v=2026-06-06x"></script>
 </body>
 </html>
