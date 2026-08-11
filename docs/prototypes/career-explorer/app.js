@@ -222,10 +222,10 @@ document.addEventListener('input', function(e) {
 document.addEventListener('change', function(e) {
   if (e.target && e.target.matches && e.target.matches('[data-modal-state]')) {
     const code = e.target.value;
-    document.querySelectorAll('.state-tile.selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.state-map svg path.selected').forEach(el => el.classList.remove('selected'));
     if (code) {
-      const tile = document.querySelector(`.state-tile[data-state="${code}"]`);
-      if (tile) tile.classList.add('selected');
+      const path = document.querySelector('.state-map svg path[data-state="' + code + '"]');
+      if (path) path.classList.add('selected');
     }
   }
 });
@@ -1700,6 +1700,7 @@ async function openLiveDetail(code, prefix) {
     modal.innerHTML = buildModalDetail(detailCache[code], code);
     modal.scrollTop = 0;
     enrichRelatedCards(detailCache[code].related || []);
+    hydrateStateMap(code);
     return;
   }
 
@@ -1831,6 +1832,7 @@ async function openLiveDetail(code, prefix) {
       modal.innerHTML = buildModalDetail(detail, code);
       modal.scrollTop = 0;
       enrichRelatedCards(relatedList);
+      hydrateStateMap(code);
     }
 
   } catch (err) {
@@ -1838,6 +1840,83 @@ async function openLiveDetail(code, prefix) {
     if (openModalCode === code) {
       modal.innerHTML = `<div class="cmodal-head"><div class="cmodal-head-left"><h2 class="cmodal-title">Couldn't load</h2></div><div class="cmodal-head-right"></div><div class="cmodal-actions"><button class="cmodal-close" data-cmodal-close aria-label="Close">✕</button></div></div><div class="cmodal-body"><p style="color:var(--ts);font-size:15px">Couldn't load details. Try again in a moment.</p></div>`;
     }
+  }
+}
+
+// Name -> 2-letter code lookup. Used to translate the SVG's <title>
+// text into our stateOutlook code entries.
+const US_STATE_CODES = {
+  'Alabama':'AL','Alaska':'AK','Arizona':'AZ','Arkansas':'AR','California':'CA',
+  'Colorado':'CO','Connecticut':'CT','Delaware':'DE','District of Columbia':'DC',
+  'Florida':'FL','Georgia':'GA','Hawaii':'HI','Idaho':'ID','Illinois':'IL',
+  'Indiana':'IN','Iowa':'IA','Kansas':'KS','Kentucky':'KY','Louisiana':'LA',
+  'Maine':'ME','Maryland':'MD','Massachusetts':'MA','Michigan':'MI','Minnesota':'MN',
+  'Mississippi':'MS','Missouri':'MO','Montana':'MT','Nebraska':'NE','Nevada':'NV',
+  'New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM','New York':'NY',
+  'North Carolina':'NC','North Dakota':'ND','Ohio':'OH','Oklahoma':'OK','Oregon':'OR',
+  'Pennsylvania':'PA','Rhode Island':'RI','South Carolina':'SC','South Dakota':'SD',
+  'Tennessee':'TN','Texas':'TX','Utah':'UT','Vermont':'VT','Virginia':'VA',
+  'Washington':'WA','West Virginia':'WV','Wisconsin':'WI','Wyoming':'WY',
+};
+
+// One-shot fetch of the US map SVG. Same-origin, so no CORS. Cached
+// module-side after the first successful load — subsequent modal
+// opens paint immediately.
+let _usMapSvgCache = null;
+async function getUsMapSvg() {
+  if (_usMapSvgCache) return _usMapSvgCache;
+  try {
+    const r = await fetch('us-map.svg', { cache: 'force-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _usMapSvgCache = await r.text();
+  } catch (e) {
+    console.warn('US map fetch failed', e);
+    _usMapSvgCache = '';
+  }
+  return _usMapSvgCache;
+}
+
+// Inject the geographic SVG into the placeholder container, then set
+// each state's fill from the career's stateOutlook list. Called from
+// openLiveDetail after modal.innerHTML has been set.
+async function hydrateStateMap(code) {
+  const host = document.querySelector('.state-map[data-code="' + code + '"]');
+  if (!host) return;
+  const svgText = await getUsMapSvg();
+  if (!svgText) { host.innerHTML = '<div class="state-map-loading">Map unavailable.</div>'; return; }
+  host.innerHTML = svgText;
+  const detail = detailCache[code];
+  const list = (detail && detail.stateOutlook) || [];
+  const byCode = Object.create(null);
+  for (const s of list) byCode[s.code] = s;
+  const variantFor = (out) => {
+    if (!out || /no data/i.test(out)) return 'none';
+    if (/above average/i.test(out))   return 'good';
+    if (/below average/i.test(out))   return 'low';
+    return 'ok';
+  };
+  // Walk each path, look up the state by its <title> child, tag with
+  // data-state + data-variant so CSS handles the fill.
+  host.querySelectorAll('svg path').forEach(p => {
+    const titleEl = p.querySelector('title');
+    if (!titleEl) return;
+    const name = (titleEl.textContent || '').trim();
+    const stCode = US_STATE_CODES[name];
+    if (!stCode) return;
+    const s = byCode[stCode];
+    const outlook = s ? s.job_outlook : 'No data available';
+    p.setAttribute('data-state', stCode);
+    p.setAttribute('data-variant', variantFor(outlook));
+    // Replace the plain state name in <title> with a tooltip that
+    // also carries the outlook label.
+    titleEl.textContent = name + ' — ' + outlook;
+  });
+  // If the state-bar selector already has a picked state (unlikely
+  // right after render but safe to check), re-apply the highlight.
+  const sel = document.querySelector('[data-modal-state]');
+  if (sel && sel.value) {
+    const tgt = host.querySelector('svg path[data-state="' + sel.value + '"]');
+    if (tgt) tgt.classList.add('selected');
   }
 }
 
@@ -1958,43 +2037,15 @@ function buildModalDetail(d, code) {
       ${(() => {
         const list = (d.stateOutlook || []).filter(s => s && s.code && s.name);
         if (!list.length) return '';
-        // Fast lookup for the tilegram render pass.
-        const byCode = Object.create(null);
-        for (const s of list) byCode[s.code] = s;
-        // Bucket each state's outlook into a color variant. 3-step
-        // sequential green so the picture reads like a real heatmap:
-        // brighter green = more opportunity.
-        const variantFor = (out) => {
-          if (!out || /no data/i.test(out)) return 'none';
-          if (/above average/i.test(out))   return 'good';
-          if (/below average/i.test(out))   return 'low';
-          return 'ok';
-        };
-        // Approximate US-shape tilegram. All 50 states + DC positioned
-        // on an 11-wide grid; empty strings are gaps.
-        const GRID = [
-          ['', '', '', '', '', '', '', '', '', '', 'ME'],
-          ['', '', '', '', '', '', '', '', 'VT', 'NH', ''],
-          ['WA', 'ID', 'MT', 'ND', 'MN', '', 'WI', 'MI', '', 'NY', 'MA'],
-          ['OR', 'NV', 'WY', 'SD', 'IA', 'IL', 'IN', 'OH', 'PA', 'CT', 'RI'],
-          ['CA', 'UT', 'CO', 'NE', 'MO', 'KY', 'WV', 'VA', 'NJ', 'DE', ''],
-          ['', 'AZ', 'NM', 'KS', 'AR', 'TN', 'NC', 'MD', 'DC', '', ''],
-          ['', '', '', 'OK', 'LA', 'MS', 'AL', 'GA', 'SC', '', ''],
-          ['HI', '', '', 'TX', '', '', '', '', 'FL', '', ''],
-          ['AK', '', '', '', '', '', '', '', '', '', ''],
-        ];
-        const tilesHtml = GRID.map(row => row.map(sc => {
-          if (!sc) return `<div class="state-tile" data-empty></div>`;
-          const s = byCode[sc];
-          const outlook = s ? s.job_outlook : 'No data available';
-          const v = variantFor(outlook);
-          const name = s ? s.name : sc;
-          return `<div class="state-tile" data-state="${sc}" data-variant="${v}" title="${name} — ${outlook}">${sc}</div>`;
-        }).join('')).join('');
+        // Emit a placeholder — the actual geographic <svg> is fetched
+        // once (us-map.svg) and injected + colored by hydrateStateMap
+        // right after openLiveDetail sets the modal innerHTML.
         return `<div class="cmodal-section state-outlook" data-code="${code}">
           <div class="cmodal-section-title">Job Opportunities By State</div>
           <div class="state-map-card">
-            <div class="state-map">${tilesHtml}</div>
+            <div class="state-map" data-code="${code}">
+              <div class="state-map-loading">Loading map…</div>
+            </div>
             <div class="state-map-legend">
               <span><span class="state-tile-mini" data-variant="good"></span>Above average</span>
               <span><span class="state-tile-mini" data-variant="ok"></span>Average</span>

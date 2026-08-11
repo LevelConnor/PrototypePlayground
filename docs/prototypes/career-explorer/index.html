@@ -725,14 +725,18 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .cmodal-state-bar-select{background:transparent;border:1.5px solid var(--mg);border-radius:var(--rf);padding:8px 34px 8px 16px;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;transition:border-color .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230083FF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;flex-shrink:0}
 .cmodal-state-bar-select:focus{border-color:var(--blue);outline:none}
 @media (max-width:520px){.cmodal-state-bar{padding:12px 14px}.cmodal-state-bar-l span{font-size:14px}}
-.state-map{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px}
-.state-tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--navy);background:transparent;border-radius:6px;user-select:none;transition:transform .12s ease}
-.state-tile[data-empty]{visibility:hidden}
-.state-tile[data-variant="good"]{background:#68F4B8;color:var(--ink)}
-.state-tile[data-variant="ok"]{background:rgba(104,244,184,.30);color:var(--ink)}
-.state-tile[data-variant="low"]{background:rgba(104,244,184,.10);color:var(--ts)}
-.state-tile[data-variant="none"]{background:var(--off);color:var(--ts);border:2px dashed var(--mg)}
-.state-tile:not([data-empty]):hover{transform:scale(1.15);z-index:2;cursor:default}
+/* Geographic SVG choropleth. Fetched once from us-map.svg and
+   injected + colored by hydrateStateMap. */
+.state-map{position:relative}
+.state-map-loading{padding:24px 20px;text-align:center;color:var(--ts);font-size:14px}
+.state-map svg{width:100%;height:auto;display:block}
+.state-map svg path[data-state]{stroke:#fff;stroke-width:.6;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
+.state-map svg path[data-variant="good"]{fill:#68F4B8}
+.state-map svg path[data-variant="ok"]{fill:rgba(104,244,184,.30)}
+.state-map svg path[data-variant="low"]{fill:rgba(104,244,184,.10)}
+.state-map svg path[data-variant="none"]{fill:var(--off);stroke-dasharray:2 2}
+.state-map svg path[data-state]:hover{stroke:var(--blue);stroke-width:1.4}
+.state-map svg path.selected{stroke:var(--blue);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(0,131,255,.45))}
 .state-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;font-size:12px;color:var(--ts);margin:14px 0 0}
 .state-map-legend span{display:inline-flex;align-items:center;gap:6px}
 .state-tile-mini{width:14px;height:14px;border-radius:4px;flex-shrink:0}
@@ -1181,6 +1185,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-07d"></script>
+<script src="app.js?v=2026-06-07e"></script>
 </body>
 </html>
