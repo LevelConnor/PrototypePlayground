@@ -198,11 +198,14 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .home-nm-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;background:var(--white);border:1.5px solid var(--mg);border-radius:20px;padding:22px 22px 18px;box-shadow:0 4px 14px rgba(10,15,46,.06);cursor:pointer;font-family:inherit;color:inherit;transition:transform .15s ease, box-shadow .2s ease, border-color .15s ease;width:100%}
 .home-nm-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,15,46,.10);border-color:var(--blue)}
 .home-nm-card:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.home-nm-icon{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:#fff;margin-bottom:14px;box-shadow:0 4px 12px rgba(10,15,46,.14)}
-.home-nm-icon--blue{background:linear-gradient(135deg,#0083FF 0%,#5C9CE8 100%)}
-.home-nm-icon--purple{background:linear-gradient(135deg,#A78BFA 0%,#F49FFB 100%)}
-.home-nm-icon--green{background:linear-gradient(135deg,#68F4B8 0%,#0083FF 100%);color:var(--ink)}
-.home-nm-icon--yellow{background:linear-gradient(135deg,#FFD810 0%,#F2BB7A 100%);color:var(--ink)}
+/* Same subtle blue-tinted inset used by the .home-card icons above.
+   Every Next Moves card gets the identical treatment — no per-card
+   gradient — so the icon language is one thing across the home page. */
+.home-nm-icon{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--blue);background:rgba(0,131,255,.10);border:1px solid rgba(0,131,255,.18);margin-bottom:14px}
+.home-nm-icon--blue,
+.home-nm-icon--purple,
+.home-nm-icon--green,
+.home-nm-icon--yellow{background:rgba(0,131,255,.10);color:var(--blue)}
 .home-nm-card h3{font-size:16px;font-weight:900;color:var(--navy);margin:0 0 6px;line-height:1.3}
 .home-nm-card p{font-size:13px;color:var(--ts);line-height:1.5;margin:0 0 12px}
 .home-nm-cta{margin-top:auto;font-size:12px;font-weight:900;letter-spacing:.02em;color:var(--blue)}
@@ -223,8 +226,13 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .nm-body{padding:22px 26px 28px}
 .nm-career{background:var(--white);border:1.5px solid var(--mg);border-radius:18px;padding:20px 22px;margin-bottom:14px}
 .nm-career:last-child{margin-bottom:0}
-.nm-career-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.nm-career-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .nm-career-title{font-size:17px;font-weight:900;color:var(--navy);line-height:1.25;margin:0;flex:1;min-width:0;letter-spacing:-.01em}
+/* 'View Career' pill on the right of each Next Moves career block —
+   opens the full career details modal. */
+.nm-view-btn{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:100px;padding:8px 14px;font-size:12px;font-weight:900;letter-spacing:.02em;cursor:pointer;font-family:inherit;transition:filter .15s ease}
+.nm-view-btn:hover{filter:brightness(1.08)}
+.nm-view-btn svg{width:12px;height:12px}
 .nm-career-meta{font-size:12px;color:var(--ts);font-weight:600}
 .nm-career-body{margin-top:12px;font-size:13px;color:var(--navy);line-height:1.55}
 .nm-subhead{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--ts);margin:14px 0 8px}
@@ -1108,6 +1116,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06t"></script>
+<script src="app.js?v=2026-06-06u"></script>
 </body>
 </html>

@@ -30,6 +30,17 @@ document.addEventListener('click', function(e) {
   // Next Moves modal close (X button OR clicking the backdrop directly).
   if (t.closest('[data-nm-close]')) { closeNextMoves(); return; }
   if (t.dataset && t.dataset.nmBackdrop !== undefined) { closeNextMoves(); return; }
+  // 'View Career' button inside a Next Moves career block — closes the
+  // Next Moves modal and opens the full career details modal for that
+  // code. Small delay before openLiveDetail so the close transition
+  // has room to release the overflow lock cleanly.
+  const nmView = t.closest('[data-nm-view]');
+  if (nmView) {
+    const code = nmView.dataset.nmView;
+    closeNextMoves();
+    setTimeout(() => openLiveDetail(code, 'nm'), 60);
+    return;
+  }
 
   // ASSESSMENT rating buttons
   const sb = t.closest('.sb');
@@ -2237,6 +2248,10 @@ function renderNextMoves() {
         <div class="nm-career" id="nm-career-${nmSel(code)}">
           <div class="nm-career-head">
             <h3 class="nm-career-title">${nmEsc(nmCareerTitle(code))}</h3>
+            <button class="nm-view-btn" data-nm-view="${nmEsc(code)}" type="button">
+              View Career
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+            </button>
           </div>
           <div class="nm-career-body" data-nm-slot="${nmEsc(code)}">
             <div class="nm-loading">Loading from O*NET…</div>
