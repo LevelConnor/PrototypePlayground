@@ -197,6 +197,13 @@ document.addEventListener('keydown', function(e) {
 // Search input — use input event
 document.addEventListener('input', function(e) {
   if (e.target.id === 'sinput') doSearch();
+  else if (e.target.id === 'cluster-sinput') {
+    clusterKeyword = (e.target.value || '').trim();
+    // Reset the display window so the first page of the new filtered
+    // result set is what the user sees.
+    clusterDisplay_v2 = CLUSTER_PAGE_SIZE;
+    repaintCluster();
+  }
 });
 /* ══ O*NET PROXY (Cloudflare Worker) ══ */
 const ONET_PROXY = 'https://onet-proxy.c-irwin.workers.dev';
@@ -505,6 +512,7 @@ function submitAssessment() {
 function syncProfileUI() {
   const targets = document.querySelectorAll('.interest-profile');
   const homeCta = document.getElementById('home-quiz-cta');
+  const homeResultsSection = document.getElementById('home-results-section');
   // Search-panel headline needs to stay hidden while the results card is
   // in place there — otherwise the page has 'Explore Careers' above
   // 'Your Results' back-to-back.
@@ -515,9 +523,11 @@ function syncProfileUI() {
   const saveEl = document.getElementById('profile-save');
   if (saveEl) saveEl.style.display = 'none';
   if (lastResults) {
-    // Quiz taken -> results card replaces the Get-Matched card on Home,
-    // and lands at the top of Explore Careers.
+    // Quiz taken -> results card replaces the Get-Matched card on Home
+    // (wrapped in the "Your Interest Assessment Results" section), and
+    // lands at the top of Explore Careers.
     if (homeCta) homeCta.style.display = 'none';
+    if (homeResultsSection) homeResultsSection.style.display = '';
     if (searchPt) searchPt.style.display = 'none';
     if (searchPs) searchPs.style.display = 'none';
     const sorted = Object.entries(lastResults).sort((a,b) => b[1] - a[1]);
@@ -525,8 +535,9 @@ function syncProfileUI() {
   } else {
     // No quiz -> Get-Matched card is the primary CTA on Home. On Explore
     // Careers the search-only interest-profile slot gets the small CTA
-    // fallback card (previous behavior). Home slot stays hidden.
+    // fallback card (previous behavior). Home results section hidden.
     if (homeCta) homeCta.style.display = '';
+    if (homeResultsSection) homeResultsSection.style.display = 'none';
     if (searchPt) searchPt.style.display = '';
     if (searchPs) searchPs.style.display = '';
     // Empty-state CTA on the Search Careers page uses the same home-card
@@ -1136,14 +1147,22 @@ let loadedClusterCode_v2 = null;
 let clusterSubCatalog_v2 = []; // [{code, title}]
 // Map: career.code -> sub_cluster.code so the chip filter can match by ID.
 let careerSubCode_v2 = new Map();
+// Free-text keyword filter on the cluster page (title contains match).
+let clusterKeyword = '';
 
-// Return the pool filtered to whatever sub-cluster chip is active (or
-// the full pool if none).
+// Return the pool filtered by (a) the active sub-cluster chip and
+// (b) the cluster-page keyword search (title contains, case-insensitive).
+// Both are optional; neither active -> the full pool.
 function filteredClusterPool() {
-  if (!activeClusterSub) return clusterPool_v2;
-  return clusterPool_v2.filter(
-    c => careerSubCode_v2.get(c.code) === activeClusterSub
-  );
+  let out = clusterPool_v2;
+  if (activeClusterSub) {
+    out = out.filter(c => careerSubCode_v2.get(c.code) === activeClusterSub);
+  }
+  if (clusterKeyword) {
+    const q = clusterKeyword.toLowerCase();
+    out = out.filter(c => (c.title || '').toLowerCase().includes(q));
+  }
+  return out;
 }
 
 // Render the current view of the cluster (head slice of the active subset)
@@ -1300,7 +1319,7 @@ function openClusterDetail(name) {
   // sub-cluster catalog). Show a placeholder so the row doesn't pop in.
   document.getElementById('cluster-subs').innerHTML = '';
 
-  // Reset pagination + fire the load
+  // Reset pagination + keyword + fire the load
   const code = CLUSTER_CODES[name];
   clusterCareers_v2 = [];
   clusterPool_v2 = [];
@@ -1308,6 +1327,9 @@ function openClusterDetail(name) {
   clusterSubCatalog_v2 = [];
   clusterTotal_v2 = null;
   clusterDisplay_v2 = 0;
+  clusterKeyword = '';
+  const csi = document.getElementById('cluster-sinput');
+  if (csi) csi.value = '';
   loadedClusterCode_v2 = code;
   document.getElementById('cluster-list').innerHTML =
     '<div style="color:var(--ts);font-size:15px;padding:14px 0">Loading careers from O*NET…</div>';
@@ -1329,6 +1351,9 @@ function closeClusterDetail() {
   clusterSubCatalog_v2 = [];
   clusterTotal_v2 = null;
   clusterDisplay_v2 = 0;
+  clusterKeyword = '';
+  const csi = document.getElementById('cluster-sinput');
+  if (csi) csi.value = '';
   const detail = document.getElementById('cluster-detail');
   if (detail) detail.style.display = 'none';
   document.getElementById('cluster-grid').scrollIntoView({behavior:'smooth', block:'start'});
@@ -1532,6 +1557,11 @@ function renderLiveList(list, listId, prefix) {
     el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--ts);font-size:15px">No careers found. Try a different keyword.</div>`;
     return;
   }
+  // Float saved careers (top picks first, then other saved) to the top
+  // of any browsing list — Search Careers, Career Clusters, Bright
+  // Outlook. Within each group original order is preserved so
+  // fit-score / salary rankings still hold.
+  list = sortListBySaveState(list);
   el.innerHTML = list.map(c => {
     const code = c.code;
     const isSaved = saved.has('live-'+code);
@@ -2060,6 +2090,22 @@ function sortByTopPicks(codes) {
   const top = [], rest = [];
   for (const c of codes) (topPicks.has(c) ? top : rest).push(c);
   return top.concat(rest);
+}
+
+// Sort a list of career objects for browsing surfaces (Search Careers,
+// Career Clusters, Bright Outlook): top picks first, other saved
+// careers next, then everything else. Insertion order preserved within
+// each group so ranking (fit-score, salary, etc.) still holds within.
+function sortListBySaveState(list) {
+  const top = [], savedTier = [], rest = [];
+  for (const c of list) {
+    const code = c && c.code;
+    if (!code) { rest.push(c); continue; }
+    if (topPicks.has(code))                top.push(c);
+    else if (saved.has('live-' + code))    savedTier.push(c);
+    else                                    rest.push(c);
+  }
+  return top.concat(savedTier).concat(rest);
 }
 
 // Backfill metadata for any saved careers we don't have details for yet.

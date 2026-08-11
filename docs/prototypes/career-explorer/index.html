@@ -407,6 +407,11 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 #search-empty-state{display:none}
 #search-empty-state.show{display:block}
 .rc2{font-size:24px;font-weight:900;color:var(--navy);line-height:1.25;margin:16px 0;letter-spacing:-.01em}
+/* Cluster page: result count on the left, keyword search on the right. */
+.cluster-results-row{display:flex;align-items:center;gap:16px;margin:16px 0;flex-wrap:wrap}
+.cluster-results-row .rc2{margin:0;flex:1;min-width:0}
+.cluster-results-row .cluster-search{margin:0;flex:0 0 auto;width:100%;max-width:360px}
+@media (max-width:640px){.cluster-results-row .cluster-search{max-width:none}}
 .rc2:empty{margin:0}
 .crow{background:var(--white);border-radius:var(--rmd);border:1.5px solid var(--mg);padding:16px 18px;margin-bottom:4px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .crow:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(10,15,46,.08)}
@@ -781,10 +786,17 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   </button>
 
   <!-- Home-side interest-profile slot. Only visible AFTER the quiz.
-       Positioned below the two nav cards so Search + Clusters remain
-       the primary calls-to-action; the results card sits above the
-       user's saved careers + next-moves as a running reference. -->
-  <div id="interest-profile" class="interest-profile" data-hide-when-empty style="display:none;margin-top:20px"></div>
+       Wrapped in a .home-section so the results card carries the
+       same section-heading treatment as Saved Careers below. -->
+  <div class="home-section" id="home-results-section" style="display:none">
+    <div class="home-section-head">
+      <div>
+        <h2 class="home-section-heading">Your Interest Assessment Results</h2>
+        <p class="home-section-sub">Click search careers to see your career matches. Once you save careers, recommended next steps will appear below.</p>
+      </div>
+    </div>
+    <div id="interest-profile" class="interest-profile" data-hide-when-empty></div>
+  </div>
 
   <div class="home-section">
     <div class="home-section-head">
@@ -980,7 +992,16 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <div class="fl" style="margin-top:18px">Areas in this cluster</div>
       <div class="fcs" id="cluster-subs" style="margin-bottom:0"></div>
     </div>
-    <div class="rc2" id="cluster-rcount"></div>
+    <!-- Result count on the left, keyword filter on the right. Filters
+         the loaded cluster pool by title contains keyword — same pool
+         the sub-cluster chips filter, applied on top of that. -->
+    <div class="cluster-results-row">
+      <div class="rc2" id="cluster-rcount"></div>
+      <div class="sbx-w cluster-search">
+        <input class="sbx" id="cluster-sinput" type="text" placeholder="Search these careers by keyword" autocomplete="off">
+        <span class="si2">🔍</span>
+      </div>
+    </div>
     <div class="bo-explainer">
       <span class="bo-badge">☀ Bright Outlook</span>
       <p>Bright Outlook careers are expected to grow fast, have many job openings, or are emerging careers.</p>
@@ -1071,6 +1092,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06r"></script>
+<script src="app.js?v=2026-06-06s"></script>
 </body>
 </html>
