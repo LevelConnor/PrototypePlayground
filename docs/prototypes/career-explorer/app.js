@@ -555,7 +555,7 @@ function renderInterestProfile(sorted) {
       <div class="ip-layout">
         <div class="ip-header">
           <h2 class="ip-title">Your Career Quiz Results</h2>
-          <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Your top three shape the careers we match you to below.</p>
+          <p class="ip-intro">Based on your answers, these are the work styles that energize you most.</p>
         </div>
         <div class="ip-stack">
           ${sorted.map(rowFor).join('')}
