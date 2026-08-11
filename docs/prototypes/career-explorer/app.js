@@ -477,14 +477,20 @@ function syncProfileUI() {
     if (homeCta) homeCta.style.display = '';
     if (searchPt) searchPt.style.display = '';
     if (searchPs) searchPs.style.display = '';
+    // Empty-state CTA on the Search Careers page uses the same home-card
+    // component the Home landing uses, so the visual language across the
+    // app is identical.
     const ctaHtml = `
-      <div class="ip-card" style="text-align:center;padding:32px 28px">
-        <div class="t-eyebrow" style="margin-bottom:8px">Get personalized matches</div>
-        <p style="font-size:15px;color:var(--ts);line-height:1.55;margin:0 auto 18px;max-width:480px">
-          A short 30-question quiz uncovers your top work styles and unlocks careers tailored to your interests.
-        </p>
-        <button class="cta" id="btn-go-assess">Get Matched With Careers</button>
-      </div>`;
+      <button class="home-card" data-tab-target="assessment" type="button">
+        <div class="home-card-icon home-icon-quiz" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+        </div>
+        <div class="home-card-body">
+          <h2 class="home-card-title">Get Matched With Careers</h2>
+          <p class="home-card-desc">Take the O*NET Interest Profiler and get a personalized list of careers that match. Quick (30 items) or full (60 items).</p>
+        </div>
+        <span class="home-card-cta">Take the quiz →</span>
+      </button>`;
     targets.forEach(el => {
       // Home's slot has data-hide-when-empty so it stays out of the way
       // when no quiz has been taken (the Get-Matched card serves the
