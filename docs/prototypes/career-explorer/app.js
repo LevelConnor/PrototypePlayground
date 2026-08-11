@@ -15,10 +15,13 @@ document.addEventListener('click', function(e) {
   const nt = t.closest('.nt');
   if (nt && nt.dataset.tab) { switchTab(nt.dataset.tab, nt); return; }
 
-  // HOME landing — big link cards jump to the corresponding sub-panel.
-  const homeCard = t.closest('.home-card[data-tab-target]');
-  if (homeCard) {
-    switchTab(homeCard.dataset.tabTarget);
+  // Any element carrying data-tab-target jumps to the named panel —
+  // Home link cards on the landing, and 'Back to Home' buttons on
+  // sub-panels all route through here.
+  const tabJump = t.closest('[data-tab-target]');
+  if (tabJump) {
+    switchTab(tabJump.dataset.tabTarget);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
   // Next Moves card -> open the matching modal.
@@ -295,9 +298,16 @@ function toast(m) {
 function switchTab(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  // The top nav is gone (users navigate via Home cards + Back buttons),
+  // but keep this branch working for any legacy .nt tab still on the
+  // page.
   if (btn) btn.classList.add('active');
-  else document.querySelector('.nt[data-tab="'+id+'"]').classList.add('active');
+  else {
+    const tab = document.querySelector('.nt[data-tab="'+id+'"]');
+    if (tab) tab.classList.add('active');
+  }
 }
 function goToAssessment() { switchTab('assessment'); window.scrollTo({top:0,behavior:'smooth'}); }
 function goToSearch() {

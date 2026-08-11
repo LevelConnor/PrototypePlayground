@@ -74,6 +74,11 @@ header{background:var(--header-bg);padding:0 20px;display:flex;align-items:cente
 main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .panel{display:none}.panel.active{display:block}
 .pt{font-weight:900;font-size:clamp(28px,5vw,42px);color:var(--navy);line-height:1.1;margin-bottom:6px;letter-spacing:-.01em}
+/* 'Back to Home' pill at the top of every sub-panel. Ghost-styled so
+   it sits quietly above the page heading. */
+.back-home{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--mg);border-radius:var(--rf);padding:7px 14px 7px 12px;font-size:12px;font-weight:900;letter-spacing:.02em;color:var(--navy);cursor:pointer;text-transform:uppercase;margin:0 0 20px;font-family:inherit;transition:border-color .15s, color .15s, background .15s}
+.back-home:hover{border-color:var(--blue);color:var(--blue)}
+.back-home svg{flex-shrink:0}
 .pt span{color:var(--blue)}
 .ps{font-size:15px;color:var(--ts);margin-bottom:28px}
 .mock-note{background:#FFFBE6;border:1.5px solid var(--yellow);border-radius:var(--rmd);padding:10px 14px;font-size:12px;color:#5a4a00;margin-bottom:24px;display:flex;gap:8px}
@@ -641,7 +646,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 <body>
 
 <header>
-  <div class="logo"><svg role="img" aria-label="Level All" width="107" height="24" viewBox="0 0 107 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="logo" data-tab-target="home" role="button" tabindex="0" aria-label="Home" style="cursor:pointer"><svg role="img" aria-label="Level All" width="107" height="24" viewBox="0 0 107 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M8.36017 0V3.39238H19.9623V15.343H23.3556V0H8.36017Z" fill="#0083FF"/>
     <path fill-rule="evenodd" clip-rule="evenodd" d="M0 8.35699V11.7492H11.6021V23.7H14.9956V8.35699H0Z" fill="#0083FF"/>
     <path d="M34.8553 18.6369H43.2433V16.2751H37.855V5.33987H34.8553V18.6369Z" fill="#FAFAFA"/>
@@ -653,24 +658,10 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
     <path d="M99.0809 18.6369H101.747V4.50299H99.0809V18.6369Z" fill="#FAFAFA"/>
     <path d="M104.271 18.6369H106.937V4.50299H104.271V18.6369Z" fill="#FAFAFA"/>
   </svg></div>
-  <nav class="hdr-nav">
-    <button class="nt active" data-tab="home">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
-      Home
-    </button>
-    <button class="nt" data-tab="assessment">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>
-      Get Matched With Careers
-    </button>
-    <button class="nt" data-tab="search">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
-      Explore Careers
-    </button>
-    <button class="nt" data-tab="clusters">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4 4-2z" fill="currentColor" stroke="none"/></svg>
-      Career Clusters
-    </button>
-  </nav>
+  <!-- Primary nav lives on the Home landing (link cards). The header
+       keeps just the logo (clickable -> home) and the utility icons on
+       the right. Each sub-panel gets its own '← Back to Home' button. -->
+  <div class="hdr-nav-spacer" aria-hidden="true"></div>
   <div class="hdr-right">
     <button class="hdr-icon-btn" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
     <button class="hdr-icon-btn" id="open-tray-btn" aria-label="Saved careers">
@@ -716,7 +707,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
     </div>
     <div class="home-card-body">
-      <h2 class="home-card-title">Explore Careers</h2>
+      <h2 class="home-card-title">Search Careers</h2>
       <p class="home-card-desc">Search 900+ occupations by keyword, or filter by work style, education, and pay.</p>
     </div>
     <span class="home-card-cta">Explore →</span>
@@ -727,7 +718,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     </div>
     <div class="home-card-body">
-      <h2 class="home-card-title">Career Clusters</h2>
+      <h2 class="home-card-title">Explore Career Clusters</h2>
       <p class="home-card-desc">Browse 14 industries — from Healthcare to Advanced Manufacturing — and see the careers inside.</p>
     </div>
     <span class="home-card-cta">Browse clusters →</span>
@@ -772,6 +763,10 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 </div>
 
 <div class="panel" id="panel-assessment">
+  <button class="back-home" data-tab-target="home" type="button">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Back to Home
+  </button>
   <div id="afw">
     <div class="pt">Get Matched With Careers</div>
     <p class="ps">Rate how much you'd enjoy each activity. There are no right or wrong answers.</p>
@@ -808,7 +803,11 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <!-- FIND MY CAREER -->
 <div class="panel" id="panel-search">
-  <div class="pt" id="search-pt">Explore Careers</div>
+  <button class="back-home" data-tab-target="home" type="button">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Back to Home
+  </button>
+  <div class="pt" id="search-pt">Search Careers</div>
   <p class="ps" id="search-ps" style="margin-bottom:18px">Match careers to your interests, browse a field, or search by keyword.</p>
 
   <!-- Second interest-profile slot on the Explore Careers page. Shares
@@ -891,7 +890,11 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <!-- CAREER CLUSTERS — editorial photo grid -->
 <div class="panel" id="panel-clusters">
-  <div class="pt">Career Clusters</div>
+  <button class="back-home" data-tab-target="home" type="button">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    Back to Home
+  </button>
+  <div class="pt">Explore Career Clusters</div>
   <p class="ps" style="margin-bottom:24px">Browse 14 broad fields. Tap any cluster to see its sub-areas and the careers inside.</p>
   <div class="cluster-grid" id="cluster-grid"></div>
 
@@ -1000,6 +1003,6 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-06-06b"></script>
+<script src="app.js?v=2026-06-06c"></script>
 </body>
 </html>
