@@ -1964,12 +1964,14 @@ function buildModalDetail(d, code) {
         }).join('')).join('');
         return `<div class="cmodal-section state-outlook" data-code="${code}">
           <div class="cmodal-section-title">Job Opportunities By State</div>
-          <div class="state-map">${tilesHtml}</div>
-          <div class="state-map-legend">
-            <span><span class="state-tile-mini" data-variant="good"></span>Above average</span>
-            <span><span class="state-tile-mini" data-variant="ok"></span>Average</span>
-            <span><span class="state-tile-mini" data-variant="low"></span>Below average</span>
-            <span><span class="state-tile-mini" data-variant="none"></span>No data</span>
+          <div class="state-map-card">
+            <div class="state-map">${tilesHtml}</div>
+            <div class="state-map-legend">
+              <span><span class="state-tile-mini" data-variant="good"></span>Above average</span>
+              <span><span class="state-tile-mini" data-variant="ok"></span>Average</span>
+              <span><span class="state-tile-mini" data-variant="low"></span>Below average</span>
+              <span><span class="state-tile-mini" data-variant="none"></span>No data</span>
+            </div>
           </div>
         </div>`;
       })()}
