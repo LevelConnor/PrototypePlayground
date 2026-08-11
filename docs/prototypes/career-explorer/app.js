@@ -39,13 +39,6 @@ document.addEventListener('click', function(e) {
   if (t.id === 'btn-retake') { resetAssessment(); return; }
   const modeBtn = t.closest('.q-mode-opt');
   if (modeBtn && modeBtn.dataset.mode) { setQuizMode(modeBtn.dataset.mode); return; }
-  // Refine link on the results card — flip to full mode, keep the answers
-  // already given, and route back to the assessment.
-  if (t.id === 'btn-refine-quiz') {
-    setQuizMode('full');
-    goToAssessment();
-    return;
-  }
   if (t.id === 'btn-explore-matches') { goToSearch(); return; }
   if (t.id === 'btn-go-assess') { goToAssessment(); return; }
 
@@ -566,11 +559,7 @@ function renderInterestProfile(sorted) {
           ${sorted.map(rowFor).join('')}
         </div>
         ${ipBlurb(sorted)}
-        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.${
-          quizMode === 'quick'
-            ? ` <button class="ip-refine" id="btn-refine-quiz" type="button">Take the full 60-question quiz for sharper matches →</button>`
-            : ''
-        }</p>
+        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.</p>
         <div class="ip-foot">
           <div class="ip-toggle-pill">
             <span>Show Full Results</span>
