@@ -61,6 +61,7 @@ const CAREER_CODE_RE = /^[0-9]{2}-[0-9]{4}\.[0-9]{2}$/;
 const ALLOWED_DETAIL_SLICES = new Set([
   'tasks', 'skills', 'knowledge', 'work_activities', 'abilities',
   'interests', 'work_context', 'job_zone', 'education', 'related_occupations',
+  'technology',
   // Probe candidates for certification/licensing data. Trim after
   // confirming which endpoint O*NET exposes.
   'certifications', 'credentials', 'licenses', 'certifications_licenses',

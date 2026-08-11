@@ -1727,7 +1727,7 @@ async function openLiveDetail(code, prefix) {
   try {
     // Fetch live data from O*NET in parallel: basic info, outlook+wages,
     // related occupations, education breakdown, and the full task list.
-    const [info, outlook, related, eduRes, tasksRes, knowledgeRes, stateRes] = await Promise.all([
+    const [info, outlook, related, eduRes, tasksRes, knowledgeRes, stateRes, techRes] = await Promise.all([
       onetGet(`/career/${code}`).catch(() => null),
       onetGet(`/career/${code}/outlook`).catch(() => null),
       onetGet(`/career/${code}/details/related_occupations`).catch(() => null),
@@ -1739,6 +1739,9 @@ async function openLiveDetail(code, prefix) {
       // US state + territory. Feeds the state selector on Income &
       // Outlook.
       onetGet(`/career/${code}/state_outlook`).catch(() => null),
+      // Software + tools list, grouped by category. Feeds the
+      // "Software & Tools" section on Ways To Prepare.
+      onetGet(`/career/${code}/details/technology`).catch(() => null),
     ]);
     if (!info && !outlook) throw new Error('O*NET returned no data');
 
@@ -1806,6 +1809,27 @@ async function openLiveDetail(code, prefix) {
       // different than expected.
       stateOutlook: (Array.isArray(stateRes) ? stateRes : [])
         .filter(s => s && s.code && s.name),
+      // Software + tools grouped by category. O*NET returns:
+      //   { category: [ { title:{name}, example:[{name,hot_technology}], hot_technology } ] }
+      // Keep the categories that have at least one example, cap examples
+      // at 4 per category, and sort hot-technology categories first so
+      // industry-critical tools rise to the top of the list.
+      tech: (() => {
+        const cats = (techRes && techRes.category) || [];
+        return cats
+          .map(c => {
+            const label = c && c.title && c.title.name;
+            const examples = ((c && c.example) || [])
+              .map(e => e && e.name)
+              .filter(Boolean);
+            return label && examples.length
+              ? { label, examples: examples.slice(0, 4), hot: !!c.hot_technology }
+              : null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => (b.hot ? 1 : 0) - (a.hot ? 1 : 0))
+          .slice(0, 6);
+      })(),
     };
     // Preserve prior cache fields (fitGrade + jobZone stashed during the
     // grid render pass) — otherwise a fresh modal fetch would overwrite
@@ -2088,8 +2112,9 @@ function buildModalDetail(d, code) {
     <!-- WAYS TO PREPARE -->
     ${(() => {
       const kn = d.knowledge || [];
+      const tech = d.tech || [];
       const certs = certsForCode(code);
-      if (!kn.length && !certs.length) {
+      if (!kn.length && !tech.length && !certs.length) {
         return `<div class="cmodal-pane" data-mpane="wp" hidden>
           <p style="font-size:15px;color:var(--ts);margin:0">O*NET didn't return preparation guidance for this career.</p>
         </div>`;
@@ -2104,6 +2129,20 @@ function buildModalDetail(d, code) {
           </li>`).join('')}
         </ul>
       </div>` : '';
+      // Software & Tools: category label + example chips. "Hot technology"
+      // categories (industry-critical per O*NET) are flagged with a badge.
+      const techHtml = tech.length ? `<div class="cmodal-section">
+        <div class="cmodal-section-title">Software &amp; Tools</div>
+        <p style="font-size:14px;color:var(--ts);margin:0 0 12px;line-height:1.5">Tools ${d.title} commonly use on the job. Getting familiar with any of these gives you a head start.</p>
+        <ul class="wp-list">
+          ${tech.map(t => `<li>
+            <div class="wp-list-title">${t.label}${t.hot ? ' <span class="wp-hot" title="In-demand technology per O*NET">🔥 In demand</span>' : ''}</div>
+            <div class="cmodal-chips" style="margin-top:8px">
+              ${t.examples.map(x => `<div class="cmodal-chip">${x}</div>`).join('')}
+            </div>
+          </li>`).join('')}
+        </ul>
+      </div>` : '';
       const certsHtml = certs.length ? `<div class="cmodal-section">
         <div class="cmodal-section-title">Certifications & Licenses</div>
         <div class="wp-certs">
@@ -2114,7 +2153,7 @@ function buildModalDetail(d, code) {
           </div>`).join('')}
         </div>
       </div>` : '';
-      return `<div class="cmodal-pane" data-mpane="wp" hidden>${coursesHtml}${certsHtml}</div>`;
+      return `<div class="cmodal-pane" data-mpane="wp" hidden>${coursesHtml}${techHtml}${certsHtml}</div>`;
     })()}
 
     <!-- RELATED -->
