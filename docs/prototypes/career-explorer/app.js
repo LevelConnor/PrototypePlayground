@@ -279,7 +279,7 @@ function ipBlurb(sorted) {
   );
   const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
   const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
-  return `<details class="ip-blurb" open>
+  return `<details class="ip-blurb">
     <summary>Explain My Results</summary>
     <div class="ip-blurb-body">
       Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.
@@ -563,13 +563,12 @@ function renderInterestProfile(sorted) {
       <div class="ip-layout">
         <div class="ip-header">
           <h2 class="ip-title">Your Career Quiz Results</h2>
-          <p class="ip-intro">Based on your answers, these are the work styles that energize you most.</p>
+          <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Scores range from 0-40.</p>
         </div>
         <div class="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
         ${ipBlurb(sorted)}
-        <p class="ip-score-note">Scores range from 0–40 and reflect how strongly each work style showed up in your answers, using O*NET's Interest Profiler scoring.</p>
         <div class="ip-foot">
           <div class="ip-toggle-pill">
             <span>Show Full Results</span>
