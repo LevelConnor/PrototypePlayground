@@ -197,12 +197,14 @@ document.addEventListener('click', function(e) {
   // the handler above already routes their clicks. No extra wiring needed.
 });
 
-// Close modal on Esc
+// Close modal on Esc — cover both the career-detail modal and the
+// Next Moves modal so neither traps body scroll.
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const o = document.getElementById('cmodal-overlay');
-    if (o && o.classList.contains('open')) closeModal();
-  }
+  if (e.key !== 'Escape') return;
+  const nm = document.getElementById('nm-overlay');
+  if (nm && nm.classList.contains('open')) { closeNextMoves(); return; }
+  const o = document.getElementById('cmodal-overlay');
+  if (o && o.classList.contains('open')) closeModal();
 });
 
 // Search input — use input event
@@ -742,6 +744,15 @@ function resetAssessment() {
   answered.clear();
   lastResults = null;
   lastOnetScores = null;
+  // Clear the Explore Careers filter state so a fresh quiz doesn't
+  // inherit RIASEC chips + salary/education thresholds from the prior
+  // run. Sync the chip + filter-label UIs after so labels revert to
+  // "Any"/"Work style".
+  activeR.clear();
+  minSalary = 0;
+  eduZoneMin = 0;
+  syncRiasecChipsUI();
+  updateFbValueLabels();
   renderQuiz(); // repaints .qr rows with no selection and resets the count
   // Revert the Home + Search Careers pages to their pre-quiz state
   // (hides the results card, restores the Get-Matched CTA card).
@@ -2785,7 +2796,19 @@ function restoreFromURL() {
     // Every count badge with class .tc gets the number so header + in-page
   // tray triggers all stay in sync.
   document.querySelectorAll('.tc').forEach(el => { el.textContent = saved.size > 0 ? saved.size : ''; });
-    if (d.results) { lastResults = d.results; renderResults(d.results); }
+    if (d.results) {
+      // Restore prior quiz results — paint the profile UI, seed activeR
+      // with the user's top-3 areas so the Explore Careers grid picks
+      // them up. Same steps as the tail of submitAssessment(), minus
+      // the switchTab + scroll (this fires on page load).
+      lastResults = d.results;
+      syncProfileUI();
+      const sorted = Object.entries(d.results).sort((a, b) => b[1] - a[1]);
+      activeR.clear();
+      sorted.slice(0, 3).forEach(([k]) => activeR.add(k));
+      syncRiasecChipsUI();
+      updateFbValueLabels();
+    }
     if (saved.size) ensureSavedMeta();
     toast('✓ Your saved results have been restored!');
   } catch(e) { console.warn('Restore failed', e); }
