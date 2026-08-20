@@ -379,12 +379,11 @@ function ipBlurb(sorted) {
   );
   const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
   const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
-  return `<details class="ip-blurb" open>
-    <summary>Explain My Results</summary>
-    <div class="ip-blurb-body">
+  // Plain prose: this now sits in the results card's left column beside the
+  // score pills, so it no longer needs the collapsible <details> wrapper.
+  return `<p class="ip-blurb-body">
       Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.
-    </div>
-  </details>`;
+    </p>`;
 }
 
 /* ══ TOAST ══ */
@@ -535,6 +534,19 @@ function submitAssessment() {
 // Sync the interest-profile card + the save-your-profile row to whatever's
 // in lastResults. Called when the assessment completes and on initial load
 // (in case state was restored from a saved URL).
+// Marks a journey stage complete on the Home stepper. Only stages with a
+// real completion signal are marked: stage 1 once the quiz has results, and
+// stage 3 once at least one career is saved. Stages 2 and 4 are navigation,
+// so they stay numbered rather than claiming a state they don't have.
+function syncSteps() {
+  const savedCount = [...saved].filter(k => typeof k === 'string' && k.startsWith('live-')).length;
+  const flags = { 'step-1': !!lastResults, 'step-3': savedCount > 0 };
+  Object.entries(flags).forEach(([id, done]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('step--done', done);
+  });
+}
+
 function syncProfileUI() {
   const targets = document.querySelectorAll('.interest-profile');
   const homeCta = document.getElementById('home-quiz-cta');
@@ -593,6 +605,7 @@ function syncProfileUI() {
       }
     });
   }
+  syncSteps();
 }
 
 // Single unified visualization for the assessment results header — replaces
@@ -650,20 +663,24 @@ function renderInterestProfile(sorted) {
   // Retake icon — the only footer action still on the card.
   const iconRetake = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>`;
 
+  // Two columns: the written read-out on the left, the score pills and their
+  // controls in an inset panel on the right. One markup shape is painted into
+  // every .interest-profile slot, so the split is CSS-driven off this order.
   const cardHtml = `
     <div class="ip-card">
       <div class="ip-layout">
-        <div class="ip-header">
-          <h2 class="ip-title">Your Career Quiz Results</h2>
+        <div class="ip-side">
+          <h2 class="ip-title">Your quiz results</h2>
           <p class="ip-intro">Based on your answers, these are the work styles that energize you most. Scores range from 0-40.</p>
+          ${ipBlurb(sorted)}
         </div>
+        <div class="ip-main">
         <div class="ip-stack">
           ${sorted.map(rowFor).join('')}
         </div>
-        ${ipBlurb(sorted)}
         <div class="ip-foot">
           <div class="ip-toggle-pill">
-            <span>Show Full Results</span>
+            <span>Show All</span>
             <button class="ip-switch" type="button" aria-pressed="${ipShowAll}">
               <span class="ip-switch-dot"></span>
             </button>
@@ -671,6 +688,7 @@ function renderInterestProfile(sorted) {
           <div class="ip-foot-r">
             <button class="ip-action-pill" id="btn-retake">Retake Quiz ${iconRetake}</button>
           </div>
+        </div>
         </div>
       </div>
     </div>`;
@@ -2687,9 +2705,9 @@ function renderHomeSaved() {
   const sorted = sortByTopPicks(codes);
   if (!sorted.length) {
     el.classList.remove('cgrid');
-    el.innerHTML = `<div class="home-saved-empty">
-      Nothing saved yet. Hit the heart on any career (from your quiz results,
-      the explore page, or a cluster) and it'll land here.
+    el.innerHTML = `<div class="step-empty">
+      <div class="home-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3 4.6 13a4.8 4.8 0 0 1 6.8-6.8l.6.6.6-.6A4.8 4.8 0 0 1 19.4 13z"/></svg></div>
+      <p>Your saved careers will appear here</p>
     </div>`;
   } else {
     el.classList.add('cgrid');
@@ -2716,8 +2734,9 @@ function renderHomeSaved() {
   const count = document.getElementById('home-priority-count');
   if (chip) chip.style.display = sorted.length ? '' : 'none';
   if (count) count.textContent = topPicks.size;
-  const nm = document.getElementById('home-next-moves');
-  if (nm) nm.style.display = sorted.length ? '' : 'none';
+  // Stage 4 always shows its placeholder for now; the three Next Moves cards
+  // stay parked (hidden) in the markup until that pass is picked back up.
+  syncSteps();
 }
 
 /* ══ TRAY ══ */
@@ -3067,12 +3086,18 @@ function handleZipSearch(pid, careerTitle, onetCode) {
 }
 
 /* ══ THEME ══ */
+const THEME_ICON = {
+  moon: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="#DBEAFE"/></svg>',
+  sun:  '<svg viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4" fill="#FBBF24" stroke="none"/><path d="M12 1.6v2.6M12 19.8v2.6M1.6 12h2.6M19.8 12h2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M19.4 4.6l-1.9 1.9M6.5 17.5l-1.9 1.9"/></svg>',
+};
 function applyTheme(mode) {
   const dark = mode === 'dark';
   document.body.classList.toggle('dark', dark);
   const btn = document.getElementById('btn-theme');
   if (btn) {
-    btn.textContent = dark ? '☀️' : '🌙';
+    // Shows the CURRENT mode, matching the toggle in the other Level All
+    // prototypes: moon while dark, sun while light.
+    btn.innerHTML = dark ? THEME_ICON.moon : THEME_ICON.sun;
     btn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
   }
 }
