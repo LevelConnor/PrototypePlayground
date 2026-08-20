@@ -14,8 +14,9 @@ After GitHub Pages is enabled, the site lives at:
    (e.g. `prototypes/investment-growth/`).
 2. Add an `index.html` file inside it. That's the prototype.
 3. Open the root `index.html` (the landing page) in a text editor and add a new
-   `<article class="entry">` block linking to your prototype. Easiest way: copy
-   the existing block and edit the title, link, and description.
+   `<a class="card">` block inside `<div class="grid">`, linking to your
+   prototype. Easiest way: copy the existing first card and edit the href,
+   title, description, and date. Newest goes first.
 4. Commit and push (or run `publish.command` to do both at once).
 5. Wait ~60 seconds. The new prototype is live.
 

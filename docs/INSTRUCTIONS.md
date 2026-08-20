@@ -173,9 +173,10 @@ When you want to add a new prototype:
    your new folder.
 
 3. **Edit the root `index.html`** (the landing page) to add a new entry.
-   Open it in TextEdit/Notepad. Find the `<article class="entry">` block
-   for the calculator, copy the whole block, paste it below, and edit the
-   link, title, question, and date for the new prototype.
+   Open it in TextEdit/Notepad. Find the first `<a class="card">` block
+   inside `<div class="grid">`, copy the whole block, paste it directly
+   above as the new first card, and edit the link, title, description, and
+   date for the new prototype.
 
 4. **Double-click `publish.command`** (Mac) or `publish.bat` (Windows).
    Type a quick description. Press Enter. Done.
