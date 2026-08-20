@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build your first budget — Level All</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face { font-family:"Graphik"; src:url("fonts/GraphikRegular.otf") format("opentype"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Graphik"; src:url("fonts/GraphikMedium.otf") format("opentype"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Graphik"; src:url("fonts/GraphikSemibold.otf") format("opentype"); font-weight:600; font-display:swap; }
+@font-face { font-family:"Graphik"; src:url("fonts/GraphikSemibold.otf") format("opentype"); font-weight:700; font-display:swap; }
+html, body { margin:0; padding:0; background:#00173B; }
+body { font-family:"Graphik", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+a { color:inherit; text-decoration:none; }
+a:hover { text-decoration:underline; text-underline-offset:2px; }
+input { font-family:"Graphik", system-ui, sans-serif; }
+input::placeholder { color:#64748B; }
+</style>
+</helmet>
+
+<div style="background:{{ theme.bg }}; min-height:100vh; color:{{ theme.fg }};">
+
+  <header style="background:#00173B; height:76px; display:flex; align-items:center; gap:32px; padding:0 32px; border-bottom:1px solid #213168; position:sticky; top:0; z-index:10;">
+    <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+      <img src="assets/level-all-mark.svg" width="26" height="26" alt="" style="filter:brightness(0) saturate(100%) invert(43%) sepia(96%) saturate(3000%) hue-rotate(196deg) brightness(103%);"/>
+      <span style="color:#fff; font-weight:700; font-size:22px; letter-spacing:-0.01em;">Level All</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+      <sc-for list="{{ progSegs }}" as="seg" hint-placeholder-count="4">
+        <div onClick="{{ seg.go }}" title="Jump to a step" style="flex:1; height:7px; border-radius:9999px; background:#2A3F73; overflow:hidden; cursor:pointer;" style-hover="background:#3B5488">
+          <div style="height:100%; border-radius:9999px; background:#0083FF; width:{{ seg.fill }};"></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex; align-items:center; gap:20px; flex-shrink:0;">
+      <span style="font-size:15px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#93C5FD;">{{ stageLabel }}</span>
+      <div onClick="{{ toggleTheme }}" title="Switch between dark and light" style="width:44px; height:44px; border-radius:9999px; background:transparent; border:1.5px solid #3B5488; display:flex; align-items:center; justify-content:center; cursor:pointer;" style-hover="border-color:#0083FF" style-active="transform:scale(0.94)">
+        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="#DBEAFE"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4" fill="#FBBF24" stroke="none"></circle><path d="M12 1.6v2.6M12 19.8v2.6M1.6 12h2.6M19.8 12h2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M19.4 4.6l-1.9 1.9M6.5 17.5l-1.9 1.9"></path></svg>
+        </sc-if>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1080px; margin:0 auto; padding:28px 24px 80px;">
+
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#60A5FA; margin-bottom:6px;">Money Tools</div>
+        <h1 style="margin:0; font-size:30px; font-weight:700; letter-spacing:-0.02em;">Build Your First Budget</h1>
+        <p style="margin:6px 0 0; font-size:15px; color:{{ theme.muted }}; max-width:620px;">Pick a job you're curious about, see what it really pays where you live, then decide where every dollar goes.</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:20px; flex-shrink:0;">
+        <button onClick="{{ roll }}" title="Build a random budget" style="display:flex; align-items:center; gap:10px; background:linear-gradient(135deg,#68F4B8 0%,#15803D 100%); border:1px solid #3CCB7F; border-radius:10px; padding:11px 16px; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; color:#04220F;" style-hover="filter:brightness(1.06)" style-active="transform:scale(0.98)">
+          <img src="https://unpkg.com/lucide-static@latest/icons/dices.svg" width="20" height="20" alt="" style="filter:brightness(0) saturate(0);"/>
+          Surprise Me
+        </button>
+        <div style="text-align:right;">
+          <div style="font-size:12px; color:{{ theme.muted }};">Progress</div>
+          <div style="font-size:20px; font-weight:600;">{{ progressLabel }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:288px minmax(0, 1fr); gap:20px; align-items:start;">
+
+      <aside style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; padding:8px 4px 12px; position:sticky; top:92px;">
+
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 16px;">
+          <img src="https://unpkg.com/lucide-static@latest/icons/map-pin.svg" width="20" height="20" alt="" style="filter:{{ theme.iconFilter }}; opacity:.75;"/>
+          <span style="font-size:14px; color:{{ theme.fg }}; flex:1;">{{ placeLabel }}</span>
+          <span style="font-size:13px; color:#60A5FA; font-weight:500; cursor:pointer;">Edit</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 16px 14px;">
+          <img src="https://unpkg.com/lucide-static@latest/icons/user.svg" width="20" height="20" alt="" style="filter:{{ theme.iconFilter }}; opacity:.75;"/>
+          <span style="font-size:14px; color:{{ theme.fg }}; flex:1;">Single / No Kids</span>
+          <span style="font-size:13px; color:#60A5FA; font-weight:500; cursor:pointer;">Edit</span>
+        </div>
+
+        <div style="padding:14px 16px 16px;">
+          <div style="font-size:30px; font-weight:700; color:{{ remainingColor }}; font-variant-numeric:tabular-nums;">{{ leftToBudget }}</div>
+          <div style="font-size:13px; font-weight:600; margin-top:2px;">Remaining Monthly Budget</div>
+          <div style="font-size:12px; color:{{ theme.subtle }}; margin-top:4px;">{{ salaryBasis }}</div>
+        </div>
+
+        <sc-for list="{{ steps }}" as="step" hint-placeholder-count="13">
+          <div onClick="{{ step.go }}" style="display:flex; align-items:center; gap:12px; padding:13px 16px; border-top:1px solid {{ theme.border }}; cursor:pointer;" style-hover="background:{{ theme.elev }};">
+            <span style="width:18px; display:flex; align-items:center; justify-content:center;">
+              <img src="https://unpkg.com/lucide-static@latest/icons/arrow-right.svg" width="16" height="16" alt="" style="opacity:{{ step.markerOpacity }}; filter:brightness(0) saturate(100%) invert(74%) sepia(29%) saturate(1000%) hue-rotate(96deg) brightness(95%);"/>
+            </span>
+            <img src="https://unpkg.com/lucide-static@latest/icons/{{ step.icon }}.svg" width="20" height="20" alt="" style="filter:{{ theme.iconFilter }}; opacity:{{ step.iconOpacity }};"/>
+            <span style="font-size:15px; flex:1; color:{{ step.color }}; font-weight:{{ step.weight }};">{{ step.name }}</span>
+            <span style="font-size:13px; color:{{ theme.good }}; font-variant-numeric:tabular-nums;">{{ step.value }}</span>
+          </div>
+        </sc-for>
+
+      </aside>
+
+      <main style="display:flex; flex-direction:column; gap:20px; min-width:0;">
+
+        <sc-if value="{{ onIncome }}" hint-placeholder-val="{{ true }}">
+        <section style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; padding:28px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+            <span style="font-family:'Geist Mono', ui-monospace, monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:{{ theme.link }};">Step 1 Of 13</span>
+          </div>
+          <h2 style="margin:0 0 6px; font-size:24px; font-weight:700; letter-spacing:-0.01em;">How Much Will You Earn?</h2>
+          <p style="margin:0 0 22px; font-size:15px; color:{{ theme.muted }}; max-width:560px;">Every budget starts with what lands in your paycheck. If you already know the number, type it in. If you're still deciding on a career, look up what a job pays near you.</p>
+
+          <div style="display:grid; grid-template-columns:minmax(220px, 1fr) auto minmax(220px, 1fr); gap:20px; align-items:start;">
+
+            <div>
+              <label style="display:block; font-size:14px; font-weight:500; margin-bottom:8px;">Your Yearly Salary</label>
+              <div style="display:flex; align-items:center; gap:10px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:10px; padding:0 14px;">
+                <span style="width:30px; height:30px; border-radius:9999px; background:#0083FF; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0;">$</span>
+                <input value="{{ salaryInput }}" onChange="{{ onSalary }}" inputmode="numeric" placeholder="Enter your salary here" style="flex:1; min-width:0; background:transparent; border:none; outline:none; color:{{ theme.fg }}; font-size:18px; font-weight:600; padding:14px 0; font-variant-numeric:tabular-nums;"/>
+                <span style="font-size:13px; color:{{ theme.subtle }};">/ year</span>
+              </div>
+              <p style="margin:10px 0 0; font-size:13px; color:{{ theme.subtle }};">Use gross pay, before anything is taken out. Taxes come later in Step 13.</p>
+            </div>
+
+            <div style="font-size:14px; font-weight:600; color:{{ theme.subtle }}; padding-top:38px; text-align:center;">OR</div>
+
+            <div>
+              <label style="display:block; font-size:14px; font-weight:500; margin-bottom:8px;">Look Up A Job</label>
+              <div style="position:relative;">
+                <div style="display:flex; align-items:center; gap:10px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:10px; padding:0 14px;">
+                  <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Start typing a job title" style="flex:1; min-width:0; background:transparent; border:none; outline:none; color:{{ theme.fg }}; font-size:16px; padding:15px 0;"/>
+                  <img src="https://unpkg.com/lucide-static@latest/icons/search.svg" width="18" height="18" alt="" style="filter:{{ theme.iconFilter }}; opacity:.6;"/>
+                </div>
+                <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute; left:0; right:0; top:56px; z-index:5; background:{{ theme.elev }}; border:1px solid #2563EB; border-radius:10px; overflow:hidden; box-shadow:0 16px 36px rgba(0,0,0,.35);">
+                    <sc-for list="{{ results }}" as="job" hint-placeholder-count="3">
+                      <div onClick="{{ job.pick }}" style="display:flex; align-items:center; gap:12px; padding:12px 14px; cursor:pointer; border-bottom:1px solid {{ theme.border }};" style-hover="background:{{ theme.elev }};">
+                        <div style="flex:1;">
+                          <div style="font-size:15px;">{{ job.title }}</div>
+                          <div style="font-size:11px; color:{{ theme.subtle }}; font-family:'Geist Mono', ui-monospace, monospace; margin-top:2px;">SOC {{ job.soc }}</div>
+                        </div>
+                        <div style="font-size:14px; font-weight:600; color:{{ theme.muted }}; font-variant-numeric:tabular-nums;">{{ job.regional }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute; left:0; right:0; top:56px; z-index:5; background:{{ theme.elev }}; border:1px solid {{ theme.border }}; border-radius:10px; padding:12px 14px; font-size:14px; color:{{ theme.muted }};">No match yet. Try a broader title, like nurse, mechanic, or designer.</div>
+                </sc-if>
+              </div>
+
+              <div style="display:flex; gap:10px; margin-top:12px; align-items:center;">
+                <img src="https://unpkg.com/lucide-static@latest/icons/map-pin.svg" width="18" height="18" alt="" style="filter:{{ theme.iconFilter }}; opacity:.6; flex-shrink:0;"/>
+                <input value="{{ place }}" onChange="{{ onPlace }}" placeholder="State or ZIP code, like MI or 48226" style="flex:1; min-width:0; box-sizing:border-box; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:10px; outline:none; color:{{ theme.fg }}; font-size:14px; padding:11px 14px;"/>
+              </div>
+
+              <sc-if value="{{ hasPicked }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:10px; margin-top:12px; background:{{ theme.elev }}; border:1px solid #2563EB; border-radius:10px; padding:12px 14px;">
+                  <div style="flex:1;">
+                    <div style="font-size:14px; font-weight:600;">{{ pickedTitle }}</div>
+                    <div style="font-size:12px; color:{{ theme.muted }}; margin-top:2px;">{{ pickedNote }}</div>
+                  </div>
+                  <span onClick="{{ clearPick }}" style="font-size:13px; color:#60A5FA; font-weight:500; cursor:pointer;">Change</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="margin-top:26px; padding-top:22px; border-top:1px solid {{ theme.border }}; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+            <div style="display:flex; gap:36px;">
+              <div>
+                <div style="font-size:13px; color:{{ theme.muted }}; margin-bottom:2px;">Annual Salary</div>
+                <div style="font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;">{{ annualLabel }}</div>
+              </div>
+              <div>
+                <div style="font-size:13px; color:{{ theme.muted }}; margin-bottom:2px;">Monthly, Before Taxes</div>
+                <div style="font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; color:{{ theme.good }};">{{ monthlyLabel }}</div>
+              </div>
+            </div>
+            <button onClick="{{ next }}" style="border:none; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:13px 22px; border-radius:8px; background:#0083FF; color:#fff;" style-hover="background:#1A8FFF" style-active="background:#0072E0; transform:scale(0.98)">Next: Housing</button>
+          </div>
+        </section>
+        </sc-if>
+
+        <sc-if value="{{ isListStep }}" hint-placeholder-val="{{ false }}">
+        <section style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; overflow:hidden;">
+
+          <div style="display:flex; align-items:center; gap:18px; padding:20px 28px; background:{{ theme.elev }}; border-bottom:1px solid {{ theme.border }}; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="https://unpkg.com/lucide-static@latest/icons/{{ listIcon }}.svg" width="26" height="26" alt="" style="filter:{{ theme.iconFilter }};"/>
+              <span style="font-size:22px; font-weight:700;">{{ listTitle }}</span>
+            </div>
+            <div style="width:1px; height:32px; background:{{ theme.div }};"></div>
+            <div style="display:flex; align-items:center; gap:8px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:10px; padding:0 12px;">
+              <span style="font-size:16px; color:{{ theme.muted }};">$</span>
+              <input value="{{ listTotal }}" onChange="{{ onListTotal }}" inputmode="numeric" placeholder="0" style="width:110px; background:transparent; border:none; outline:none; color:{{ theme.fg }}; font-size:18px; font-weight:600; padding:10px 0; font-variant-numeric:tabular-nums;"/>
+              <span style="font-size:14px; color:{{ theme.subtle }};">/ month</span>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+              <div style="font-size:12px; color:{{ theme.muted }};">{{ listMeta }}</div>
+              <div style="font-size:18px; font-weight:600; font-variant-numeric:tabular-nums;">{{ listCount }}</div>
+            </div>
+          </div>
+
+          <div style="padding:24px 28px 28px;">
+            <p style="margin:0 0 20px; font-size:15px; color:{{ theme.muted }}; max-width:660px;">{{ listPrompt }}</p>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ listItems }}" as="u" hint-placeholder-count="5">
+                <div style="display:flex; align-items:center; gap:18px; background:{{ u.bg }}; border:1px solid {{ u.border }}; border-radius:14px; padding:16px 20px;">
+                  <span onClick="{{ u.toggle }}" style="width:28px; height:28px; border-radius:9999px; background:{{ u.checkBg }}; border:1px solid {{ u.checkBorder }}; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+                    <img src="https://unpkg.com/lucide-static@latest/icons/check.svg" width="16" height="16" alt="" style="filter:{{ theme.iconFilter }}; opacity:{{ u.checkOpacity }};"/>
+                  </span>
+                  <div style="width:88px; height:88px; border-radius:14px; background:{{ u.tile }}; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                    <img src="https://unpkg.com/lucide-static@latest/icons/{{ u.icon }}.svg" width="42" height="42" alt="" style="filter:brightness(0) invert(1); opacity:.95;"/>
+                  </div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:16px; font-weight:600;">{{ u.title }}</div>
+                    <div style="font-size:13px; color:{{ theme.muted }}; margin-top:3px;">{{ u.sub }}</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; background:{{ theme.deep }}; border:1px solid {{ u.border }}; border-radius:10px; padding:0 12px; opacity:{{ u.amtOpacity }};">
+                    <span style="font-size:15px; color:{{ theme.muted }};">$</span>
+                    <input value="{{ u.amount }}" onChange="{{ u.onAmount }}" inputmode="numeric" style="width:74px; background:transparent; border:none; outline:none; color:{{ theme.fg }}; font-size:16px; font-weight:600; padding:10px 0; text-align:right; font-variant-numeric:tabular-nums;"/>
+                    <span style="font-size:12px; color:{{ theme.subtle }};">/mo</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top:26px; padding-top:22px; border-top:1px solid {{ theme.border }}; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+              <div style="font-size:14px; color:{{ theme.muted }}; max-width:520px;">{{ listNote }}</div>
+              <div style="display:flex; gap:12px;">
+                <button onClick="{{ back }}" style="border:1px solid {{ theme.border }}; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:12px 20px; border-radius:8px; background:transparent; color:{{ theme.muted }};" style-hover="background:{{ theme.elev }}">Back</button>
+                <button onClick="{{ next }}" style="border:none; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:13px 22px; border-radius:8px; background:#0083FF; color:#fff;" style-hover="background:#1A8FFF" style-active="background:#0072E0; transform:scale(0.98)">{{ listNextLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <sc-if value="{{ isChoiceStep }}" hint-placeholder-val="{{ false }}">
+        <section style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; overflow:hidden;">
+
+          <div style="display:flex; align-items:center; gap:18px; padding:20px 28px; background:{{ theme.elev }}; border-bottom:1px solid {{ theme.border }}; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="https://unpkg.com/lucide-static@latest/icons/{{ stepIcon }}.svg" width="26" height="26" alt="" style="filter:{{ theme.iconFilter }};"/>
+              <span style="font-size:22px; font-weight:700;">{{ stepTitle }}</span>
+            </div>
+            <div style="width:1px; height:32px; background:{{ theme.div }};"></div>
+            <div style="display:flex; align-items:center; gap:8px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:10px; padding:0 12px;">
+              <span style="font-size:16px; color:{{ theme.muted }};">$</span>
+              <input value="{{ stepCost }}" onChange="{{ onStepCost }}" inputmode="numeric" placeholder="0" style="width:110px; background:transparent; border:none; outline:none; color:{{ theme.fg }}; font-size:18px; font-weight:600; padding:10px 0; font-variant-numeric:tabular-nums;"/>
+              <span style="font-size:14px; color:{{ theme.subtle }};">/ month</span>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+              <div style="font-size:12px; color:{{ theme.muted }};">Share Of Your Paycheck</div>
+              <div style="font-size:18px; font-weight:600; color:{{ stepShareColor }}; font-variant-numeric:tabular-nums;">{{ stepShare }}</div>
+            </div>
+          </div>
+
+          <div style="padding:24px 28px 28px;">
+            <p style="margin:0 0 24px; font-size:15px; color:{{ theme.muted }}; max-width:660px;">{{ stepPrompt }}</p>
+
+            <div style="display:grid; grid-template-columns:{{ optionCols }}; gap:16px; justify-content:center;">
+              <sc-for list="{{ choiceOptions }}" as="opt" hint-placeholder-count="3">
+                <div onClick="{{ opt.pick }}" style="background:{{ opt.bg }}; border:1px solid {{ opt.border }}; border-radius:16px; padding:22px 20px 20px; cursor:pointer; display:grid; grid-template-rows:56px auto 40px 30px auto; justify-items:center; align-items:center; text-align:center; gap:12px;" style-hover="border-color:#2563EB;">
+                  <div>
+                    <div style="font-size:16px; font-weight:600;">{{ opt.title }}</div>
+                    <div style="font-size:13px; color:{{ theme.muted }}; margin-top:3px;">{{ opt.sub }}</div>
+                  </div>
+                  <div style="width:100%; aspect-ratio:4 / 3; border-radius:14px; background:{{ opt.tile }}; display:flex; align-items:center; justify-content:center;">
+                    <img src="https://unpkg.com/lucide-static@latest/icons/{{ opt.icon }}.svg" width="64" height="64" alt="" style="filter:brightness(0) invert(1); opacity:.95;"/>
+                  </div>
+                  <div style="font-size:14px; font-weight:500; align-self:start;">{{ opt.tierLabel }}</div>
+                  <div style="font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; color:{{ opt.priceColor }};">{{ opt.price }}</div>
+                  <input type="range" min="0" max="2" step="1" value="{{ opt.tier }}" onChange="{{ opt.onTier }}" style="width:100%; accent-color:#0083FF; opacity:{{ opt.sliderOpacity }};"/>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top:26px; padding-top:22px; border-top:1px solid {{ theme.border }}; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+              <div style="font-size:14px; color:{{ theme.muted }}; max-width:520px;">{{ stepNote }}</div>
+              <div style="display:flex; gap:12px;">
+                <button onClick="{{ back }}" style="border:1px solid {{ theme.border }}; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:12px 20px; border-radius:8px; background:transparent; color:{{ theme.muted }};" style-hover="background:{{ theme.elev }}">Back</button>
+                <button onClick="{{ next }}" style="border:none; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:13px 22px; border-radius:8px; background:#0083FF; color:#fff;" style-hover="background:#1A8FFF" style-active="background:#0072E0; transform:scale(0.98)">{{ nextLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <sc-if value="{{ onSummary }}" hint-placeholder-val="{{ false }}">
+        <section style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; padding:28px;">
+          <h2 style="margin:0 0 10px; font-size:26px; font-weight:700; letter-spacing:-0.01em;">Summary</h2>
+          <p style="margin:0 0 24px; font-size:16px; line-height:1.5; color:{{ theme.muted }}; max-width:660px;">{{ summaryLine }}</p>
+
+          <div style="display:flex; align-items:center; justify-content:center; gap:22px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:14px; padding:20px 24px; flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="font-size:13px; color:{{ theme.muted }}; margin-bottom:4px;">Monthly Earnings</div>
+              <div style="font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;">{{ takeHomeLabel }}</div>
+            </div>
+            <div style="font-size:24px; font-weight:600; color:{{ theme.subtle }};">−</div>
+            <div style="text-align:center;">
+              <div style="font-size:13px; color:{{ theme.muted }}; margin-bottom:4px;">Spending</div>
+              <div style="font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;">{{ spendLabel }}</div>
+            </div>
+            <div style="font-size:24px; font-weight:600; color:{{ theme.subtle }};">=</div>
+            <div style="text-align:center;">
+              <div style="font-size:13px; color:{{ theme.muted }}; margin-bottom:4px;">Remaining Balance</div>
+              <div style="font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; color:{{ remainingColor }};">{{ leftToBudget }}</div>
+            </div>
+          </div>
+
+          <h3 style="margin:32px 0 20px; font-size:19px; font-weight:600; text-align:center;">Monthly Spending By Category</h3>
+
+          <div style="display:grid; grid-template-columns:minmax(0,260px) minmax(0,1fr); gap:32px; align-items:center;">
+            <div style="position:relative; width:100%; aspect-ratio:1;">
+              <svg viewBox="0 0 42 42" style="width:100%; height:auto; transform:rotate(-90deg);">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="{{ theme.border }}" stroke-width="7"></circle>
+                <sc-for list="{{ slices }}" as="s" hint-placeholder-count="6">
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="{{ s.color }}" stroke-width="7" stroke-dasharray="{{ s.dash }}" stroke-dashoffset="{{ s.offset }}"></circle>
+                </sc-for>
+              </svg>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none;">
+                <div style="font-size:32px; font-weight:700; color:{{ theme.muted }}; font-variant-numeric:tabular-nums;">{{ spendLabel }}</div>
+                <div style="font-size:14px; color:{{ theme.subtle }}; text-align:center; max-width:120px;">Total Monthly Spending</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px 24px;">
+              <sc-for list="{{ slices }}" as="s" hint-placeholder-count="8">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="width:12px; height:12px; border-radius:3px; background:{{ s.color }}; flex-shrink:0;"></span>
+                  <span style="font-size:14px; flex:1; min-width:0;">{{ s.name }}</span>
+                  <span style="font-size:14px; font-weight:600; font-variant-numeric:tabular-nums;">{{ s.amount }}</span>
+                  <span style="font-size:13px; color:{{ theme.muted }}; width:38px; text-align:right; font-variant-numeric:tabular-nums;">{{ s.pct }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasAdjustments }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:30px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:14px; padding:22px 24px;">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:4px;">
+                <h3 style="margin:0; font-size:18px; font-weight:600;">What It Took To Balance</h3>
+                <div style="font-size:14px; color:{{ theme.good }}; font-weight:600; font-variant-numeric:tabular-nums;">{{ adjustedTotal }} Trimmed</div>
+              </div>
+              <p style="margin:0 0 16px; font-size:14px; color:{{ theme.muted }}; max-width:620px;">{{ adjustmentIntro }}</p>
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <sc-for list="{{ adjustments }}" as="a" hint-placeholder-count="3">
+                  <div style="display:grid; grid-template-columns:150px 1fr auto; gap:16px; align-items:center; padding:11px 0; border-top:1px solid {{ theme.border }};">
+                    <div style="font-size:14px; font-weight:600;">{{ a.category }}</div>
+                    <div style="font-size:14px; color:{{ theme.muted }};">{{ a.detail }}</div>
+                    <div style="font-size:14px; font-weight:600; color:{{ theme.good }}; font-variant-numeric:tabular-nums;">{{ a.saved }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:30px; padding-top:22px; border-top:1px solid {{ theme.border }}; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+            <div style="font-size:14px; color:{{ theme.muted }}; max-width:560px;">{{ summaryAdvice }}</div>
+            <div style="display:flex; gap:12px;">
+              <button onClick="{{ back }}" style="border:1px solid {{ theme.border }}; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:12px 20px; border-radius:8px; background:transparent; color:{{ theme.muted }};" style-hover="background:{{ theme.elev }}">Back</button>
+              <button onClick="{{ balance }}" style="border:1px solid #3CCB7F; cursor:pointer; font-family:inherit; font-size:15px; font-weight:600; padding:13px 22px; border-radius:8px; background:linear-gradient(135deg,#68F4B8 0%,#15803D 100%); color:#04220F; opacity:{{ balanceOpacity }};" style-hover="filter:brightness(1.06)" style-active="transform:scale(0.98)">Balance My Budget</button>
+              <button onClick="{{ next }}" style="border:none; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:13px 22px; border-radius:8px; background:#0083FF; color:#fff;" style-hover="background:#1A8FFF" style-active="background:#0072E0; transform:scale(0.98)">Where The Data Comes From</button>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <sc-if value="{{ onSources }}" hint-placeholder-val="{{ false }}">
+        <section style="background:{{ theme.card }}; border:1px solid {{ theme.border }}; border-radius:16px; padding:28px;">
+          <h2 style="margin:0 0 8px; font-size:26px; font-weight:700; letter-spacing:-0.01em;">Where The Data Comes From</h2>
+          <p style="margin:0 0 20px; font-size:16px; line-height:1.5; color:{{ theme.muted }}; max-width:680px;">Every number in this tool is an estimate meant for learning, not a quote. Here's what sits behind each one so you can check it yourself.</p>
+
+          <div style="display:flex; flex-direction:column;">
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Job Pay</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Median annual wages for 20 occupations, each labeled with its federal SOC code (for example, Registered Nurse is 29-1141). Figures follow the U.S. Bureau of Labor Statistics Occupational Employment and Wage Statistics program, which publishes national and state wages by occupation every May. <a href="https://www.bls.gov/oes/" target="_blank" rel="noopener" style="color:{{ theme.link }};">bls.gov/oes</a> Median means half the people in that job earn more and half earn less.</div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Pay By Location</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Your state or ZIP applies a single cost-of-living multiplier to the national median, ranging from about 0.85 in the lowest-cost states to about 1.20 in Washington, D.C. Real BLS state and metro wage tables are more precise than one multiplier, and a live version of this tool should read them directly. <a href="https://www.bls.gov/oes/current/oessrcst.htm" target="_blank" rel="noopener" style="color:{{ theme.link }};">State wage tables</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Housing, Food, Transportation</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Starting amounts are drawn from typical U.S. household spending patterns published in the Bureau of Labor Statistics Consumer Expenditure Survey, then adjusted by the same state multiplier. The three slider stops are a low, average, and high version of each category, not survey percentiles. <a href="https://www.bls.gov/cex/" target="_blank" rel="noopener" style="color:{{ theme.link }};">bls.gov/cex</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">The 30% Housing Guideline</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">The federal standard that housing costing more than 30% of income counts as a cost burden. It comes from U.S. Department of Housing and Urban Development affordability rules and is why this tool flags housing above that share. <a href="https://www.huduser.gov/portal/pdredge/pdr-edge-featd-article-081417.html" target="_blank" rel="noopener" style="color:{{ theme.link }};">HUD on affordability</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Federal Income Tax</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Calculated from your salary using the seven federal marginal brackets, 10% through 37%, after subtracting the standard deduction for a single filer. Only your income above each bracket threshold is taxed at that higher rate, which is why the total is lower than the top rate you land in. <a href="https://www.irs.gov/filing/federal-income-tax-rates-and-brackets" target="_blank" rel="noopener" style="color:{{ theme.link }};">IRS brackets</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Social Security And Medicare</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Fixed federal payroll tax rates that every employee pays: 6.2% for Social Security, applied only up to the annual wage base limit, and 1.45% for Medicare with no cap. Your employer pays a matching amount you never see. <a href="https://www.ssa.gov/oact/cola/cbb.html" target="_blank" rel="noopener" style="color:{{ theme.link }};">SSA wage base</a> · <a href="https://www.irs.gov/taxtopics/tc751" target="_blank" rel="noopener" style="color:{{ theme.link }};">IRS payroll rates</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">State Income Tax</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">A flat estimated rate per state applied to your income. Nine states, Alaska, Florida, Nevada, New Hampshire, South Dakota, Tennessee, Texas, Washington, and Wyoming, tax no wage income, so this line shows $0 there. States with graduated brackets are simplified to one representative rate. <a href="https://taxfoundation.org/data/all/state/state-income-tax-rates/" target="_blank" rel="noopener" style="color:{{ theme.link }};">State rate table</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Student Loan Payments</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">Estimated monthly payments for a standard 10-year repayment plan across small, average, and large borrowing amounts. Actual payments depend on how much you borrow, your interest rate, and which repayment plan you choose. <a href="https://studentaid.gov/loan-simulator/" target="_blank" rel="noopener" style="color:{{ theme.link }};">Federal loan simulator</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Health Insurance</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">A typical monthly premium for a single adult buying coverage on their own. If a job provides insurance, your employer usually covers a large share, so your cost would be lower. <a href="https://www.kff.org/health-costs/report/employer-health-benefits-survey/" target="_blank" rel="noopener" style="color:{{ theme.link }};">KFF premium survey</a></div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:200px 1fr; gap:20px; padding:16px 0; border-top:1px solid {{ theme.border }};">
+                <div style="font-size:15px; font-weight:600;">Savings Targets</div>
+                <div style="font-size:14px; line-height:1.55; color:{{ theme.muted }};">The 5%, 10%, and 20% stops reflect the common advice to save at least 10% of income, with 20% as a stretch goal. There is no single official rule here.</div>
+              </div>
+
+          </div>
+
+          <div style="margin-top:26px; padding:20px 22px; background:{{ theme.deep }}; border:1px solid {{ theme.border }}; border-radius:14px;">
+            <div style="font-size:15px; font-weight:600; margin-bottom:6px;">One Caution</div>
+            <p style="margin:0; font-size:14px; line-height:1.55; color:{{ theme.muted }};">These amounts are built into the tool, not pulled live from a government database, and tax law and wages change every year. Check the current BLS and IRS figures before you rely on a number for a real decision. Start here: <a href="https://www.bls.gov/oes/" target="_blank" rel="noopener" style="color:{{ theme.link }};">BLS wages</a>, <a href="https://www.irs.gov/filing/federal-income-tax-rates-and-brackets" target="_blank" rel="noopener" style="color:{{ theme.link }};">IRS tax rates</a>, <a href="https://www.consumerfinance.gov/consumer-tools/" target="_blank" rel="noopener" style="color:{{ theme.link }};">CFPB money tools</a>.</p>
+          </div>
+
+          <div style="margin-top:26px; padding-top:22px; border-top:1px solid {{ theme.border }}; display:flex; justify-content:flex-end;">
+            <button onClick="{{ back }}" style="border:1px solid {{ theme.border }}; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500; padding:12px 20px; border-radius:8px; background:transparent; color:{{ theme.muted }};" style-hover="background:{{ theme.elev }}">Back To Summary</button>
+          </div>
+        </section>
+        </sc-if>
+
+      </main>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:900}}">
+const JOBS = [
+  { t: "Registered Nurse", soc: "29-1141", m: 86070 },
+  { t: "Software Developer", soc: "15-1252", m: 130160 },
+  { t: "Electrician", soc: "47-2111", m: 61590 },
+  { t: "Welder", soc: "51-4121", m: 48940 },
+  { t: "Elementary School Teacher", soc: "25-2021", m: 63680 },
+  { t: "Police Officer", soc: "33-3051", m: 74910 },
+  { t: "Firefighter", soc: "33-2011", m: 57120 },
+  { t: "Dental Hygienist", soc: "29-1292", m: 87530 },
+  { t: "HVAC Technician", soc: "49-9021", m: 57300 },
+  { t: "Automotive Service Technician", soc: "49-3023", m: 47770 },
+  { t: "Diesel Mechanic", soc: "49-3031", m: 58970 },
+  { t: "Graphic Designer", soc: "27-1024", m: 58910 },
+  { t: "Accountant", soc: "13-2011", m: 79880 },
+  { t: "Physical Therapist", soc: "29-1123", m: 99710 },
+  { t: "Marketing Manager", soc: "11-2021", m: 157620 },
+  { t: "Hairstylist / Cosmetologist", soc: "39-5012", m: 35080 },
+  { t: "Pharmacy Technician", soc: "29-2052", m: 40300 },
+  { t: "Chef", soc: "35-1011", m: 58920 },
+  { t: "Carpenter", soc: "47-2031", m: 58200 },
+  { t: "Veterinary Technician", soc: "29-2056", m: 43740 }
+];
+
+const MULT = { AL:0.88, AK:1.10, AZ:0.98, AR:0.86, CA:1.15, CO:1.05, CT:1.09, DE:1.02, DC:1.20, FL:0.96, GA:0.95, HI:1.12, ID:0.94, IL:1.01, IN:0.93, IA:0.95, KS:0.93, KY:0.90, LA:0.89, ME:0.97, MD:1.08, MA:1.16, MI:0.96, MN:1.03, MS:0.85, MO:0.93, MT:0.94, NE:0.96, NV:1.00, NH:1.03, NJ:1.10, NM:0.92, NY:1.14, NC:0.94, ND:0.99, OH:0.94, OK:0.89, OR:1.08, PA:0.98, RI:1.04, SC:0.91, SD:0.93, TN:0.92, TX:0.97, UT:0.99, VT:1.00, VA:1.02, WA:1.12, WV:0.87, WI:0.96, WY:0.97 };
+
+const ZIP2 = { "01":"MA","02":"MA","03":"NH","04":"ME","05":"VT","06":"CT","07":"NJ","08":"NJ","10":"NY","11":"NY","12":"NY","13":"NY","14":"NY","15":"PA","16":"PA","17":"PA","18":"PA","19":"PA","20":"DC","21":"MD","22":"VA","23":"VA","24":"VA","25":"WV","26":"WV","27":"NC","28":"NC","29":"SC","30":"GA","31":"GA","32":"FL","33":"FL","34":"FL","35":"AL","36":"AL","37":"TN","38":"TN","39":"MS","40":"KY","41":"KY","42":"KY","43":"OH","44":"OH","45":"OH","46":"IN","47":"IN","48":"MI","49":"MI","50":"IA","51":"IA","52":"IA","53":"WI","54":"WI","55":"MN","56":"MN","57":"SD","58":"ND","59":"MT","60":"IL","61":"IL","62":"IL","63":"MO","64":"MO","65":"MO","66":"KS","67":"KS","68":"NE","69":"NE","70":"LA","71":"LA","72":"AR","73":"OK","74":"OK","75":"TX","76":"TX","77":"TX","78":"TX","79":"TX","80":"CO","81":"CO","82":"WY","83":"ID","84":"UT","85":"AZ","86":"AZ","87":"NM","88":"NM","89":"NV","90":"CA","91":"CA","92":"CA","93":"CA","94":"CA","95":"CA","96":"CA","97":"OR","98":"WA","99":"AK" };
+
+const STATE_RATE = { AL:0.037, AK:0, AZ:0.025, AR:0.033, CA:0.055, CO:0.044, CT:0.045, DE:0.048, DC:0.06, FL:0, GA:0.0539, HI:0.062, ID:0.053, IL:0.0495, IN:0.03, IA:0.038, KS:0.049, KY:0.04, LA:0.03, ME:0.058, MD:0.0475, MA:0.05, MI:0.0425, MN:0.058, MS:0.044, MO:0.047, MT:0.047, NE:0.0464, NV:0, NH:0, NJ:0.045, NM:0.043, NY:0.055, NC:0.0425, ND:0.0195, OH:0.028, OK:0.0475, OR:0.0875, PA:0.0307, RI:0.0475, SC:0.062, SD:0, TN:0, TX:0, UT:0.0455, VT:0.066, VA:0.0575, WA:0, WV:0.0482, WI:0.053, WY:0 };
+
+const NO_INCOME_TAX = ["AK", "FL", "NV", "SD", "TN", "TX", "WA", "WY", "NH"];
+
+const LIST_STEPS = {
+  utilities: {
+    step: 2, icon: "lightbulb", title: "Utilities", next: "Transportation", meta: "Services Turned On",
+    prompt: "What home services will you need? Switch on the ones you'd pay for and adjust any amount. The total at the top adds itself up.",
+    items: [
+      { k: "water", icon: "droplets", title: "Water & Electricity", sub: "Water, garbage, sewer, gas, electricity.", amt: 295, on: false, tile: "linear-gradient(135deg,#60A5FA 0%,#1D4ED8 100%)" },
+      { k: "cell", icon: "smartphone", title: "Cell Phone Service", sub: "The phone itself plus your monthly plan.", amt: 125, on: false, tile: "linear-gradient(135deg,#5EEAD4 0%,#0D9488 100%)" },
+      { k: "internet", icon: "wifi", title: "Internet", sub: "Monthly access only, no streaming subscriptions.", amt: 65, on: false, tile: "linear-gradient(135deg,#FBBF24 0%,#D97706 100%)" },
+      { k: "tv", icon: "tv", title: "Cable / Streaming TV", sub: "Every service you'd actually keep.", amt: 90, on: false, tile: "linear-gradient(135deg,#68F4B8 0%,#15803D 100%)" },
+      { k: "landline", icon: "phone", title: "House Phone", sub: "A landline, if your place still has one.", amt: 25, on: false, tile: "linear-gradient(135deg,#AD6BFF 0%,#7C3AED 100%)" }
+    ]
+  },
+  healthcare: {
+    step: 8, icon: "briefcase-medical", title: "Healthcare", next: "Education", meta: "Costs Turned On",
+    prompt: "How much will you pay for health and medical costs? These are the amounts that come out of your pocket, not what an employer chips in.",
+    items: [
+      { k: "insurance", icon: "clipboard-plus", title: "Health Insurance", sub: "Average monthly premium for one person, not counting employer contributions.", amt: 135, on: false, tile: "linear-gradient(135deg,#60A5FA 0%,#1D4ED8 100%)" },
+      { k: "medical", icon: "pill", title: "Medical Expenses", sub: "Doctor visits, prescriptions, supplies, co-pays, and deductibles.", amt: 70, on: false, tile: "linear-gradient(135deg,#AD6BFF 0%,#7C3AED 100%)" }
+    ]
+  },
+  miscellaneous: {
+    step: 10, icon: "ellipsis", title: "Miscellaneous", next: "Saving", meta: "Costs Turned On",
+    prompt: "Anything else in your life that costs money? Switch on what applies and adjust the amounts.",
+    items: [
+      { k: "childcare", icon: "baby", title: "Child Care", sub: "Day care can run over $750 a month for one infant.", amt: 750, on: false, tile: "linear-gradient(135deg,#5EEAD4 0%,#0D9488 100%)" },
+      { k: "travel", icon: "plane", title: "Travel", sub: "Occasional trips and vacations, spread across the year.", amt: 150, on: false, tile: "linear-gradient(135deg,#F87171 0%,#B91C1C 100%)" },
+      { k: "pets", icon: "dog", title: "Pets", sub: "Food, toys, vet visits, medicine, boarding.", amt: 85, on: false, tile: "linear-gradient(135deg,#68F4B8 0%,#15803D 100%)" },
+      { k: "credit", icon: "credit-card", title: "Credit Card Debt", sub: "What you'd pay toward a balance each month.", amt: 250, on: false, tile: "linear-gradient(135deg,#FFD810 0%,#CA8A04 100%)" },
+      { k: "other", icon: "banknote", title: "Other Expenses", sub: "Anything you know you'll spend that isn't listed yet.", amt: 100, on: false, tile: "linear-gradient(135deg,#93C5FD 0%,#2563EB 100%)" }
+    ]
+  },
+  taxes: {
+    step: 12, icon: "landmark", title: "Taxes", next: "Summary", meta: "Taxes Included",
+    prompt: "Taxes are why your take-home pay looks smaller than your salary. These amounts are estimated from your income, and they pay for roads, schools, emergency services, and retirement programs.",
+    items: [
+      { k: "federal", icon: "landmark", title: "Federal Income Tax", sub: "National defense, public health, veterans' benefits, interest on the national debt.", rate: 0.10, on: false, tile: "linear-gradient(135deg,#93C5FD 0%,#2563EB 100%)" },
+      { k: "ss", icon: "id-card", title: "Social Security", sub: "Income and health coverage for people who are retired or have a disability.", rate: 0.062, on: false, tile: "linear-gradient(135deg,#5EEAD4 0%,#0D9488 100%)" },
+      { k: "medicare", icon: "heart-pulse", title: "Medicare", sub: "The federal health insurance program for people 65 and older.", rate: 0.0145, on: false, tile: "linear-gradient(135deg,#F87171 0%,#B91C1C 100%)" },
+      { k: "state", icon: "receipt", title: "State Income Tax", sub: "Your state's schools, health care, highways, and shared services.", rate: 0.04, on: false, tile: "linear-gradient(135deg,#AD6BFF 0%,#7C3AED 100%)" }
+    ]
+  }
+};
+
+const CHOICE_STEPS = {
+  housing: {
+    step: 1, icon: "house", title: "Housing", next: "Utilities",
+    prompt: "What kind of place will you live in? Pick the option that sounds like you, then slide to set how nice a place you're after. Already know your rent? Type it in the box above.",
+    options: [
+      { k: "own", icon: "house", title: "Own My Own Home", sub: "House, townhouse, condo", tile: "linear-gradient(135deg,#FFD810 0%,#F59E0B 100%)",
+        amounts: [2050, 2650, 3450],
+        labels: ["Own An Affordable Home", "Own A Mid-Range Home", "Own A Big, New Home"] },
+      { k: "rent", icon: "building-2", title: "Rent", sub: "Apartment, townhome, house", tile: "linear-gradient(135deg,#60A5FA 0%,#2563EB 100%)",
+        amounts: [1600, 2050, 2700],
+        labels: ["Rent An Affordable Place", "Rent A Mid-Range Place", "Rent A Luxury Place"] },
+      { k: "family", icon: "bed-double", title: "Live With Parents Or Friends", sub: "Rent-free or split the bills", tile: "linear-gradient(135deg,#F472B6 0%,#DB2777 100%)",
+        amounts: [0, 175, 400], scale: false,
+        labels: ["Pay Nothing At Home", "Split Some Bills", "Pay Real Rent At Home"] }
+    ]
+  },
+  transportation: {
+    step: 3, icon: "car", title: "Transportation", next: "Food",
+    prompt: "How will you get around? Pick what fits your life, then slide to set how much car you're after. Already know the cost? Type it in the box above.",
+    options: [
+      { k: "loan", icon: "car-front", title: "Buy A Car With A Car Loan", sub: "Payment, insurance, gas, upkeep", tile: "linear-gradient(135deg,#F87171 0%,#B91C1C 100%)",
+        amounts: [520, 780, 1100],
+        labels: ["Basic Used Car With A Payment", "Average Car With A Payment", "Truck, SUV, Or Luxury"] },
+      { k: "paid", icon: "car", title: "Use A Car That's Already Paid For", sub: "No payment, just running costs", tile: "linear-gradient(135deg,#60A5FA 0%,#1D4ED8 100%)",
+        amounts: [210, 310, 450],
+        labels: ["Older Car, Short Drives", "Average Car, Average Drives", "Big Vehicle, Long Commute"] },
+      { k: "transit", icon: "bike", title: "Walk, Bike, Public Transportation", sub: "No car of your own", tile: "linear-gradient(135deg,#FFD810 0%,#CA8A04 100%)",
+        amounts: [0, 60, 165], scale: false,
+        labels: ["Walk And Bike Everywhere", "Monthly Bus Or Train Pass", "Transit Plus Regular Rideshare"] }
+    ]
+  },
+  clothes: {
+    step: 5, icon: "shopping-cart", title: "Clothes", next: "Entertainment",
+    prompt: "How much do you value what you wear? Slide to match your tastes. Already know what you spend? Type it in the box above.",
+    options: [
+      { k: "wear", icon: "shirt", title: "Clothes And Shoes", sub: "Everything you buy to wear", tile: "linear-gradient(135deg,#5EEAD4 0%,#0F766E 100%)",
+        amounts: [35, 90, 220],
+        labels: ["I Buy Only What I Need", "I Have Average Tastes", "I Buy Brands I Love"] }
+    ]
+  },
+  entertainment: {
+    step: 6, icon: "music", title: "Entertainment", next: "Personal",
+    prompt: "How much do you want for gadgets, games, streaming, and going out? Slide to match how you spend.",
+    options: [
+      { k: "fun", icon: "headphones", title: "Gadgets And Going Out", sub: "Streaming, games, concerts, movies", tile: "linear-gradient(135deg,#F472B6 0%,#BE185D 100%)",
+        amounts: [20, 65, 180],
+        labels: ["I Keep It Cheap", "I Spend About The Same As Most People", "I Never Miss Anything"] }
+    ]
+  },
+  personal: {
+    step: 7, icon: "shopping-basket", title: "Personal", next: "Healthcare",
+    prompt: "How much for personal items and household goods, like toiletries, haircuts, cleaning supplies, and furniture?",
+    options: [
+      { k: "goods", icon: "sofa", title: "Personal And Household Items", sub: "Toiletries, haircuts, supplies, furniture", tile: "linear-gradient(135deg,#A5B4FC 0%,#4338CA 100%)",
+        amounts: [120, 250, 480],
+        labels: ["I Keep It Simple", "I Spend About Average", "I Replace Things Often"] }
+    ]
+  },
+  education: {
+    step: 9, icon: "graduation-cap", title: "Education", next: "Miscellaneous",
+    prompt: "Do you expect to have student loans to repay? Payments depend on how much you borrow, so slide to set your estimate.",
+    options: [
+      { k: "none", icon: "graduation-cap", title: "No Student Loan Debt", sub: "Scholarships, savings, or a paid path", tile: "linear-gradient(135deg,#93C5FD 0%,#1D4ED8 100%)",
+        amounts: [0, 0, 0], scale: false,
+        labels: ["I Plan To Graduate Debt-Free", "I Plan To Graduate Debt-Free", "I Plan To Graduate Debt-Free"] },
+      { k: "loans", icon: "library", title: "I Will Have Student Loan Debt", sub: "Monthly payment after graduation", tile: "linear-gradient(135deg,#FBBF24 0%,#B45309 100%)",
+        amounts: [120, 300, 600], scale: false,
+        labels: ["Borrowed A Little", "Borrowed About Average", "Borrowed For A Long Program"] }
+    ]
+  },
+  saving: {
+    step: 11, icon: "piggy-bank", title: "Saving", next: "Taxes",
+    prompt: "What share of your paycheck will you save each month for emergencies, big purchases, and retirement? Saving early is the whole reason this budget matters.",
+    options: [
+      { k: "save", icon: "piggy-bank", title: "Money You Keep", sub: "Emergency fund, big goals, retirement", tile: "linear-gradient(135deg,#68F4B8 0%,#15803D 100%)",
+        pct: [0.05, 0.10, 0.20],
+        labels: ["Save 5% Of Your Paycheck", "Save 10% Of Your Paycheck", "Save 20% Of Your Paycheck"] }
+    ]
+  },
+  food: {
+    step: 4, icon: "utensils", title: "Food", next: "Clothes",
+    prompt: "How expensive are your tastes? Slide to match how you actually eat. Already know what you spend? Type it in the box above.",
+    options: [
+      { k: "eat", icon: "utensils-crossed", title: "Groceries And Eating Out", sub: "Everything you eat in a month", tile: "linear-gradient(135deg,#FDBA74 0%,#C2410C 100%)",
+        amounts: [200, 330, 560],
+        labels: ["I Cook Cheap At Home", "I Eat Like The Average Person", "I Eat Out Most Days"] }
+    ]
+  }
+};
+
+const STEP_DEFS = [
+  ["Salary / Job", "wallet"], ["Housing", "house"], ["Utilities", "lightbulb"], ["Transportation", "car"],
+  ["Food", "utensils"], ["Clothes", "shopping-cart"], ["Entertainment", "music"], ["Personal", "shopping-basket"],
+  ["Healthcare", "briefcase-medical"], ["Education", "graduation-cap"], ["Miscellaneous", "ellipsis"],
+  ["Saving", "piggy-bank"], ["Taxes", "landmark"], ["Summary", "chart-pie"], ["Where The Data Comes From", "book-open"]
+];
+
+class Component extends DCLogic {
+  state = { mode: "lookup", salary: 0, salaryInput: "", query: "", place: "", jobId: null, current: 0,
+            dark: true, picks: {}, tiers: {}, costs: {}, adjustments: [], shortBy: 0,
+            uOn: {}, uAmt: {} };
+
+  money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+
+  federalMonthly() {
+    const taxable = Math.max(0, this.annualIncome() - 15000);
+    const bands = [[11925, 0.10], [48475, 0.12], [103350, 0.22], [197300, 0.24], [250525, 0.32], [626350, 0.35], [Infinity, 0.37]];
+    let tax = 0, last = 0;
+    for (const [cap, rate] of bands) {
+      if (taxable <= last) break;
+      tax += (Math.min(taxable, cap) - last) * rate;
+      last = cap;
+    }
+    return tax / 12;
+  }
+
+  stateMonthly() {
+    const st = this.resolvedState();
+    if (!st) return 0;
+    const rate = STATE_RATE[st] === undefined ? 0.04 : STATE_RATE[st];
+    return Math.max(0, this.annualIncome() - 5000) * rate / 12;
+  }
+
+  balanceBudget() {
+    const KEYS = ["housing", "utilities", "transportation", "food", "clothes", "entertainment", "personal",
+      "healthcare", "education", "miscellaneous", "saving", "taxes"];
+    const monthly = this.monthlyIncome();
+    let deficit = KEYS.reduce((s, k) => s + this.stepTotal(k), 0) - monthly;
+    if (!monthly || deficit <= 0) return;
+
+    const picks = Object.assign({}, this.state.picks);
+    const tiers = {};
+    Object.keys(this.state.tiers).forEach(k => { tiers[k] = Object.assign({}, this.state.tiers[k]); });
+    const uOn = Object.assign({}, this.state.uOn);
+    const uAmt = Object.assign({}, this.state.uAmt);
+    const costs = Object.assign({}, this.state.costs);
+    const changes = [];
+
+    const OFFS = [
+      ["utilities", "landline"], ["utilities", "tv"], ["miscellaneous", "other"], ["miscellaneous", "credit"],
+      ["miscellaneous", "pets"], ["miscellaneous", "travel"], ["miscellaneous", "childcare"]
+    ];
+    for (const [key, ik] of OFFS) {
+      if (deficit <= 0) break;
+      const item = LIST_STEPS[key].items.find(i => i.k === ik);
+      if (!this.itemOn(key, item)) continue;
+      const amt = parseInt(this.itemAmount(key, item), 10) || 0;
+      if (!amt) continue;
+      uOn[key + "." + ik] = false;
+      costs[key] = "";
+      deficit -= amt;
+      changes.push({ category: LIST_STEPS[key].title, detail: "Turned off " + item.title, saved: this.money(amt) });
+    }
+
+    const DOWN = ["entertainment", "clothes", "personal", "food", "transportation", "housing", "saving"];
+    for (const key of DOWN) {
+      if (deficit <= 0) break;
+      const pickK = picks[key];
+      if (!pickK) continue;
+      const opt = CHOICE_STEPS[key].options.find(o => o.k === pickK);
+      let tier = (tiers[key] || {})[pickK] || 0;
+      while (deficit > 0 && tier > 0) {
+        const saved = this.optPrice(opt, tier) - this.optPrice(opt, tier - 1);
+        if (saved <= 0) break;
+        const fromLabel = opt.labels[tier];
+        tier -= 1;
+        tiers[key] = Object.assign({}, tiers[key], { [pickK]: tier });
+        costs[key] = "";
+        deficit -= saved;
+        changes.push({
+          category: CHOICE_STEPS[key].title,
+          detail: fromLabel + " → " + opt.labels[tier],
+          saved: this.money(saved)
+        });
+      }
+    }
+
+    this.setState({ picks, tiers, uOn, uAmt, costs, adjustments: changes, shortBy: Math.max(0, Math.round(deficit)) });
+  }
+
+  theme() {
+    return this.state.dark === false
+      ? { bg: "#EFF6FF", deep: "#F8FAFF", card: "#FFFFFF", elev: "#DBEAFE", border: "#BFDBFE", div: "#93C5FD",
+          fg: "#00173B", muted: "#1D4ED8", subtle: "#64748B", good: "#15803D", warn: "#B45309", bad: "#B91C1C",
+          activeBg: "#DBEAFE", activeBorder: "#2563EB", iconFilter: "none", link: "#1D4ED8" }
+      : { bg: "#00173B", deep: "#00173B", card: "#172554", elev: "#1D2E5E", border: "#213168", div: "#2B3D75",
+          fg: "#FFFFFF", muted: "#93C5FD", subtle: "#64748B", good: "#3CCB7F", warn: "#FBBF24", bad: "#F87171",
+          activeBg: "#1D2E5E", activeBorder: "#2563EB", iconFilter: "brightness(0) invert(1)", link: "#60A5FA" };
+  }
+
+  mult() { const st = this.resolvedState(); return st ? MULT[st] : 1; }
+
+  annualIncome() {
+    const typed = parseInt((this.state.salaryInput || "").replace(/[^0-9]/g, ""), 10) || 0;
+    return typed || this.state.salary;
+  }
+
+  monthlyIncome() { return this.annualIncome() / 12; }
+
+  optPrice(opt, tier) {
+    if (opt.pct) return Math.round(this.monthlyIncome() * opt.pct[tier] / 5) * 5;
+    const raw = opt.amounts[tier] * (opt.scale === false ? 1 : this.mult());
+    return Math.round(raw / 5) * 5;
+  }
+
+  itemDefault(key, item) {
+    if (item.rate) {
+      let v;
+      if (item.k === "federal") v = this.federalMonthly();
+      else if (item.k === "state") v = this.stateMonthly();
+      else if (item.k === "ss") v = Math.min(this.annualIncome(), 176100) * 0.062 / 12;
+      else v = this.monthlyIncome() * 0.0145;
+      return Math.round(v / 5) * 5;
+    }
+    return Math.round((item.amt || 0) * (key === "utilities" || key === "healthcare" ? this.mult() : 1) / 5) * 5;
+  }
+
+  itemOn(key, item) {
+    const id = key + "." + item.k;
+    return this.state.uOn[id] === undefined ? !!item.on : this.state.uOn[id];
+  }
+
+  itemAmount(key, item) {
+    const id = key + "." + item.k;
+    return this.state.uAmt[id] === undefined ? String(this.itemDefault(key, item)) : this.state.uAmt[id];
+  }
+
+  stepTotal(key) {
+    const typed = parseInt((this.state.costs[key] || "").replace(/[^0-9]/g, ""), 10);
+    if (!isNaN(typed)) return typed;
+    const list = LIST_STEPS[key];
+    if (list) {
+      return list.items.reduce((s, it) => s + (this.itemOn(key, it) ? (parseInt(this.itemAmount(key, it), 10) || 0) : 0), 0);
+    }
+    const cfg = CHOICE_STEPS[key];
+    if (!cfg) return 0;
+    const pickK = this.state.picks[key];
+    if (!pickK) return 0;
+    const opt = cfg.options.find(o => o.k === pickK);
+    return this.optPrice(opt, (this.state.tiers[key] || {})[pickK] || 0);
+  }
+
+  resolvedState() {
+    const p = (this.state.place || "").trim().toUpperCase();
+    if (/^\d{2}/.test(p)) return ZIP2[p.slice(0, 2)] || null;
+    if (MULT[p]) return p;
+    return null;
+  }
+
+  renderVals() {
+    const T = this.theme();
+    const st = this.resolvedState();
+    const mult = st ? MULT[st] : 1;
+    const q = this.state.query.trim().toLowerCase();
+    const matches = q ? JOBS.filter(j => j.t.toLowerCase().includes(q)) : JOBS.slice(0, 4);
+
+    const picked = JOBS.find(j => j.soc === this.state.jobId) || null;
+    const results = matches.slice(0, 5).map(j => ({
+      title: j.t,
+      soc: j.soc,
+      regional: this.money(j.m * mult),
+      regionNote: st ? "Median in " + st : "U.S. median",
+      bg: this.state.jobId === j.soc ? "#1D2E5E" : "#00173B",
+      border: this.state.jobId === j.soc ? "#2563EB" : "#213168",
+      pick: () => this.setState({ jobId: j.soc, salary: Math.round(j.m * mult), query: j.t, salaryInput: "" })
+    }));
+
+    const typedSalary = parseInt((this.state.salaryInput || "").replace(/[^0-9]/g, ""), 10) || 0;
+    const annual = typedSalary || this.state.salary;
+
+    const KEY_BY_STEP = { 1: "housing", 2: "utilities", 3: "transportation", 4: "food", 5: "clothes",
+      6: "entertainment", 7: "personal", 8: "healthcare", 9: "education", 10: "miscellaneous", 11: "saving", 12: "taxes" };
+    let spent = 0;
+    Object.keys(KEY_BY_STEP).forEach(i => { spent += this.stepTotal(KEY_BY_STEP[i]); });
+
+    const steps = STEP_DEFS.map(([name, icon], i) => {
+      const key = KEY_BY_STEP[i];
+      const amt = i === 0 ? annual / 12 : (key ? this.stepTotal(key) : 0);
+      return {
+        name, icon,
+        go: () => this.setState({ current: i }),
+        markerOpacity: i === this.state.current ? 1 : 0,
+        iconOpacity: i === this.state.current ? 1 : 0.55,
+        color: i === this.state.current ? T.fg : T.muted,
+        weight: i === this.state.current ? 600 : 400,
+        value: amt ? this.money(amt) : ""
+      };
+    });
+
+    const monthly = annual / 12;
+    const stepKey = Object.keys(CHOICE_STEPS).find(k => CHOICE_STEPS[k].step === this.state.current) || null;
+    const cfg = stepKey ? CHOICE_STEPS[stepKey] : null;
+    const stepSpend = cfg ? this.stepTotal(stepKey) : 0;
+    const share = monthly && cfg ? stepSpend / monthly : 0;
+
+    const choiceOptions = !cfg ? [] : cfg.options.map(o => {
+      const active = this.state.picks[stepKey] === o.k;
+      const tier = (this.state.tiers[stepKey] || {})[o.k] || 0;
+      const setTier = t => this.setState({
+        picks: Object.assign({}, this.state.picks, { [stepKey]: o.k }),
+        costs: Object.assign({}, this.state.costs, { [stepKey]: "" }),
+        tiers: Object.assign({}, this.state.tiers, { [stepKey]: Object.assign({}, this.state.tiers[stepKey], { [o.k]: t }) })
+      });
+      return {
+        title: o.title, sub: o.sub, tile: o.tile, tier, icon: o.icon,
+        slotId: stepKey + "-" + o.k,
+        slotHint: "Drop image",
+        bg: active ? T.activeBg : T.deep,
+        border: active ? T.activeBorder : T.border,
+        tierLabel: o.labels[tier],
+        price: this.money(this.optPrice(o, tier)) + "/mo",
+        priceColor: active ? T.good : T.muted,
+        sliderOpacity: active ? 1 : 0.5,
+        pick: () => setTier(tier),
+        onTier: e => setTier(parseInt(e.target.value, 10))
+      };
+    });
+
+    const guide = { housing: 0.33, transportation: 0.18, food: 0.14, utilities: 0.10 };
+    const cap = guide[stepKey || "housing"] || 0.2;
+    const stepNote = !annual
+      ? "Set your salary in Step 1 and we'll show what share of your paycheck this takes."
+      : !this.state.picks[stepKey] && !stepSpend
+        ? "Pick an option to see it land in your budget."
+        : share > cap
+          ? "That's " + Math.round(share * 100) + "% of your paycheck. A common target for this category is about " + Math.round(cap * 100) + "%."
+          : "This fits the usual guideline of about " + Math.round(cap * 100) + "% with room left for everything else.";
+
+    const listKey = Object.keys(LIST_STEPS).find(k => LIST_STEPS[k].step === this.state.current) || null;
+    const lcfg = listKey ? LIST_STEPS[listKey] : null;
+    const listItems = !lcfg ? [] : lcfg.items.map(it => {
+      const id = listKey + "." + it.k;
+      const on = this.itemOn(listKey, it);
+      return {
+        title: it.title, sub: it.sub, tile: it.tile, icon: it.icon,
+        amount: this.itemAmount(listKey, it),
+        bg: on ? T.activeBg : T.deep,
+        border: on ? T.activeBorder : T.border,
+        checkBg: on ? T.good : "transparent",
+        checkBorder: on ? T.good : T.div,
+        checkOpacity: on ? 1 : 0,
+        amtOpacity: on ? 1 : 0.45,
+        toggle: () => this.setState({ uOn: Object.assign({}, this.state.uOn, { [id]: !on }), costs: Object.assign({}, this.state.costs, { [listKey]: "" }) }),
+        onAmount: e => this.setState({ uAmt: Object.assign({}, this.state.uAmt, { [id]: e.target.value }), costs: Object.assign({}, this.state.costs, { [listKey]: "" }) })
+      };
+    });
+    const listTotalVal = listKey ? this.stepTotal(listKey) : 0;
+    const listOnCount = lcfg ? lcfg.items.filter(it => this.itemOn(listKey, it)).length : 0;
+
+    const SLICE_COLORS = ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#5EEAD4", "#0D9488",
+      "#8A38F5", "#C084FC", "#F472B6", "#FBBF24", "#F97316"];
+    const rows = Object.keys(KEY_BY_STEP).map(i => ({ key: KEY_BY_STEP[i], amt: this.stepTotal(KEY_BY_STEP[i]) }))
+      .filter(r => r.amt > 0).sort((a, b) => b.amt - a.amt);
+    let acc = 0;
+    const slices = rows.map((r, i) => {
+      const frac = spent ? r.amt / spent : 0;
+      const len = frac * 100;
+      const s = {
+        name: (CHOICE_STEPS[r.key] || LIST_STEPS[r.key]).title,
+        color: SLICE_COLORS[i % SLICE_COLORS.length],
+        amount: this.money(r.amt),
+        pct: Math.round(frac * 100) + "%",
+        dash: len.toFixed(2) + " " + (100 - len).toFixed(2),
+        offset: (100 - acc + 25).toFixed(2)
+      };
+      acc += len;
+      return s;
+    });
+
+    const isSalary = this.state.mode === "salary";
+    return {
+      onSummary: this.state.current === 13,
+      onSources: this.state.current === 14,
+      summaryLine: annual
+        ? "You created a budget where you take home " + this.money(monthly) + " a month, and budgeted " + this.money(spent) + " towards expenses. This will leave you " + (monthly - spent < 0 ? "-" : "") + this.money(Math.abs(monthly - spent)) + " a month."
+        : "Add a salary in Step 1, then work through the categories to see your budget here.",
+      takeHomeLabel: this.money(monthly),
+      spendLabel: this.money(spent),
+      slices,
+      balance: () => this.balanceBudget(),
+      balanceOpacity: monthly && spent > monthly ? 1 : 0.5,
+      hasAdjustments: this.state.adjustments.length > 0,
+      adjustments: this.state.adjustments,
+      adjustedTotal: this.money(this.state.adjustments.reduce((s, a) => s + (parseInt(a.saved.replace(/[^0-9]/g, ""), 10) || 0), 0)),
+      adjustmentIntro: this.state.shortBy > 0
+        ? "These are the cuts the tool made to your discretionary categories. Even after all of them you're still " + this.money(this.state.shortBy) + " short each month, so the fixed costs, housing, taxes, and healthcare, are more than this salary can carry."
+        : "The tool trimmed the categories you have the most control over, starting with the ones easiest to live without. Everything below is a change you can undo by going back to that step.",
+      summaryAdvice: monthly - spent < 0
+        ? "You're spending more than you earn. Balance My Budget will trim the discretionary categories for you, and show you exactly what it changed."
+        : spent === 0
+          ? "Nothing budgeted yet. Pick options in each category, or hit Surprise Me."
+          : "You have money left over. Sending it to Saving builds an emergency fund faster than anything else on this list.",
+      theme: T,
+      isDark: this.state.dark !== false,
+      toggleTheme: () => this.setState({ dark: this.state.dark === false }),
+      isLight: this.state.dark === false,
+      orbBg: this.state.dark === false ? "#DBEAFE" : "#0B1F49",
+      orbRing: this.state.dark === false ? "#1D4ED8" : "#2563EB",
+      steps,
+      onIncome: this.state.current === 0,
+      isListStep: !!lcfg,
+      listIcon: lcfg ? lcfg.icon : "lightbulb",
+      listTitle: lcfg ? lcfg.title : "",
+      listPrompt: lcfg ? lcfg.prompt : "",
+      listMeta: lcfg ? lcfg.meta : "",
+      listNextLabel: lcfg ? "Next: " + lcfg.next : "Next",
+      listItems,
+      isChoiceStep: !!cfg,
+      stepIcon: cfg ? cfg.icon : "house",
+      stepTitle: cfg ? cfg.title : "",
+      stepPrompt: cfg ? cfg.prompt : "",
+      nextLabel: cfg ? "Next: " + cfg.next : "Next",
+      optionCols: cfg && cfg.options.length === 1 ? "minmax(0, 300px)" : "repeat(" + (cfg ? cfg.options.length : 3) + ", 1fr)",
+      choiceOptions,
+      stepCost: cfg ? (this.state.costs[stepKey] !== undefined && this.state.costs[stepKey] !== "" ? this.state.costs[stepKey] : (stepSpend ? String(stepSpend) : "")) : "",
+      onStepCost: e => this.setState({ costs: Object.assign({}, this.state.costs, { [stepKey]: e.target.value }) }),
+      stepShare: monthly ? Math.round(share * 100) + "% Of Income" : "—",
+      stepShareColor: share > cap ? T.warn : T.good,
+      stepNote,
+      listTotal: listKey && this.state.costs[listKey] ? this.state.costs[listKey] : (listTotalVal ? String(listTotalVal) : ""),
+      onListTotal: e => this.setState({ costs: Object.assign({}, this.state.costs, { [listKey]: e.target.value }) }),
+      listCount: lcfg ? listOnCount + " Of " + lcfg.items.length : "",
+      listNote: !monthly
+        ? "Set your salary in Step 1 to see how this compares to your paycheck."
+        : "That's " + this.money(listTotalVal) + " a month, about " + Math.round(listTotalVal / monthly * 100) + "% of your paycheck.",
+      roll: () => {
+        const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+        const picks = {}, tiers = {};
+        Object.keys(CHOICE_STEPS).forEach(k => {
+          const opt = pick(CHOICE_STEPS[k].options);
+          picks[k] = opt.k;
+          tiers[k] = { [opt.k]: Math.floor(Math.random() * 3) };
+        });
+        const uOn = {}, uAmt = {};
+        Object.keys(LIST_STEPS).forEach(k => {
+          LIST_STEPS[k].items.forEach(it => {
+            const id = k + "." + it.k;
+            uOn[id] = k === "taxes" ? true : Math.random() < 0.6;
+            if (k === "taxes") return;
+            const base = this.itemDefault(k, it);
+            uAmt[id] = String(Math.max(0, Math.round(base * (0.8 + Math.random() * 0.4) / 5) * 5));
+          });
+        });
+        const job = pick(JOBS);
+        const st = pick(Object.keys(MULT));
+        const next = { adjustments: [], shortBy: 0, picks, tiers, costs: {}, uOn, uAmt, place: st, jobId: job.soc, query: job.t, salaryInput: "", salary: Math.round(job.m * MULT[st]) };
+        this.setState(next);
+      },
+      back: () => this.setState({ current: Math.max(0, this.state.current - 1) }),
+      progSegs: [0,1,2,3].map(i => {
+        const frac = (this.state.current + 1) / 15;
+        const f = Math.max(0, Math.min(1, (frac - i / 4) * 4));
+        return {
+          fill: (f * 100).toFixed(1) + "%",
+          go: (e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const within = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+            const overall = (i + within) / 4;
+            const target = Math.max(0, Math.min(14, Math.round(overall * 15 - 0.5)));
+            this.setState({ current: target });
+          }
+        };
+      }),
+      stageLabel: this.state.current === 14 ? "Sources" : this.state.current === 13 ? "Summary" : this.state.current === 0 ? "Start" : "Step " + (this.state.current + 1),
+      progressLabel: this.state.current === 14 ? "Sources" : this.state.current === 13 ? "Summary" : (this.state.current + 1) + " Of 13 Steps",
+      placeLabel: !st ? "Add Your Location"
+        : (this.state.place.trim().toUpperCase() === st ? st : this.state.place.trim().toUpperCase() + " · " + st),
+      leftToBudget: annual ? (monthly - spent < 0 ? "-" : "") + this.money(Math.abs(monthly - spent)) : "$0",
+      remainingColor: monthly - spent < 0 ? T.bad : T.good,
+      salaryBasis: annual ? "Based on a " + this.money(annual) + " / year salary." : "Add a salary in Step 1 to start.",
+      isSalaryMode: isSalary,
+      isLookupMode: !isSalary,
+      salaryTabBg: isSalary ? "#0083FF" : "transparent",
+      salaryTabFg: isSalary ? "#FFFFFF" : T.muted,
+      lookupTabBg: isSalary ? "transparent" : "#0083FF",
+      lookupTabFg: isSalary ? T.muted : "#FFFFFF",
+      pickSalary: () => this.setState({ mode: "salary" }),
+      pickLookup: () => this.setState({ mode: "lookup" }),
+      salaryInput: this.state.salaryInput,
+      onSalary: e => this.setState({ salaryInput: e.target.value }),
+      query: this.state.query,
+      onQuery: e => this.setState({ query: e.target.value }),
+      place: this.state.place,
+      onPlace: e => this.setState({ place: e.target.value }),
+      results,
+      showResults: !!q && matches.length > 0 && !picked,
+      noResults: !!q && matches.length === 0,
+      hasPicked: !!picked,
+      pickedTitle: picked ? picked.t : "",
+      pickedNote: picked ? (st ? "Median pay in " + st + " · " + this.money(picked.m * mult) + " a year" : "U.S. median · " + this.money(picked.m) + " a year. Add a state for a local number.") : "",
+      clearPick: () => this.setState({ jobId: null, salary: 0, query: "" }),
+      annualLabel: annual ? this.money(annual) : "—",
+      monthlyLabel: annual ? this.money(annual / 12) : "—",
+      next: () => this.setState({ current: Math.min(14, this.state.current + 1) })
+    };
+  }
+}
+
+</script>
+</body>
+</html>
