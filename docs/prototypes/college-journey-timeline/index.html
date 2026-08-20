@@ -1,0 +1,1400 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>College Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   LEVEL ALL — DESIGN TOKENS
+   Sampled from the Level All product UI (Scholarship Finder)
+   ============================================================ */
+:root{
+  /* ---- Level All brand ---- */
+  --blue      :#2F62E8;   /* Brilliant Blue */
+  --blue-700  :#2049C9;
+  --blue-400  :#7BA3FF;
+  --blue-200  :#A9C2FF;
+  --purple    :#B579FF;
+  --pink      :#F49FFB;
+  --green     :#68F4B8;
+  --yellow    :#FFD810;
+  --ivory     :#FCF6EC;
+
+  /* Grounds — near-black, biased a few degrees toward the brand blue
+     so the neutrals read as chosen rather than inherited greys. */
+  --ink-950:#000305;   /* page */
+  --ink-900:#06080E;
+  --ink-880:#0A0D16;   /* media plate */
+  --ink-860:#0E121C;   /* raised chrome */
+  --ink-800:#191E2C;   /* hairlines */
+  --ink-700:#242A3B;   /* chips */
+  --ink-600:#39415A;
+
+  /* Text */
+  --tx-1:#FCF6EC; --tx-2:#B4BCD1; --tx-3:#7F8799; --tx-4:#575E70;
+
+  /* Category accents — the five brand hues, three of them at a second step */
+  --c-plan:#2F62E8; --c-academics:#7BA3FF; --c-explore:#23C4E8;
+  --c-activities:#8B5CF6; --c-testing:#FFD810; --c-money:#2FD9A0;
+  --c-apply:#FF6FA5; --c-decide:#FF9F1C;
+
+  /* Type */
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  /* Geometry — overridden per zoom level */
+  --media-w:264px; --media-h:106px; --rail:64px;
+  --row-gap:10px; --card-r:12px; --cnt-pad:20px;
+  --t-title:15.5px; --t-desc:12.5px;
+  --node:13px;
+  --bar:1320px;
+  --shell:988px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--ink-950); color:var(--tx-1);
+  font-family:var(--sans); font-size:15px; line-height:1.45;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+body::before{ /* ambient brand wash */
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(900px 520px at 12% -8%, rgba(47,98,232,.16), transparent 62%),
+    radial-gradient(700px 500px at 92% 8%, rgba(43,88,228,.11), transparent 60%);
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+::selection{background:var(--blue);color:#fff}
+:focus-visible{outline:2px solid var(--blue-400);outline-offset:3px;border-radius:6px}
+.node:focus-visible{outline-offset:4px}
+select:focus-visible{outline-offset:2px}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.top{
+  position:sticky; top:0; z-index:60;
+  background:rgba(0,3,5,.82);
+  backdrop-filter:saturate(1.6) blur(18px);
+  -webkit-backdrop-filter:saturate(1.6) blur(18px);
+  border-bottom:1px solid var(--ink-800);
+}
+.top-in{
+  max-width:var(--bar); margin:0 auto; padding:10px 22px;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.brand .mk{width:26px;height:26px;flex:none}
+.brand b{font-size:16.5px;font-weight:700;letter-spacing:-.022em}
+.brand .div{width:1px;height:20px;background:var(--ink-700);margin:0 3px}
+.brand .pg{font-size:13.5px;font-weight:600;color:var(--blue-200);letter-spacing:-.01em}
+
+.spacer{flex:1 1 auto}
+
+/* progress ring */
+.prog{display:flex;align-items:center;gap:9px;flex:none}
+.prog svg{width:34px;height:34px;transform:rotate(-90deg)}
+.prog .bg{fill:none;stroke:var(--ink-700);stroke-width:3.5}
+.prog .fg{fill:none;stroke:var(--blue);stroke-width:3.5;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.prog .lbl{line-height:1.15}
+.prog .lbl b{display:block;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.prog .lbl span{display:block;font-size:10.5px;color:var(--tx-3);font-weight:500}
+
+/* grade jump nav */
+.gnav{display:flex;gap:4px;background:var(--ink-860);padding:3px;border-radius:11px;border:1px solid var(--ink-800);flex:none}
+.gnav button{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;color:var(--tx-3);
+  transition:.16s; line-height:1.1;
+}
+.gnav button i{font-style:normal;font-size:9px;font-weight:600;color:var(--tx-4);font-variant-numeric:tabular-nums}
+.gnav button:hover{background:var(--ink-700);color:var(--tx-2)}
+.gnav button.on{background:var(--blue);color:#fff}
+.gnav button.on i{color:rgba(255,255,255,.78)}
+
+/* zoom control */
+.zoom{display:flex;align-items:center;gap:2px;background:var(--ink-860);border:1px solid var(--ink-800);border-radius:11px;padding:3px;flex:none}
+.zoom .zb{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--tx-2);transition:.14s}
+.zoom .zb:hover{background:var(--ink-700);color:#fff}
+.zoom .zb:disabled{opacity:.28;cursor:default;background:none}
+.zoom .stops{display:flex;gap:3px;padding:0 7px;align-items:center}
+.zoom .stops i{width:7px;height:7px;border-radius:99px;background:var(--ink-600);transition:.2s;cursor:pointer;display:block}
+.zoom .stops i.on{background:var(--blue);width:20px}
+.zoom .stops i.pas{background:var(--blue-400);opacity:.55}
+.zname{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--blue-200);min-width:56px;text-align:center;padding-right:5px;
+}
+
+/* filter legend */
+.legend{
+  max-width:var(--bar);margin:0 auto;padding:0 22px 10px;
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+}
+.legend .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--tx-4);margin-right:3px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px 4px 8px;border-radius:99px;
+  border:1px solid var(--ink-700);background:var(--ink-880);
+  font-size:11.5px;font-weight:600;color:var(--tx-3);transition:.15s;
+}
+.chip s{width:7px;height:7px;border-radius:99px;background:var(--k);display:block}
+.chip:hover{border-color:var(--ink-600);color:var(--tx-2)}
+.chip.on{background:color-mix(in srgb,var(--k) 15%,var(--ink-880));border-color:color-mix(in srgb,var(--k) 46%,transparent);color:#fff}
+.chip.off{opacity:.42}
+.chip.reset{color:var(--blue-400)}
+
+/* ============================================================
+   TIMELINE SHELL
+   ============================================================ */
+.wrap{
+  max-width:var(--shell);margin:0 auto;padding:0 22px 140px;position:relative;z-index:1;
+  transition:max-width .32s cubic-bezier(.4,0,.2,1);
+}
+
+/* HERO */
+.hero{padding:44px 0 30px;max-width:640px}
+.hero .kick{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--blue-400);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.hero .kick::before{content:'';width:22px;height:1.5px;background:var(--blue);border-radius:2px}
+.hero h1{font-size:40px;line-height:1.06;letter-spacing:-.034em;font-weight:700;margin-bottom:12px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--blue-400)}
+.hero p{font-size:15px;color:var(--tx-2);line-height:1.55;max-width:560px}
+.hero .meta{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;align-items:center}
+.selwrap{display:flex;align-items:center;gap:7px;padding:5px 7px 5px 13px;border-radius:10px;background:var(--ink-880);border:1px solid var(--ink-800)}
+.selwrap span{font-size:11.5px;color:var(--tx-3);font-weight:500}
+.selwrap select{
+  font:inherit;font-size:12.5px;font-weight:600;color:#fff;background:var(--ink-700);
+  border:1px solid var(--ink-600);border-radius:7px;padding:4px 8px;cursor:pointer;
+}
+.selwrap select option{background:var(--ink-880)}
+
+/* ---- GRADE SECTION ---- */
+.grade{position:relative;scroll-margin-top:118px}
+.ghead{
+  position:sticky; top:57px; z-index:40;
+  display:grid; grid-template-columns:var(--media-w) var(--rail) minmax(0,1fr);
+  align-items:end; padding:26px 0 11px;
+  background:var(--ink-950);
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.ghead::after{ /* fade sits below the plate so tasks never show through it */
+  content:'';position:absolute;left:0;right:0;top:100%;height:20px;pointer-events:none;
+  background:linear-gradient(180deg,var(--ink-950),rgba(0,3,5,0));
+}
+.ghead{position:sticky}
+.ghead .num{
+  grid-column:1; justify-self:end; padding-right:20px; text-align:right;
+  font-size:52px; font-weight:800; letter-spacing:-.05em; line-height:.82;
+  color:transparent; -webkit-text-stroke:1.5px var(--ink-600);
+}
+.ghead .rl{grid-column:2;justify-self:center;position:relative;height:100%}
+.ghead .txt{grid-column:3;padding-left:20px;min-width:0}
+.ghead h2{font-size:19px;font-weight:700;letter-spacing:-.024em;line-height:1.15;text-wrap:balance}
+.ghead .sub{font-size:12.5px;color:var(--tx-3);margin-top:3px;font-weight:500}
+.ghead .bar{display:flex;align-items:center;gap:9px;margin-top:8px}
+.ghead .track{height:3px;background:var(--ink-800);border-radius:99px;flex:1;max-width:210px;overflow:hidden}
+.ghead .fill{height:100%;background:var(--blue);border-radius:99px;transition:width .45s cubic-bezier(.4,0,.2,1)}
+.ghead .pct{font-family:var(--mono);font-size:10px;color:var(--tx-3);font-variant-numeric:tabular-nums}
+
+/* ---- THE RAIL ---- */
+.body{position:relative}
+.body::before{ /* the continuous vertical line */
+  content:''; position:absolute; top:0; bottom:0;
+  left:calc(var(--media-w) + var(--rail)/2); width:1.5px; margin-left:-.75px;
+  background:linear-gradient(180deg,var(--ink-700),var(--ink-600) 12%,var(--ink-600) 88%,var(--ink-700));
+  transition:left .32s cubic-bezier(.4,0,.2,1);
+}
+
+/* ---- MONTH DIVIDER ---- */
+.mrow{
+  display:grid;grid-template-columns:var(--media-w) var(--rail) minmax(0,1fr);
+  align-items:center;padding:14px 0 8px;position:relative;
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.mrow .mchip{
+  grid-column:2;justify-self:center;position:relative;z-index:3;
+  font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.09em;
+  padding:3.5px 8px;border-radius:7px;background:var(--ink-860);
+  border:1px solid var(--ink-700);color:var(--tx-2);white-space:nowrap;
+}
+.mrow .mline{grid-column:3;height:1px;background:var(--ink-800);margin-left:20px;opacity:.75}
+.mrow .myear{
+  grid-column:1;justify-self:end;padding-right:20px;
+  font-family:var(--mono);font-size:9.5px;color:var(--tx-4);letter-spacing:.06em;
+}
+
+/* ---- TASK ROW ---- */
+.task{
+  display:grid; grid-template-columns:var(--media-w) var(--rail) minmax(0,1fr);
+  align-items:center; margin-bottom:var(--row-gap); position:relative;
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.task.hidden{display:none}
+
+/* media (LEFT of the line) */
+.media{
+  grid-column:1; justify-self:end; position:relative;
+  width:var(--media-w); height:var(--media-h);
+  border-radius:var(--card-r); overflow:hidden;
+  background:var(--ink-880); border:1px solid var(--ink-800);
+  transition:width .32s cubic-bezier(.4,0,.2,1),height .32s cubic-bezier(.4,0,.2,1),border-color .18s,transform .18s;
+}
+.media svg{width:100%;height:100%;display:block}
+.media::after{ /* colour wash — only earns its place when the plate is too small to read */
+  content:'';position:absolute;inset:0;background:var(--k);opacity:0;
+  transition:opacity .32s cubic-bezier(.4,0,.2,1);pointer-events:none;
+}
+.task:hover .media{border-color:color-mix(in srgb,var(--k) 44%,var(--ink-800));transform:translateY(-1px)}
+.play{
+  position:absolute;right:8px;bottom:8px;width:24px;height:24px;border-radius:99px;
+  background:var(--blue);display:grid;place-items:center;
+  box-shadow:0 3px 10px rgba(0,3,5,.55);
+}
+.play svg{width:9px;height:9px}
+.dur{
+  position:absolute;left:8px;bottom:8px;font-family:var(--mono);font-size:8.5px;font-weight:600;
+  background:rgba(0,3,5,.8);padding:2.5px 5px;border-radius:5px;color:var(--ivory);
+  letter-spacing:.04em;backdrop-filter:blur(4px);
+}
+
+/* connector hairline */
+.link{
+  grid-column:2;position:relative;height:100%;display:grid;place-items:center;
+}
+.link::before{
+  content:'';position:absolute;top:50%;right:50%;height:1px;
+  width:calc(50% - var(--node)/2 - 3px);
+  background:linear-gradient(90deg,transparent,var(--ink-600));
+}
+/* node */
+.node{
+  position:relative;z-index:3;width:var(--node);height:var(--node);border-radius:99px;
+  background:var(--ink-950);border:2px solid var(--ink-600);
+  display:grid;place-items:center;cursor:pointer;flex:none;
+  transition:.2s cubic-bezier(.4,0,.2,1);
+}
+.node svg{width:60%;height:60%;opacity:0;transform:scale(.4);transition:.22s cubic-bezier(.34,1.56,.64,1)}
+.node:hover{border-color:var(--blue-400);transform:scale(1.16)}
+.task.mile .node{border-color:var(--yellow);box-shadow:0 0 0 3.5px rgba(255,216,16,.13)}
+.task.done .node{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,98,232,.16)}
+.task.done .node svg{opacity:1;transform:scale(1)}
+
+/* content (RIGHT of the line) */
+.cnt{grid-column:3;padding-left:var(--cnt-pad);min-width:0}
+.ttl{
+  font-size:var(--t-title);font-weight:600;letter-spacing:-.017em;line-height:1.28;
+  color:var(--tx-1);transition:font-size .32s cubic-bezier(.4,0,.2,1),color .18s;
+  display:block;text-align:left;width:100%;
+}
+.task:hover .ttl{color:var(--blue-400)}
+.task.done .ttl{color:var(--tx-3);text-decoration:line-through;text-decoration-color:var(--tx-4);text-decoration-thickness:1.5px}
+.dsc{
+  font-size:var(--t-desc);color:var(--tx-3);line-height:1.5;margin-top:4px;max-width:56ch;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.mrow2{display:flex;align-items:center;gap:7px;margin-top:6px;flex-wrap:wrap}
+.tag{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;
+  padding:2.5px 8px;border-radius:6px;letter-spacing:.005em;
+  background:color-mix(in srgb,var(--k) 14%,transparent);
+  color:color-mix(in srgb,var(--k) 76%,#fff);
+  border:1px solid color-mix(in srgb,var(--k) 26%,transparent);
+}
+.tag s{width:6px;height:6px;border-radius:99px;background:var(--k);display:block;flex:none}
+.mini{font-family:var(--mono);font-size:10px;color:var(--tx-4);letter-spacing:.02em}
+.mflag{
+  display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;
+  padding:2.5px 8px;border-radius:6px;letter-spacing:.02em;text-transform:uppercase;
+  background:rgba(255,216,16,.14);color:var(--yellow);border:1px solid rgba(255,216,16,.3);
+}
+.acts{display:flex;gap:7px;margin-top:11px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:9px;
+  font-size:12.5px;font-weight:600;transition:.15s;
+}
+.btn.p{background:var(--blue);color:#fff}
+.btn.p:hover{background:var(--blue-700)}
+.btn.s{background:var(--ink-700);color:var(--tx-2);border:1px solid var(--ink-600)}
+.btn.s:hover{background:var(--ink-600);color:#fff}
+
+/* "You are here" marker */
+.here{
+  display:grid;grid-template-columns:var(--media-w) var(--rail) minmax(0,1fr);
+  align-items:center;margin:8px 0 16px;position:relative;
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.here[hidden]{display:none}
+.here .hl{grid-column:1;justify-self:end;width:100%;height:1.5px;
+  background:linear-gradient(90deg,transparent,var(--green));border-radius:2px}
+.here .hd{grid-column:2;justify-self:center;width:11px;height:11px;border-radius:99px;
+  background:var(--green);z-index:4;box-shadow:0 0 0 4px rgba(84,244,184,.18),0 0 0 1px var(--ink-950)}
+.here .ht{grid-column:3;padding-left:20px;font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--green)}
+
+/* END CAP */
+.endcap{
+  display:grid;grid-template-columns:var(--media-w) var(--rail) minmax(0,1fr);
+  align-items:center;padding-top:22px;
+  transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1);
+}
+.endcap .ec{grid-column:2;justify-self:center;width:34px;height:34px;border-radius:99px;
+  background:var(--blue);display:grid;place-items:center;z-index:4;
+  box-shadow:0 0 0 6px rgba(47,98,232,.14)}
+.endcap .ec svg{width:17px;height:17px}
+.endcap .et{grid-column:3;padding-left:20px}
+.endcap .et b{display:block;font-size:19px;font-weight:700;letter-spacing:-.024em}
+.endcap .et span{display:block;font-size:12.5px;color:var(--tx-3);margin-top:2px}
+
+/* ============================================================
+   ZOOM LEVELS — semantic level-of-detail
+   ============================================================ */
+[data-zoom="0"]{--media-w:52px;--media-h:26px;--rail:40px;--row-gap:0px;--card-r:6px;
+  --t-title:12.5px;--node:9px;--shell:700px}
+[data-zoom="0"] .dsc,[data-zoom="0"] .mrow2,[data-zoom="0"] .acts,
+[data-zoom="0"] .play,[data-zoom="0"] .dur,[data-zoom="0"] .mrow .myear{display:none}
+[data-zoom="0"]{--cnt-pad:14px}
+[data-zoom="0"] .task{padding:1px 0}
+[data-zoom="0"] .ttl{line-height:1.15}
+[data-zoom="0"] .hero{padding:26px 0 14px}
+[data-zoom="0"] .hero h1{font-size:30px}
+[data-zoom="0"] .hero p{display:none}
+[data-zoom="0"] .ghead{padding:18px 0 8px}
+[data-zoom="0"] .ghead .sub{display:none}
+[data-zoom="0"] .here{margin:4px 0 8px}
+[data-zoom="0"] .ghead .num{font-size:34px}
+[data-zoom="0"] .mrow{padding:6px 0 3px}
+[data-zoom="0"] .media::after{opacity:.20}
+
+[data-zoom="1"]{--media-w:148px;--media-h:58px;--rail:52px;--row-gap:5px;--card-r:9px;
+  --t-title:13.5px;--node:11px;--shell:840px}
+[data-zoom="1"] .dsc,[data-zoom="1"] .acts,[data-zoom="1"] .play,[data-zoom="1"] .dur{display:none}
+[data-zoom="1"]{--cnt-pad:16px}
+[data-zoom="1"] .mrow2{margin-top:3px}
+[data-zoom="1"] .ghead .num{font-size:42px}
+
+[data-zoom="2"]{--media-w:264px;--media-h:106px;--rail:64px;--row-gap:12px;
+  --t-title:15.5px;--node:13px;--shell:988px}
+[data-zoom="2"] .acts{display:none}
+
+[data-zoom="3"]{--media-w:392px;--media-h:172px;--rail:76px;--row-gap:26px;--card-r:15px;
+  --t-title:21px;--t-desc:13.5px;--node:16px;--shell:1180px}
+[data-zoom="3"]{--cnt-pad:26px}
+[data-zoom="3"] .dsc{-webkit-line-clamp:unset;display:block;overflow:visible;max-width:62ch}
+[data-zoom="3"] .ghead .num{font-size:62px}
+
+/* motion for "video" cards */
+@media (prefers-reduced-motion:no-preference){
+  .mo-draw{stroke-dasharray:200;stroke-dashoffset:200;animation:draw 3.4s cubic-bezier(.4,0,.2,1) infinite}
+  @keyframes draw{0%{stroke-dashoffset:200}45%,100%{stroke-dashoffset:0}}
+  .mo-pulse{animation:pl 2.6s ease-in-out infinite}
+  @keyframes pl{0%,100%{opacity:.25;transform:scale(.94)}50%{opacity:.75;transform:scale(1.04)}}
+}
+
+
+/* ============================================================
+   COLLABORATION — assignments, events and kudos from real people
+   Curated rows are bare; anything a person added sits in a tinted
+   panel keyed to that person, so authorship reads structurally
+   and not only by hue.
+   ============================================================ */
+.tagword{color:var(--tx-4);font-weight:500}
+
+.task.contrib .cnt{
+  margin-left:var(--cnt-pad); padding:11px 14px 12px; padding-left:14px; border-radius:12px;
+  background:color-mix(in srgb, var(--k) 7%, var(--ink-880));
+  border:1px solid color-mix(in srgb, var(--k) 22%, transparent);
+  transition:border-color .18s, background .18s;
+}
+.task.contrib:hover .cnt{border-color:color-mix(in srgb, var(--k) 40%, transparent)}
+.task.contrib .node{border-color:color-mix(in srgb, var(--k) 62%, var(--ink-600))}
+.task.contrib.done .node{background:var(--k);border-color:var(--k);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--k) 18%,transparent)}
+.task.contrib.done .node svg{stroke:var(--ink-950)}
+
+/* attribution */
+.attrib{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+.av{
+  width:19px;height:19px;border-radius:99px;flex:none;display:grid;place-items:center;
+  font-size:8.5px;font-weight:800;letter-spacing:.01em;
+  background:var(--k);color:var(--ink-950);
+}
+.attrib b{font-size:12.5px;font-weight:650;color:var(--tx-1);letter-spacing:-.008em}
+.attrib .role{font-size:11px;color:var(--tx-4);font-weight:500}
+.kpill{
+  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding:2.5px 7px;border-radius:5px;
+  background:color-mix(in srgb,var(--k) 20%,transparent);
+  color:color-mix(in srgb,var(--k) 82%,var(--ivory));
+  border:1px solid color-mix(in srgb,var(--k) 34%,transparent);
+}
+.attrib .ago{font-family:var(--mono);font-size:9.5px;color:var(--tx-4)}
+.newdot{
+  font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  padding:2.5px 7px;border-radius:5px;background:var(--yellow);color:var(--ink-950);
+}
+
+/* kind-specific meta */
+.due{
+  display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.01em;
+  padding:2.5px 8px;border-radius:6px;background:var(--k);color:var(--ink-950);
+}
+.when,.where{
+  display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
+  color:color-mix(in srgb,var(--k) 68%,var(--ivory));
+}
+.when svg,.where svg{width:12px;height:12px;flex:none;opacity:.85}
+.where{color:var(--tx-3);font-weight:500}
+
+/* rail markers for things that are moments, not to-dos */
+.node.ev,.node.kd{
+  border:none;background:none;color:var(--k);cursor:default;
+  width:calc(var(--node) + 4px);height:calc(var(--node) + 4px);
+}
+.node.ev svg,.node.kd svg{width:100%;height:100%;opacity:1;transform:none}
+.node.ev::after,.node.kd::after{
+  content:'';position:absolute;inset:-5px;border-radius:99px;
+  background:var(--ink-950);z-index:-1;
+}
+.task.k-kudos .dsc{color:var(--tx-2);font-style:italic}
+.task.k-kudos .media{border-color:color-mix(in srgb,var(--k) 30%,transparent)}
+
+/* rsvp / thanks state */
+.state{display:none;margin-top:9px}
+.state.on{
+  display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;
+  padding:4px 10px;border-radius:7px;
+  background:color-mix(in srgb,var(--k) 18%,transparent);
+  color:color-mix(in srgb,var(--k) 80%,var(--ivory));
+  border:1px solid color-mix(in srgb,var(--k) 32%,transparent);
+}
+.btn.s svg{width:12px;height:12px}
+.task.contrib .btn.p{background:var(--k);color:var(--ink-950)}
+.btn.p:hover{filter:brightness(1.1)}
+
+/* a freshly added item gets found, once */
+@keyframes flash{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--k) 0%,transparent)}
+  25%    {box-shadow:0 0 0 5px color-mix(in srgb,var(--k) 34%,transparent)}
+}
+.task.flash .cnt{animation:flash 1.5s ease-out 2}
+
+/* ---- facepile ---- */
+.faces{display:flex;align-items:center;gap:5px;margin-left:auto}
+.faces .flab{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--tx-4);margin-right:3px;
+}
+.face{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border-radius:99px;
+  border:1px solid var(--ink-700);background:var(--ink-880);
+  font-size:11.5px;font-weight:600;color:var(--tx-3);transition:.15s;
+}
+.face .av{width:18px;height:18px;font-size:8px;background:var(--f)}
+.face:hover{border-color:var(--ink-600);color:var(--tx-2)}
+.face.on{background:color-mix(in srgb,var(--f) 15%,var(--ink-880));
+  border-color:color-mix(in srgb,var(--f) 46%,transparent);color:var(--tx-1)}
+.face.off{opacity:.4}
+.face.owner{cursor:default;background:none;border-style:dashed;border-color:var(--ink-700)}
+.face.owner:hover{border-color:var(--ink-700);color:var(--tx-3)}
+
+/* ---- "recently added" strip ---- */
+.inbox{
+  margin:0 0 40px; padding:16px 18px; border-radius:16px;
+  background:var(--ink-900); border:1px solid var(--ink-800);
+}
+.ihead{display:flex;align-items:baseline;gap:9px;margin-bottom:13px;flex-wrap:wrap}
+.ihead b{font-size:14px;font-weight:650;letter-spacing:-.014em}
+.ihead span{font-size:12px;color:var(--tx-3)}
+.icards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
+.icard{
+  display:flex;gap:10px;align-items:flex-start;text-align:left;
+  padding:11px 12px;border-radius:11px;
+  background:color-mix(in srgb,var(--k) 6%,var(--ink-880));
+  border:1px solid color-mix(in srgb,var(--k) 20%,transparent);
+  transition:.15s;
+}
+.icard:hover{border-color:color-mix(in srgb,var(--k) 42%,transparent);transform:translateY(-1px)}
+.icard .av{margin-top:1px}
+.icard .ic{min-width:0}
+.icard .in{font-size:12.5px;font-weight:600;line-height:1.3;color:var(--tx-1);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.icard .iw{font-size:10.5px;color:var(--tx-4);margin-top:3px;font-weight:500}
+
+/* zoom: collaboration detail folds away with everything else */
+[data-zoom="0"] .attrib .role,[data-zoom="0"] .attrib .ago,
+[data-zoom="0"] .kpill,[data-zoom="0"] .inbox{display:none}
+[data-zoom="0"] .attrib{margin-bottom:0;display:inline-flex;margin-right:8px}
+[data-zoom="0"] .attrib b{font-size:11.5px}
+[data-zoom="0"] .task.contrib .cnt{padding:3px 8px;margin-left:12px;border-radius:8px}
+[data-zoom="0"] .av{width:15px;height:15px;font-size:7px}
+[data-zoom="1"] .attrib .role{display:none}
+[data-zoom="1"] .task.contrib .cnt{padding:8px 11px}
+[data-zoom="0"] .state,[data-zoom="1"] .state,[data-zoom="2"] .state{margin-top:6px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;animation-iteration-count:1 !important}
+  html{scroll-behavior:auto}
+}
+
+/* ============================================================
+   RESPONSIVE
+   Below 720px the centre-rail composition stops working — there
+   isn't room for media and text side by side. The rail moves to
+   the far left and each row stacks: plate above, words below.
+   ============================================================ */
+@media (max-width:1080px){
+  .hero h1{font-size:34px}
+  .top-in{padding:9px 14px;gap:11px}
+  .wrap{padding:0 16px 110px}
+  .legend{padding:0 16px 10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .legend::-webkit-scrollbar{display:none}
+  .chip,.face,.legend .lb,.faces .flab{flex:none}
+  .faces{margin-left:10px}
+}
+
+@media (max-width:720px){
+  :root{--rail:30px;--cnt-pad:0px}
+  .brand .pg{display:none}
+  .prog .lbl{display:none}
+  .gnav button i{display:none}
+  .gnav button{padding:6px 9px}
+  .hero{padding:30px 0 22px}
+  .hero h1{font-size:27px}
+  .hero p{font-size:14px}
+
+  /* rows stack: rail | (media over text) */
+  .task{grid-template-columns:var(--rail) minmax(0,1fr);
+        grid-template-areas:"rail media" "rail cnt";align-items:start}
+  .media{grid-area:media;width:100%;justify-self:stretch;margin-bottom:9px}
+  .link{grid-area:rail;align-self:start;height:auto;
+        padding-top:calc(var(--media-h)/2 - var(--node)/2)}
+  .link::before{display:none}
+  .cnt{grid-area:cnt;padding-left:0}
+  .task.contrib .cnt{margin-left:0}
+  .body::before{left:calc(var(--rail)/2)}
+
+  /* media heights stop tracking a width that no longer exists */
+  [data-zoom="1"]{--media-h:92px}
+  [data-zoom="2"]{--media-h:132px}
+  [data-zoom="3"]{--media-h:168px}
+  [data-zoom="0"] .media{display:none}
+  [data-zoom="0"] .task{grid-template-areas:"rail cnt"}
+  [data-zoom="0"] .link{padding-top:2px}
+
+  /* the other rail-aligned rows follow the same two-column grid */
+  .ghead{display:block;padding:22px 0 10px}
+  .ghead .num,.ghead .rl{display:none}
+  .ghead .txt{padding-left:0}
+  .mrow,.here,.endcap{grid-template-columns:var(--rail) minmax(0,1fr)}
+  .mrow .mchip{display:none}
+  .mrow .myear{grid-column:2;justify-self:start;padding:0 0 0 10px;
+    font-size:10.5px;font-weight:600;color:var(--tx-2);letter-spacing:.08em;text-transform:uppercase}
+  .mrow .mline{display:none}
+  .here .hl{display:none}
+  .here .hd{grid-column:1}
+  .here .ht{grid-column:2;padding-left:10px}
+  .endcap .ec{grid-column:1;width:26px;height:26px}
+  .endcap .ec svg{width:13px;height:13px}
+  .endcap .et{grid-column:2;padding-left:10px}
+
+  .acts{flex-wrap:wrap}
+  .dsc{max-width:none}
+  .inbox{padding:14px}
+}
+
+@media (max-width:430px){
+  .hero h1{font-size:24px}
+  .attrib .role{display:none}
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg class="mk" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M4 20V6h14" stroke="#2F62E8" stroke-width="3.4" stroke-linecap="square"/>
+        <path d="M11 13l10 10M21 15V23h-8" stroke="#2F62E8" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/>
+      </svg>
+      <b>Level All</b>
+      <span class="div"></span>
+      <span class="pg">College Journey</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="gnav" id="gnav"></div>
+
+    <div class="zoom" role="group" aria-label="Zoom level">
+      <span class="zname" id="zname">Normal</span>
+      <button class="zb" id="zout" title="Zoom out  (−)" aria-label="Zoom out">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 8h10"/></svg>
+      </button>
+      <div class="stops" id="stops"></div>
+      <button class="zb" id="zin" title="Zoom in  (+)" aria-label="Zoom in">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+      </button>
+    </div>
+
+    <div class="prog">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle class="bg" cx="20" cy="20" r="16.5"/>
+        <circle class="fg" id="ring" cx="20" cy="20" r="16.5" stroke-dasharray="103.7" stroke-dashoffset="103.7"/>
+      </svg>
+      <span class="lbl"><b id="pnum">0%</b><span id="pcnt">0 of 0</span></span>
+    </div>
+  </div>
+  <div class="legend" id="legend"></div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="kick">4-Year Plan · Grades 9–12</div>
+    <h1>Everything it takes to get into a <em>four-year college</em>.</h1>
+    <p>Every deadline, application, test and campus visit from freshman orientation to move-in day — plus whatever your counselor, teachers and family add along the way.</p>
+    <div class="meta">
+      <div class="selwrap">
+        <span>I'm in</span>
+        <select id="gradesel" aria-label="Your current grade">
+          <option value="9">9th grade</option>
+          <option value="10">10th grade</option>
+          <option value="11" selected>11th grade</option>
+          <option value="12">12th grade</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="inbox" id="inbox" hidden></section>
+
+  <div id="tl"></div>
+</div>
+
+<script>
+/* ============================================================
+   1. TAXONOMY
+   ============================================================ */
+const CATS = {
+  plan:      {n:'Planning',    c:'#2F62E8'},
+  academics: {n:'Academics',   c:'#7BA3FF'},
+  explore:   {n:'Exploring',   c:'#23C4E8'},
+  activities:{n:'Activities',  c:'#8B5CF6'},
+  testing:   {n:'Testing',     c:'#FFD810'},
+  money:     {n:'Money & Aid', c:'#2FD9A0'},
+  apply:     {n:'Applying',    c:'#FF6FA5'},
+  decide:    {n:'Deciding',    c:'#FF9F1C'},
+};
+
+/* ---- The people who can put things on this roadmap ----
+   Curated Level All tasks carry a category colour; anything a person adds
+   carries THAT PERSON's colour instead, so one row never mixes two encodings. */
+const PEOPLE = {
+  you:    {n:'Jordan',      r:'You',              i:'J',  c:'#2F62E8'},
+  rivera: {n:'Ms. Rivera',  r:'School Counselor', i:'MR', c:'#B579FF'},
+  osei:   {n:'Mr. Osei',    r:'AP English',       i:'MO', c:'#F49FFB'},
+  dad:    {n:'Marcus',      r:'Parent',           i:'M',  c:'#68F4B8'},
+};
+
+/* Item kinds. `task` is Level All's curated spine; the rest are contributed. */
+const KINDS = {
+  task:   {n:'Task',     check:true },
+  assign: {n:'Assigned', check:true },
+  event:  {n:'Event',    check:false},
+  kudos:  {n:'Kudos',    check:false},
+};
+const MONTHS = ['Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul'];
+const MFULL  = {Aug:'August',Sep:'September',Oct:'October',Nov:'November',Dec:'December',
+                Jan:'January',Feb:'February',Mar:'March',Apr:'April',May:'May',Jun:'June',Jul:'July'};
+
+const GRADES = [
+  {g:9,  name:'Freshman Year',  tag:'Explore',  sub:'Set the foundation — grades, habits, and a course plan that keeps every door open.'},
+  {g:10, name:'Sophomore Year', tag:'Build',    sub:'Go deeper. Take harder classes, lead something, and start naming schools.'},
+  {g:11, name:'Junior Year',    tag:'Prove',    sub:'The year colleges scrutinize most. Test, tour, and build a real list.'},
+  {g:12, name:'Senior Year',    tag:'Apply',    sub:'Submit, fund it, compare offers, and commit by May 1.'},
+];
+
+/* ============================================================
+   2. THE JOURNEY
+   ============================================================ */
+const TASKS = [
+/* ---------- GRADE 9 ---------- */
+{g:9,m:'Aug',c:'plan',a:'path',v:1,t:'Start your college file on day one',
+ d:'Open one folder — digital or physical — for transcripts, awards, activity hours, and every certificate. Seniors who start this in 9th grade save weeks later.',x:'20 min'},
+{g:9,m:'Aug',c:'plan',a:'people',t:'Introduce yourself to your school counselor',
+ d:'Learn their name, their email, and how to book time. They control course approvals, transcripts, and the school report that goes to every college.',x:'15 min'},
+{g:9,m:'Sep',c:'academics',a:'calendar',t:'Map all four years of courses',
+ d:'Work backward from the toughest schedule you could handle senior year. Four years of English, math through pre-calc or higher, three lab sciences, and at least two years of one language.',x:'45 min'},
+{g:9,m:'Sep',c:'activities',a:'search',t:'Try three clubs, sports, or programs',
+ d:'Freshman year is for sampling. Say yes to more than you will keep — you cannot lead something in 11th grade that you never joined in 9th.',x:'ongoing'},
+{g:9,m:'Oct',c:'academics',a:'chart',t:'Run your first grade check',
+ d:'Six weeks in is early enough to fix a class. Find out how your school weights GPA and what a B- in Algebra actually costs you.',x:'30 min'},
+{g:9,m:'Nov',c:'plan',a:'check',t:'Start an activity and awards log',
+ d:'Date, role, hours per week, weeks per year, and what you actually did. The Common App asks for exactly this and nobody remembers 9th grade in 12th.',x:'20 min'},
+{g:9,m:'Dec',c:'academics',a:'books',t:'Review semester one — GPA counts from here',
+ d:'Freshman grades are in the transcript colleges read. If a class went badly, ask now about credit recovery or a retake.',x:'30 min'},
+{g:9,m:'Jan',c:'explore',a:'search',v:1,t:'Take a career interests inventory',
+ d:'Not to pick a job at 14 — to find the two or three fields worth exploring so your electives and summers have a direction.',x:'40 min'},
+{g:9,m:'Feb',c:'money',a:'money',t:'Learn how college actually gets paid for',
+ d:'Sticker price, net price, grants vs. loans, need-based vs. merit. Understanding this now changes which schools feel possible.',x:'35 min'},
+{g:9,m:'Mar',c:'academics',a:'laptop',t:'Request honors, AP, or dual enrollment for next year',
+ d:'Course selection happens in spring for the following fall. Ask what prerequisites you need and push for the hardest load you can carry well.',x:'30 min'},
+{g:9,m:'Apr',c:'testing',a:'bubbles',t:'Sit the PSAT 8/9 or a full practice test',
+ d:'No stakes, no scores sent anywhere. You are buying a baseline and learning what four hours of testing feels like.',x:'2.5 hrs'},
+{g:9,m:'May',c:'academics',a:'clock',t:'Finish strong on finals',
+ d:'Second-semester grades close out your first transcript year. Build a two-week study calendar instead of a two-day panic.',x:'2 wks'},
+{g:9,m:'Jun',c:'explore',a:'map',t:'Do one real thing this summer',
+ d:'A job, a volunteer commitment, a free online course, a family business. Colleges care that you did something deliberately — not that it was expensive.',x:'summer'},
+{g:9,m:'Jul',c:'explore',a:'campus',t:'Walk one college campus — any campus',
+ d:'Even the state school twenty minutes away. The point is to make "college" a real place instead of an abstraction.',x:'half day'},
+
+/* ---------- GRADE 10 ---------- */
+{g:10,m:'Aug',c:'academics',a:'books',t:'Step up your course rigor',
+ d:'Admissions officers read your transcript against what your school offered. Take the harder section if you can pass it with a B+ or better.',x:'30 min'},
+{g:10,m:'Sep',c:'activities',a:'trophy',t:'Cut down to two activities and go deep',
+ d:'Depth beats breadth. Pick the two you would keep if you could only keep two, and start acting like the person who will run them next year.',x:'ongoing'},
+{g:10,m:'Oct',c:'testing',a:'bubbles',t:'Take the PSAT 10',
+ d:'Still practice, but now it is predictive. Your score maps directly onto an SAT range and tells you how much prep junior year needs.',x:'2.5 hrs'},
+{g:10,m:'Nov',c:'testing',a:'chart',t:'Break down your PSAT score report',
+ d:'Ignore the total. Look at the sub-scores — that is where the fixable 80 points are hiding.',x:'45 min'},
+{g:10,m:'Dec',c:'academics',a:'chart',t:'Check your cumulative GPA and class rank',
+ d:'You are now halfway through the GPA colleges will see. Do the arithmetic on what senior year would need to look like to move it.',x:'30 min'},
+{g:10,m:'Jan',c:'explore',a:'search',v:1,t:'Draft a wide first college list — 20 or more',
+ d:'Cast wide and weird. Big, small, public, private, near, far. You are learning what you like, not committing to anything.',x:'1.5 hrs'},
+{g:10,m:'Feb',c:'explore',a:'people',t:'Attend a college fair or virtual info session',
+ d:'Ask three questions and get the rep\'s email. Demonstrated interest is tracked at a lot of schools, and it starts here.',x:'2 hrs'},
+{g:10,m:'Mar',c:'money',a:'money',t:'Find scholarships open to sophomores',
+ d:'Most students only look senior year and miss four years of eligibility. Search local first — the odds are dramatically better than national contests.',x:'1 hr'},
+{g:10,m:'Apr',c:'testing',a:'calendar',t:'Decide SAT or ACT and book your junior dates',
+ d:'Take a timed practice of each and pick the one you score better on. Then reserve a spring junior test date and one retake window.',x:'4 hrs'},
+{g:10,m:'May',c:'testing',a:'clock',t:'Sit your first AP or IB exams',
+ d:'A 4 or 5 can convert into real college credit — sometimes a full semester of it, which is money and time back.',x:'per exam'},
+{g:10,m:'Jun',c:'explore',a:'campus',t:'Visit three campuses of different sizes',
+ d:'One large public, one mid-size, one small. You will know within an hour of walking around which scale fits you.',x:'3 days'},
+{g:10,m:'Jul',c:'activities',a:'laptop',t:'Lock in a summer program, job, or internship',
+ d:'A paid job counts every bit as much as a pre-college program. What matters is responsibility, consistency, and something you can describe well.',x:'summer'},
+
+/* ---------- GRADE 11 ---------- */
+{g:11,m:'Aug',c:'plan',a:'people',mi:1,t:'Sit down with your counselor — junior year is the one',
+ d:'This is the last full year of grades most colleges see before they decide. Confirm your schedule, your testing plan, and your graduation requirements.',x:'45 min'},
+{g:11,m:'Sep',c:'testing',a:'calendar',t:'Register for the SAT or ACT',
+ d:'Seats fill and late fees are real. Register for a fall or winter date now and hold a spring date for the retake.',x:'25 min'},
+{g:11,m:'Oct',c:'testing',a:'bubbles',mi:1,t:'Take the PSAT/NMSQT — the one that pays',
+ d:'This is the only PSAT that qualifies you for National Merit. Top scorers get scholarship money and a line on the résumé that lasts.',x:'2.8 hrs'},
+{g:11,m:'Nov',c:'explore',a:'check',t:'Cut your list to 10–15: reach, target, likely',
+ d:'Roughly a third each. Every likely school must be one you would genuinely be happy to attend and can afford without a miracle.',x:'2 hrs'},
+{g:11,m:'Nov',c:'money',a:'money',t:'Run the net price calculator on every school',
+ d:'Every college is required to host one. Sticker price is fiction — this gives you the number your family would actually pay.',x:'1.5 hrs'},
+{g:11,m:'Dec',c:'explore',a:'chart',v:1,t:'Research majors against real career outcomes',
+ d:'Look up median earnings, graduate placement, and what the first two years of coursework actually contain before you commit to a major.',x:'1 hr'},
+{g:11,m:'Jan',c:'testing',a:'bubbles',t:'Take your first official SAT or ACT',
+ d:'Almost nobody peaks on the first sitting. Treat this as the diagnostic that tells you what to drill before the retake.',x:'4 hrs'},
+{g:11,m:'Feb',c:'apply',a:'letter',mi:1,t:'Ask two teachers for recommendation letters',
+ d:'Ask in person, in February, from junior-year core teachers who have seen you struggle and improve. Hand them your résumé and a short note on what to highlight.',x:'30 min'},
+{g:11,m:'Mar',c:'explore',a:'map',t:'Tour campuses over spring break',
+ d:'Take the official tour, then go off-script — eat in the dining hall, sit in the library, read the flyers on the walls.',x:'1 wk'},
+{g:11,m:'Apr',c:'apply',a:'doc',t:'Write your activities list and résumé',
+ d:'Ten slots, 150 characters each. Lead with the verb, name the scale, and put a number on the result wherever one exists.',x:'2 hrs'},
+{g:11,m:'May',c:'testing',a:'clock',t:'AP exams, plus your SAT or ACT retake',
+ d:'The heaviest testing month of high school. Most students gain 40–100 SAT points on a focused second attempt.',x:'3 wks'},
+{g:11,m:'Jun',c:'apply',a:'doc',mi:1,v:1,t:'Draft your personal statement',
+ d:'650 words about a specific moment only you could write. Expect four or five real drafts — summer is the only time you will have space for them.',x:'8+ hrs'},
+{g:11,m:'Jul',c:'apply',a:'laptop',t:'Open your Common App and lock the final list',
+ d:'The Common App opens August 1 and rolls over. Create the account, fill the demographic and school sections, and inventory every supplemental essay you owe.',x:'2 hrs'},
+
+/* ---------- GRADE 12 ---------- */
+{g:12,m:'Aug',c:'apply',a:'doc',t:'Finish essays and request your transcript',
+ d:'Have two people who are not your parents read the personal statement. Then formally request transcripts through your counseling office.',x:'6 hrs'},
+{g:12,m:'Sep',c:'apply',a:'letter',t:'Confirm recommenders and grind supplementals',
+ d:'Send each recommender the deadline and the submission link. Meanwhile the "Why us?" essays — the ones that decide close calls — need real research.',x:'10 hrs'},
+{g:12,m:'Oct',c:'money',a:'key',mi:1,t:'FAFSA opens October 1 — file it immediately',
+ d:'Some aid is genuinely first-come, first-served, and several states award on a rolling basis. File in October even if you are unsure you qualify.',x:'1.5 hrs'},
+{g:12,m:'Oct',c:'money',a:'money',t:'Submit the CSS Profile if any school requires it',
+ d:'Around 240 mostly private colleges use it to award their own institutional grants. Separate form, separate deadline, separate fee.',x:'2 hrs'},
+{g:12,m:'Nov',c:'apply',a:'clock',mi:1,t:'Early Action and Early Decision deadlines — Nov 1 and 15',
+ d:'ED is binding; EA is not. Applying early can meaningfully lift your odds at some schools, but only if the application is genuinely finished.',x:'hard date'},
+{g:12,m:'Dec',c:'apply',a:'doc',t:'Early results land — keep submitting regardless',
+ d:'Deferred is not denied. Send a strong letter of continued interest, and have every regular-decision application queued up before winter break ends.',x:'6 hrs'},
+{g:12,m:'Jan',c:'apply',a:'clock',mi:1,t:'Regular decision deadlines — January 1 to 15',
+ d:'Most fall between these dates. Submit 48 hours early: portals crash, payments fail, and "the website was down" is not an extension.',x:'hard date'},
+{g:12,m:'Jan',c:'money',a:'money',mi:1,t:'Hit your state aid deadline',
+ d:'State grant deadlines are often earlier than the college\'s own and are absolutely unforgiving. Look yours up — several close in January or February.',x:'45 min'},
+{g:12,m:'Feb',c:'apply',a:'chart',t:'Send mid-year reports and keep your grades up',
+ d:'Colleges receive your seventh-semester grades and admission offers are conditional. Every year, offers get pulled over senior slide.',x:'20 min'},
+{g:12,m:'Feb',c:'money',a:'trophy',t:'Apply to every local scholarship you can find',
+ d:'A $1,000 local award with 40 applicants beats a $20,000 national one with 40,000. Your counseling office keeps the list.',x:'6 hrs'},
+{g:12,m:'Mar',c:'decide',a:'letter',t:'Decisions arrive — read every award letter closely',
+ d:'Separate grants from loans from work-study, then compute the real four-year cost. The biggest headline award is frequently the worse deal.',x:'3 hrs'},
+{g:12,m:'Mar',c:'money',a:'money',t:'Appeal any aid package that falls short',
+ d:'A professional judgment appeal is a normal, expected process. A polite letter with documentation moves the number more often than students believe.',x:'2 hrs'},
+{g:12,m:'Apr',c:'decide',a:'campus',v:1,t:'Go to admitted student days',
+ d:'Different crowd, different energy than a tour. This is where most students finally know — and where you can ask current students the real questions.',x:'2 days'},
+{g:12,m:'May',c:'decide',a:'key',mi:1,t:'Commit by May 1 and pay your deposit',
+ d:'National Decision Day. Deposit at exactly one school, then formally decline the others so their waitlists can move.',x:'hard date'},
+{g:12,m:'May',c:'academics',a:'clock',t:'Sit final AP exams and send your final transcript',
+ d:'Your final transcript is a condition of admission. Have your counselor send it, and have score reports routed to the school you chose.',x:'3 wks'},
+{g:12,m:'Jun',c:'decide',a:'cap',mi:1,v:1,t:'Graduate',
+ d:'Four years of transcripts, tests, essays, and deadlines. You did the thing.',x:'one day'},
+{g:12,m:'Jun',c:'plan',a:'campus',t:'Register for orientation and housing',
+ d:'Housing is often assigned by deposit date. Submit the roommate questionnaire honestly — the accurate answer beats the flattering one.',x:'2 hrs'},
+{g:12,m:'Jul',c:'plan',a:'laptop',t:'Placement tests, class registration, health forms',
+ d:'Math and language placement exams decide your first-semester schedule. Immunization records have a hard cutoff and hold registration.',x:'4 hrs'},
+{g:12,m:'Jul',c:'money',a:'key',t:'Set up billing, refunds, and your student loans',
+ d:'Complete entrance counseling and sign the master promissory note for any federal loan, then set up the payment plan and direct deposit for refunds.',x:'2 hrs'},
+];
+
+/* ============================================================
+   2b. CONTRIBUTED ITEMS
+   What a counselor, a teacher, and a parent put on the same rail.
+   `by` sets the accent, so contributed rows read as theirs on sight.
+   ============================================================ */
+const SHARED = [
+/* ---------- Ms. Rivera · School Counselor ---------- */
+{g:11,m:'Sep',k:'assign',by:'rivera',a:'check',t:'Junior Year Interest Survey',
+ d:'Twelve questions on majors, campus size, and distance from home. Your answers seed the college list we build together in November.',
+ due:'Due Sep 12', x:'20 min', ago:'2d ago', fresh:1, note:'Advisory · Period 3'},
+{g:11,m:'Oct',k:'event',by:'rivera',a:'people',v:1,t:'Fall College & Career Fair',
+ d:'Forty-two colleges, eight trade programs, and the military branches. Bring a printed résumé and collect rep emails.',
+ when:'Thu Oct 14 · 5–8 PM', where:'Main Gym', x:'3 hrs', ago:'2d ago', fresh:1},
+{g:11,m:'Mar',k:'event',by:'rivera',a:'campus',t:'Field trip: State University',
+ d:'Chartered bus, guided tour, lunch in the dining hall, and a live admissions Q&A. Thirty seats, first come first served.',
+ when:'Wed Mar 19 · 7:30 AM–4 PM', where:'Bus loop', x:'full day', note:'Permission slip due Mar 5'},
+{g:12,m:'Sep',k:'assign',by:'rivera',a:'doc',t:'Submit your college list for review',
+ d:'Share your final 10–15 so I can sanity-check the reach/target/likely balance and flag any deadline you have wrong.',
+ due:'Due Sep 26', x:'30 min'},
+{g:12,m:'Oct',k:'event',by:'rivera',a:'money',t:'FAFSA Completion Night',
+ d:'Bring a guardian and last year\'s tax return. We will file it with you in the room — most families finish in under an hour.',
+ when:'Thu Oct 9 · 6–8 PM', where:'Library', x:'2 hrs'},
+
+/* ---------- Mr. Osei · AP English ---------- */
+{g:11,m:'Jun',k:'assign',by:'osei',a:'doc',t:'Personal statement — first full draft',
+ d:'650 words, any Common App prompt. Graded on specificity and voice, not polish. We workshop these in the first week back.',
+ due:'Due Jun 20', x:'4 hrs', note:'AP English · Summer work'},
+{g:12,m:'Sep',k:'assign',by:'osei',a:'letter',t:'Peer essay workshop — bring two copies',
+ d:'You will read someone else\'s statement and they will read yours. Come with the draft you are actually planning to submit.',
+ due:'Due Sep 18', x:'1 hr', note:'AP English · Period 5'},
+
+/* ---------- Marcus · Parent ---------- */
+{g:11,m:'Apr',k:'event',by:'dad',a:'map',v:1,t:'College road trip — three campuses',
+ d:'Booked the hotel. State U Monday, the small liberal arts college Tuesday, the big private Wednesday. You pick the food stops.',
+ when:'Apr 6–9 · Spring break', where:'Road trip', x:'4 days', ago:'5d ago', fresh:1},
+{g:11,m:'May',k:'kudos',by:'dad',a:'trophy',t:'That SAT jump was all you',
+ d:'Ninety points in one retake. I watched you do practice sections at the kitchen table every Sunday since February. Nobody handed you that.',
+ x:'', ago:'1w ago'},
+{g:12,m:'Apr',k:'event',by:'dad',a:'campus',t:'Admitted students weekend — flights booked',
+ d:'Out Friday morning, back Sunday night. Your cousin is driving us from the airport. Bring a question for the financial aid table.',
+ when:'Apr 18–20', where:'Two nights', x:'weekend'},
+{g:12,m:'May',k:'kudos',by:'dad',a:'cap',t:'First in the family. Go get it.',
+ d:'Deposit paid. Four years of your work, and every single deadline hit. Your grandmother would not stop telling the neighbours.',
+ x:''},
+];
+
+/* ============================================================
+   3. GENERATIVE SVG ARTWORK
+   Self-contained line-art motifs, tinted per category.
+   Each plate: tinted gradient panel + dot grid + oversized
+   ghost motif bleeding off-frame + crisp foreground motif.
+   ============================================================ */
+let UID = 0;
+function motif(kind, A, mo){
+  const S  = 'fill="none" stroke="#E6E2DA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
+  const AS = `fill="none" stroke="${A}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"`;
+  const dr = mo ? ' class="mo-draw"' : '';
+  const pu = mo ? ' class="mo-pulse"' : '';
+  switch(kind){
+  case 'calendar': return `<rect x="6" y="16" width="80" height="70" rx="8" ${S}/><path d="M6 36h80M26 8v14M66 8v14" ${S}/>
+    <rect x="20" y="48" width="15" height="13" rx="3" fill="${A}"${pu}/><rect x="42" y="48" width="15" height="13" rx="3" ${AS} stroke-width="2.2"/>
+    <rect x="20" y="68" width="15" height="11" rx="3" ${AS} stroke-width="2.2"/><rect x="42" y="68" width="15" height="11" rx="3" ${AS} stroke-width="2.2"/>`;
+  case 'doc': return `<path d="M14 6h40l24 24v56a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4Z" ${S}/>
+    <path d="M54 6v24h24" ${S}/><path d="M24 48h40M24 60h40M24 72h24"${dr} ${AS}/>`;
+  case 'bubbles': return `<rect x="8" y="10" width="76" height="76" rx="8" ${S}/>
+    <circle cx="24" cy="28" r="6" fill="${A}"${pu}/><circle cx="44" cy="28" r="6" ${AS} stroke-width="2.2"/><circle cx="64" cy="28" r="6" ${AS} stroke-width="2.2"/>
+    <circle cx="24" cy="48" r="6" ${AS} stroke-width="2.2"/><circle cx="44" cy="48" r="6" fill="${A}"/><circle cx="64" cy="48" r="6" ${AS} stroke-width="2.2"/>
+    <circle cx="24" cy="68" r="6" ${AS} stroke-width="2.2"/><circle cx="44" cy="68" r="6" ${AS} stroke-width="2.2"/><circle cx="64" cy="68" r="6" fill="${A}"/>`;
+  case 'campus': return `<path d="M6 82h84M12 82V44M30 82V44M48 82V44M66 82V44M84 82V44" ${S}/>
+    <path d="M4 44 48 14l44 30" ${S}/><path d="M4 44h88" ${S}/><rect x="40" y="60" width="16" height="22" rx="2" fill="${A}"${pu}/>`;
+  case 'money': return `<ellipse cx="48" cy="24" rx="34" ry="11" ${S}/><path d="M14 24v18c0 6 15 11 34 11s34-5 34-11V24" ${S}/>
+    <path d="M14 42v18c0 6 15 11 34 11s34-5 34-11V42" ${S}/><path d="M48 33v22M55 39c0-4-14-5-14 0s14 4 14 9-14 4-14 0"${dr} ${AS}/>`;
+  case 'chart': return `<path d="M10 84V16M10 84h78" ${S}/>
+    <rect x="22" y="60" width="12" height="24" rx="2.5" fill="${A}" opacity=".45"/><rect x="42" y="46" width="12" height="38" rx="2.5" fill="${A}" opacity=".7"/>
+    <rect x="62" y="28" width="12" height="56" rx="2.5" fill="${A}"${pu}/><path d="M22 66 44 52l20-16 20-14"${dr} ${AS}/>`;
+  case 'people': return `<circle cx="30" cy="30" r="12" ${S}/><path d="M8 78c0-13 10-22 22-22s22 9 22 22" ${S}/>
+    <circle cx="66" cy="38" r="10" ${AS}/><path d="M48 80c0-11 8-19 18-19s18 8 18 19"${pu} ${AS}/>`;
+  case 'letter': return `<rect x="6" y="20" width="84" height="58" rx="7" ${S}/><path d="M6 26 48 54 90 26" ${S}/>
+    <circle cx="76" cy="66" r="12" fill="${A}"${pu}/><path d="M71 66l4 4 7-8" fill="none" stroke="#000305" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  case 'map': return `<path d="M8 22 34 12l30 12 26-10v62l-26 10-30-12-26 10V22Z" ${S}/><path d="M34 12v62M64 24v62" ${S}/>
+    <path d="M56 34c8 0 14 6 14 14 0 10-14 22-14 22S42 58 42 48c0-8 6-14 14-14Z" fill="${A}"${pu}/>`;
+  case 'check': return `<rect x="8" y="8" width="80" height="80" rx="9" ${S}/>
+    <path d="M22 30l6 6 11-12" ${AS}/><path d="M50 32h22" ${S}/>
+    <path d="M22 52l6 6 11-12"${dr} ${AS}/><path d="M50 54h22" ${S}/>
+    <path d="M22 74h12M50 76h22" ${S}/>`;
+  case 'laptop': return `<rect x="14" y="16" width="68" height="46" rx="5" ${S}/><path d="M4 76h88l-6-14H10L4 76Z" ${S}/>
+    <path d="M26 30h30M26 40h44M26 50h20"${dr} ${AS}/><circle cx="70" cy="30" r="5" fill="${A}"${pu}/>`;
+  case 'cap': return `<path d="M48 16 92 34 48 52 4 34 48 16Z" ${S}/><path d="M20 42v20c0 7 13 13 28 13s28-6 28-13V42" ${S}/>
+    <path d="M86 38v24"${dr} ${AS}/><circle cx="86" cy="66" r="6" fill="${A}"${pu}/>`;
+  case 'trophy': return `<path d="M28 12h40v22c0 11-9 20-20 20s-20-9-20-20V12Z" ${S}/>
+    <path d="M28 18H16v8c0 7 5 12 12 12M68 18h12v8c0 7-5 12-12 12" ${S}/>
+    <path d="M48 54v16M32 84h32l-4-14H36l-4 14Z" ${S}/><path d="m48 20 3.6 7.4 8.1 1.1-5.9 5.7 1.4 8-7.2-3.8-7.2 3.8 1.4-8-5.9-5.7 8.1-1.1L48 20Z" fill="${A}"${pu}/>`;
+  case 'clock': return `<circle cx="48" cy="48" r="40" ${S}/><path d="M48 24v24l16 10"${dr} ${AS}/>
+    <circle cx="48" cy="48" r="5" fill="${A}"/><path d="M48 8v6M88 48h-6M48 88v-6M8 48h6" ${S}/>`;
+  case 'books': return `<path d="M8 76V20a6 6 0 0 1 6-6h24a10 10 0 0 1 10 10v52" ${S}/>
+    <path d="M88 76V20a6 6 0 0 0-6-6H58a10 10 0 0 0-10 10v52" ${S}/>
+    <path d="M8 76a10 10 0 0 1 10-10h60a10 10 0 0 1 10 10v8H8v-8Z" ${S}/>
+    <path d="M20 30h16M20 42h16M60 30h16M60 42h16"${dr} ${AS}/>`;
+  case 'search': return `<circle cx="42" cy="42" r="30" ${S}/><path d="M64 64 88 88"${dr} ${AS}/>
+    <path d="M42 28v28M28 42h28" ${AS} stroke-width="2.6" opacity=".8"/><circle cx="42" cy="42" r="14" fill="${A}" opacity=".22"${pu}/>`;
+  case 'key': return `<circle cx="30" cy="34" r="20" ${S}/><circle cx="30" cy="34" r="7" fill="${A}"${pu}/>
+    <path d="M44 48 82 86M68 72l10-10M58 62l8-8"${dr} ${AS}/>`;
+  case 'path': return `<path d="M14 84c0-18 20-14 20-30S8 40 14 24c4-11 26-12 34 0 8 12 4 22 14 26 12 5 22-2 24 8"${dr} ${AS} stroke-width="3.4"/>
+    <circle cx="14" cy="84" r="6" fill="#E6E2DA"/><circle cx="26" cy="26" r="5" ${S} stroke-width="2.6"/>
+    <circle cx="58" cy="42" r="5" ${S} stroke-width="2.6"/><circle cx="86" cy="58" r="8" fill="${A}"${pu}/>`;
+  default: return `<circle cx="48" cy="48" r="30" ${AS}/>`;
+  }
+}
+function plate(kind, A, mo){
+  const u = ++UID;
+  return `<svg viewBox="0 0 320 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="g${u}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${A}" stop-opacity=".30"/>
+      <stop offset=".55" stop-color="${A}" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#000305" stop-opacity=".65"/>
+    </linearGradient>
+    <radialGradient id="r${u}" cx=".78" cy=".22" r=".7">
+      <stop offset="0" stop-color="${A}" stop-opacity=".34"/><stop offset="1" stop-color="${A}" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="p${u}" width="11" height="11" patternUnits="userSpaceOnUse">
+      <circle cx="1.4" cy="1.4" r="1" fill="#FCF6EC" opacity=".085"/>
+    </pattern>
+  </defs>
+  <rect width="320" height="140" fill="#0A0D16"/>
+  <rect width="320" height="140" fill="url(#g${u})"/>
+  <rect width="320" height="140" fill="url(#r${u})"/>
+  <rect width="320" height="140" fill="url(#p${u})"/>
+  <g opacity=".10" transform="translate(212,-34) scale(1.85)">${motif(kind,A,0)}</g>
+  <g transform="translate(40,26) scale(0.92)">${motif(kind,A,mo)}</g>
+</svg>`;
+}
+
+/* ============================================================
+   4. RENDER
+   ============================================================ */
+const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 8.4 6.3 11.5 12.8 4.8"/></svg>';
+const PLAY  = '<svg viewBox="0 0 12 12" fill="#fff"><path d="M3.4 2.2 9.6 6 3.4 9.8V2.2Z"/></svg>';
+
+const state = {
+  zoom: 2,
+  done: new Set(),
+  filters: new Set(),
+  people: new Set(),
+  rsvp: new Map(),      // id -> 'yes' | 'no'
+  thanks: new Set(),
+  grade: 11,
+};
+try{ const s = localStorage.getItem('la-journey-done'); if(s) state.done = new Set(JSON.parse(s)); }catch(e){}
+try{ const z = localStorage.getItem('la-journey-zoom'); if(z!==null) state.zoom = +z; }catch(e){}
+// deep link: #z2 / #z2g11  — shareable view state
+{ const h = location.hash.match(/z([0-3])/); if(h) state.zoom = +h[1];
+  const g = location.hash.match(/g(9|1[0-2])/); if(g) state.grade = +g[1]; }
+
+/* Merge the curated spine with everything people added. Curated first inside
+   each month, contributed after, so the month reads "your plan, then theirs". */
+TASKS.forEach(t => { t.k = 'task'; t.by = null; });
+const ITEMS = [...TASKS, ...SHARED];
+ITEMS.forEach((t,i) => t.id = `${t.g}-${t.m}-${i}`);
+
+const accentOf   = t => t.by ? PEOPLE[t.by].c : CATS[t.c].c;
+const CHECKABLE  = ITEMS.filter(t => KINDS[t.k].check);   // events & kudos aren't to-dos
+const esc        = x => String(x).replace(/"/g,'&quot;');
+
+const ICON = {
+  clock:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.2 1.4"/></svg>',
+  pin:  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14s5-4.2 5-7.6A5 5 0 0 0 3 6.4C3 9.8 8 14 8 14Z"/><circle cx="8" cy="6.3" r="1.8"/></svg>',
+  heart:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13.4S2.3 10 2.3 6.2A2.9 2.9 0 0 1 8 5a2.9 2.9 0 0 1 5.7 1.2C13.7 10 8 13.4 8 13.4Z"/></svg>',
+  star: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="m8 1.8 1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6 4.2 13.6l.7-4.3-3.1-3 4.3-.6L8 1.8Z"/></svg>',
+  diam: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="8" y="1.5" width="9.2" height="9.2" rx="2" transform="rotate(45 8 1.5)"/></svg>',
+};
+
+function itemHTML(t){
+  const K = KINDS[t.k], P = t.by ? PEOPLE[t.by] : null, A = accentOf(t);
+  const cls = ['task', 'k-' + t.k];
+  if(t.mi)    cls.push('mile');
+  if(P)       cls.push('contrib');
+  if(t.fresh) cls.push('fresh');
+
+  /* the rail node: a checkbox for to-dos, a marker for moments */
+  const node = K.check
+    ? `<button class="node" data-toggle="${t.id}" aria-pressed="false"
+         aria-label="Mark complete: ${esc(t.t)}">${CHECK}</button>`
+    : `<span class="node ${t.k === 'kudos' ? 'kd' : 'ev'}" aria-hidden="true">${t.k === 'kudos' ? ICON.star : ICON.diam}</span>`;
+
+  /* who put this here */
+  const attrib = P ? `<div class="attrib">
+      <span class="av">${P.i}</span>
+      <b>${P.n}</b><span class="role">${P.r}</span>
+      <span class="kpill">${K.n}</span>
+      ${t.ago ? `<span class="ago">${t.ago}</span>` : ''}
+      ${t.fresh ? '<span class="newdot">New</span>' : ''}
+    </div>` : '';
+
+  /* the meta line says something different for each kind */
+  let meta = '';
+  if(t.k === 'task'){
+    const C = CATS[t.c];
+    meta = `${t.mi ? '<span class="mflag">Key deadline</span>' : ''}
+      <span class="tag"><s></s>${C.n}</span>
+      <span class="mini">${MFULL[t.m]} · Grade ${t.g}</span><span class="mini">·</span><span class="mini">${t.x}</span>`;
+  } else if(t.k === 'assign'){
+    meta = `<span class="due">${t.due}</span>
+      ${t.note ? `<span class="mini">${t.note}</span>` : ''}
+      <span class="mini">·</span><span class="mini">${t.x}</span>`;
+  } else if(t.k === 'event'){
+    meta = `<span class="when">${ICON.clock}${t.when}</span>
+      ${t.where ? `<span class="where">${ICON.pin}${t.where}</span>` : ''}
+      ${t.note ? `<span class="mini">${t.note}</span>` : ''}`;
+  }
+
+  /* actions differ too: you don't "start" a career fair */
+  let acts = '';
+  if(K.check){
+    acts = `<button class="btn p">${t.k === 'assign' ? 'Open assignment' : 'Start this task'}</button>
+            <button class="btn s">Save for later</button>`;
+  } else if(t.k === 'event'){
+    acts = `<button class="btn p" data-rsvp="${t.id}">Going</button>
+            <button class="btn s" data-rsvp-no="${t.id}">Can't make it</button>`;
+  } else {
+    acts = `<button class="btn s" data-thx="${t.id}">${ICON.heart} Say thanks</button>`;
+  }
+
+  return `<article class="${cls.join(' ')}" data-id="${t.id}" data-cat="${t.c || ''}"
+      data-by="${t.by || 'levelall'}" style="--k:${A}">
+    <div class="media">${plate(t.a, A, t.v)}
+      ${t.v ? `<span class="play">${PLAY}</span>` : ''}
+      ${t.x ? `<span class="dur">${t.x}</span>` : ''}
+    </div>
+    <div class="link">${node}</div>
+    <div class="cnt">
+      ${attrib}
+      ${K.check ? `<button class="ttl" data-toggle="${t.id}">${t.t}</button>`
+                : `<span class="ttl as-text">${t.t}</span>`}
+      <p class="dsc">${t.d}</p>
+      ${meta ? `<div class="mrow2">${meta}</div>` : ''}
+      <div class="acts">${acts}</div>
+      <span class="state" data-state="${t.id}"></span>
+    </div>
+  </article>`;
+}
+
+function buildTimeline(){
+  let html = '';
+  GRADES.forEach(G => {
+    const list  = ITEMS.filter(t => t.g === G.g);
+    const todos = list.filter(t => KINDS[t.k].check).length;
+    html += `<section class="grade" id="grade-${G.g}" data-g="${G.g}">
+      <div class="ghead">
+        <div class="num">${G.g}</div><div class="rl"></div>
+        <div class="txt">
+          <h2>${G.name} <span class="tagword">· ${G.tag}</span></h2>
+          <div class="sub">${G.sub}</div>
+          <div class="bar"><div class="track"><div class="fill" data-gfill="${G.g}" style="width:0%"></div></div>
+          <span class="pct" data-gpct="${G.g}">0 / ${todos}</span></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="here" data-here="${G.g}" hidden>
+          <div class="hl"></div><div class="hd"></div><div class="ht">You are here · August</div></div>`;
+
+    MONTHS.forEach(M => {
+      const rows = list.filter(t => t.m === M);
+      if(!rows.length) return;
+      html += `<div class="mrow" data-m="${M}">
+        <div class="myear" data-yr="${G.g}" data-mo="${M}"></div>
+        <div class="mchip">${M.toUpperCase()}</div>
+        <div class="mline"></div></div>` + rows.map(itemHTML).join('');
+    });
+    html += `</div></section>`;
+  });
+
+  html += `<div class="endcap"><div class="ec"><svg viewBox="0 0 24 24" fill="none" stroke="#000305" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M7 10.5V16c0 1.7 2.2 3 5 3s5-1.3 5-3v-5.5"/></svg></div>
+    <div class="et"><b>Move-in day</b><span>Four years, ${CHECKABLE.length} things to do, and four people who helped you get there.</span></div></div>`;
+
+  document.getElementById('tl').innerHTML = html;
+}
+
+/* Newest contributions, surfaced before the reader has to scroll for them. */
+function buildInbox(){
+  const fresh = ITEMS.filter(t => t.fresh);
+  if(!fresh.length) return;
+  const box = document.getElementById('inbox');
+  box.hidden = false;
+  box.innerHTML =
+    `<div class="ihead"><b>${fresh.length} new on your roadmap</b>
+       <span>added by your counselor and family this week</span></div>
+     <div class="icards">` +
+    fresh.map(t => {
+      const P = PEOPLE[t.by];
+      return `<button class="icard" data-goto="${t.id}" style="--k:${P.c}">
+        <span class="av">${P.i}</span>
+        <span class="ic"><span class="in">${t.t}</span>
+          <span class="iw">${P.n} · ${KINDS[t.k].n.toLowerCase()} · ${t.ago}</span></span>
+      </button>`;
+    }).join('') + `</div>`;
+}
+
+/* ---------- grade nav ---------- */
+function buildNav(){
+  document.getElementById('gnav').innerHTML = GRADES.map(G =>
+    `<button data-jump="${G.g}"><span>Grade ${G.g}</span><i data-npct="${G.g}">0%</i></button>`).join('');
+}
+/* ---------- legend / filters ---------- */
+function buildLegend(){
+  const el = document.getElementById('legend');
+  el.innerHTML = `<span class="lb">Filter</span>` + Object.entries(CATS).map(([k,v]) =>
+    `<button class="chip" data-cat="${k}" style="--k:${v.c}"><s></s>${v.n}</button>`).join('')
+    + `<button class="chip reset" data-reset hidden>Clear filters</button>`
+    + `<span class="faces" id="faces"></span>`;
+  const you = PEOPLE.you;
+  const sources = {levelall:{n:'Level All', r:'Your curated plan', i:'LA', c:'#2F62E8'},
+                   rivera:PEOPLE.rivera, osei:PEOPLE.osei, dad:PEOPLE.dad};
+  document.getElementById('faces').innerHTML =
+    `<span class="flab">Shared with</span>` +
+    `<span class="face owner" style="--f:${you.c}" title="${you.n} · owner">
+       <span class="av">${you.i}</span>${you.n}</span>` +
+    Object.entries(sources).map(([k,v]) =>
+      `<button class="face" data-person="${k}" style="--f:${v.c}" title="Show only ${v.n} · ${v.r}">
+         <span class="av">${v.i}</span>${v.n}</button>`).join('');
+}
+
+/* ============================================================
+   5. STATE / INTERACTION
+   ============================================================ */
+function save(){
+  try{
+    localStorage.setItem('la-journey-done', JSON.stringify([...state.done]));
+    localStorage.setItem('la-journey-zoom', String(state.zoom));
+  }catch(e){}
+}
+
+function refreshProgress(){
+  const tot = CHECKABLE.length, n = state.done.size;
+  const pct = tot ? n/tot : 0;
+  const C = 2*Math.PI*16.5;
+  const ring = document.getElementById('ring');
+  ring.setAttribute('stroke-dasharray', C.toFixed(1));
+  ring.setAttribute('stroke-dashoffset', (C*(1-pct)).toFixed(1));
+  document.getElementById('pnum').textContent = Math.round(pct*100)+'%';
+  document.getElementById('pcnt').textContent = `${n} of ${tot}`;
+
+  GRADES.forEach(G=>{
+    const list = CHECKABLE.filter(t=>t.g===G.g);
+    const d = list.filter(t=>state.done.has(t.id)).length;
+    const p = list.length ? d/list.length : 0;
+    const f = document.querySelector(`[data-gfill="${G.g}"]`); if(f) f.style.width = (p*100)+'%';
+    const x = document.querySelector(`[data-gpct="${G.g}"]`);  if(x) x.textContent = `${d} / ${list.length}`;
+    const nb= document.querySelector(`[data-npct="${G.g}"]`);  if(nb) nb.textContent = Math.round(p*100)+'%';
+  });
+}
+
+function toggle(id){
+  const el = document.querySelector(`.task[data-id="${id}"]`);
+  if(!el) return;
+  if(state.done.has(id)) state.done.delete(id); else state.done.add(id);
+  const on = state.done.has(id);
+  el.classList.toggle('done', on);
+  el.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-pressed', on));
+  refreshProgress(); save();
+}
+
+/* ---------- ZOOM (semantic level of detail) ---------- */
+const ZNAMES = ['Overview','Compact','Normal','Detail'];
+function anchorTask(){
+  // the task nearest the top of the viewport, so zoom feels anchored
+  const els = [...document.querySelectorAll('.task:not(.hidden)')];
+  const top = 130;
+  let best = null, bd = 1e9;
+  for(const e of els){
+    const r = e.getBoundingClientRect();
+    const d = Math.abs(r.top - top);
+    if(r.bottom > 0 && d < bd){ bd = d; best = e; }
+  }
+  return best ? {el:best, off:best.getBoundingClientRect().top} : null;
+}
+let zTick = 0;
+function setZoom(z, anim){
+  z = Math.max(0, Math.min(3, z));
+  if(z === state.zoom) return;
+  const a = anchorTask();
+  state.zoom = z;
+  document.documentElement.dataset.zoom = z;
+  document.getElementById('zname').textContent = ZNAMES[z];
+  document.getElementById('zin').disabled  = z===3;
+  document.getElementById('zout').disabled = z===0;
+  document.querySelectorAll('#stops i').forEach((s,i)=>{
+    s.className = i===z ? 'on' : (i<z ? 'pas' : '');
+  });
+  save();
+  if(a){
+    // Hold the anchored task pinned for the whole 320ms layout transition, so
+    // everything grows/shrinks *around* wherever you were looking.
+    const t0 = performance.now();
+    const me = ++zTick;                    // rapid clicks: newest correction wins
+    const tick = () => {
+      if(me !== zTick) return;
+      const d = a.el.getBoundingClientRect().top - a.off;
+      if(Math.abs(d) > 0.5) window.scrollBy(0, d);
+      if(performance.now() - t0 < 440) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+}
+
+function applyFilters(){
+  const f = state.filters, ppl = state.people;
+  document.querySelectorAll('.task').forEach(el=>{
+    const okCat = f.size===0   || f.has(el.dataset.cat);
+    const okWho = ppl.size===0 || ppl.has(el.dataset.by);
+    el.classList.toggle('hidden', !(okCat && okWho));
+  });
+  // collapse month rows and grade sections that emptied out
+  document.querySelectorAll('.grade').forEach(sec=>{
+    let vis = 0, cur = null, curCount = 0;
+    [...sec.querySelector('.body').children].forEach(ch=>{
+      if(ch.classList.contains('mrow')){
+        if(cur) cur.style.display = curCount ? '' : 'none';
+        cur = ch; curCount = 0;
+      } else if(ch.classList.contains('task') && !ch.classList.contains('hidden')){
+        curCount++; vis++;
+      }
+    });
+    if(cur) cur.style.display = curCount ? '' : 'none';
+    sec.style.display = vis ? '' : 'none';
+  });
+  document.querySelectorAll('.chip[data-cat]').forEach(c=>{
+    c.classList.toggle('on', f.has(c.dataset.cat));
+    c.classList.toggle('off', f.size>0 && !f.has(c.dataset.cat));
+  });
+  document.querySelectorAll('.face').forEach(c=>{
+    c.classList.toggle('on', ppl.has(c.dataset.person));
+    c.classList.toggle('off', ppl.size>0 && !ppl.has(c.dataset.person));
+  });
+  document.querySelector('[data-reset]').hidden = (f.size===0 && ppl.size===0);
+}
+
+const BASE_YEAR = 2026;   // August of the selected grade's school year
+function stampYears(sg){
+  document.querySelectorAll('[data-yr]').forEach(el=>{
+    const g = +el.dataset.yr, m = el.dataset.mo;
+    const start = BASE_YEAR + (g - sg);
+    el.textContent = MFULL[m] + ' ' + (MONTHS.indexOf(m) <= 4 ? start : start + 1);
+  });
+}
+function setHere(g){
+  state.grade = g;
+  stampYears(g);
+  document.querySelectorAll('[data-here]').forEach(el=>{
+    el.hidden = (+el.dataset.here !== g);
+  });
+}
+
+/* ---------- boot ---------- */
+buildNav(); buildLegend(); buildTimeline(); buildInbox();
+
+document.getElementById('stops').innerHTML = ZNAMES.map((n,i)=>`<i data-z="${i}" title="${n}"></i>`).join('');
+document.documentElement.dataset.zoom = state.zoom;
+document.getElementById('zname').textContent = ZNAMES[state.zoom];
+document.getElementById('zin').disabled = state.zoom===3;
+document.getElementById('zout').disabled = state.zoom===0;
+document.querySelectorAll('#stops i').forEach((s,i)=>{ s.className = i===state.zoom?'on':(i<state.zoom?'pas':''); });
+
+
+// restore completed state onto DOM
+state.done.forEach(id=>{
+  const el = document.querySelector(`.task[data-id="${id}"]`);
+  if(el){ el.classList.add('done'); el.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-pressed','true')); }
+});
+refreshProgress();
+document.getElementById('gradesel').value = String(state.grade);  // browsers restore form state on reload
+setHere(state.grade);
+
+/* events */
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-toggle]');   if(t){ toggle(t.dataset.toggle); return; }
+  const j = e.target.closest('[data-jump]');     if(j){ document.getElementById('grade-'+j.dataset.jump).scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  const z = e.target.closest('#stops i');        if(z){ setZoom(+z.dataset.z); return; }
+  const c = e.target.closest('.chip[data-cat]'); if(c){ state.filters.has(c.dataset.cat)?state.filters.delete(c.dataset.cat):state.filters.add(c.dataset.cat); applyFilters(); return; }
+  const f = e.target.closest('.face[data-person]');
+  if(f){ const k=f.dataset.person; state.people.has(k)?state.people.delete(k):state.people.add(k); applyFilters(); return; }
+  if(e.target.closest('[data-reset]')){ state.filters.clear(); state.people.clear(); applyFilters(); return; }
+
+  const gt = e.target.closest('[data-goto]');   if(gt){ jumpTo(gt.dataset.goto); return; }
+  const ry = e.target.closest('[data-rsvp]');   if(ry){ setRsvp(ry.dataset.rsvp,'yes'); return; }
+  const rn = e.target.closest('[data-rsvp-no]');if(rn){ setRsvp(rn.dataset.rsvpNo,'no'); return; }
+  const th = e.target.closest('[data-thx]');    if(th){ toggleThanks(th.dataset.thx); return; }
+});
+function jumpTo(id){
+  const el = document.querySelector(`.task[data-id="${id}"]`);
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.remove('flash');
+  void el.offsetWidth;               // restart the animation
+  el.classList.add('flash');
+}
+function setRsvp(id, v){
+  const el = document.querySelector(`.task[data-id="${id}"]`);
+  if(state.rsvp.get(id) === v) state.rsvp.delete(id); else state.rsvp.set(id, v);
+  const cur = state.rsvp.get(id);
+  const chip = el.querySelector('[data-state]');
+  chip.className = 'state' + (cur ? ' on' : '');
+  chip.textContent = cur === 'yes' ? "You're going" : cur === 'no' ? "You said you can't make it" : '';
+  el.querySelectorAll('.acts .btn').forEach(b=>b.style.opacity = cur ? .55 : 1);
+}
+function toggleThanks(id){
+  const el = document.querySelector(`.task[data-id="${id}"]`);
+  const on = !state.thanks.has(id);
+  on ? state.thanks.add(id) : state.thanks.delete(id);
+  const chip = el.querySelector('[data-state]');
+  chip.className = 'state' + (on ? ' on' : '');
+  chip.textContent = on ? 'Thanks sent to ' + PEOPLE[ITEMS.find(t=>t.id===id).by].n : '';
+  el.querySelector('[data-thx]').style.opacity = on ? .55 : 1;
+}
+
+document.getElementById('zin').addEventListener('click',()=>setZoom(state.zoom+1));
+document.getElementById('zout').addEventListener('click',()=>setZoom(state.zoom-1));
+document.getElementById('gradesel').addEventListener('change',e=>{
+  setHere(+e.target.value);
+  document.getElementById('grade-'+e.target.value).scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+/* keyboard */
+addEventListener('keydown', e=>{
+  if(e.target.matches('input,textarea,select')) return;
+  if(e.key==='+'||e.key==='='){ e.preventDefault(); setZoom(state.zoom+1); }
+  if(e.key==='-'||e.key==='_'){ e.preventDefault(); setZoom(state.zoom-1); }
+  if(e.key==='0'){ e.preventDefault(); setZoom(2); }
+});
+/* ctrl/⌘ + wheel  (also captures trackpad pinch) */
+let wl = 0;
+addEventListener('wheel', e=>{
+  if(!(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault();
+  const now = performance.now();
+  if(now - wl < 260) return;
+  wl = now;
+  setZoom(state.zoom + (e.deltaY < 0 ? 1 : -1));
+}, {passive:false});
+
+/* scroll-spy on the grade nav */
+const nav = document.getElementById('gnav');
+const io = new IntersectionObserver(es=>{
+  es.forEach(en=>{
+    if(en.isIntersecting){
+      nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.jump===en.target.dataset.g));
+    }
+  });
+},{rootMargin:'-118px 0px -70% 0px'});
+document.querySelectorAll('.grade').forEach(s=>io.observe(s));
+</script>
