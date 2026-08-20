@@ -89,8 +89,6 @@ select:focus-visible{outline-offset:2px}
 .brand{display:flex;align-items:center;gap:10px;flex:none}
 .brand .mk{width:26px;height:26px;flex:none}
 .brand b{font-size:16.5px;font-weight:700;letter-spacing:-.022em}
-.brand .div{width:1px;height:20px;background:var(--ink-700);margin:0 3px}
-.brand .pg{font-size:13.5px;font-weight:600;color:var(--blue-200);letter-spacing:-.01em}
 
 .spacer{flex:1 1 auto}
 
@@ -135,17 +133,45 @@ select:focus-visible{outline-offset:2px}
   display:flex;gap:6px;align-items:center;flex-wrap:wrap;
 }
 .legend .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--tx-4);margin-right:3px}
-.chip{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 10px 4px 8px;border-radius:99px;
+.dd{position:relative;flex:none}
+.ddbtn{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 9px 5px 11px;border-radius:9px;
   border:1px solid var(--ink-700);background:var(--ink-880);
-  font-size:11.5px;font-weight:600;color:var(--tx-3);transition:.15s;
+  font-size:12px;font-weight:600;color:var(--tx-2);transition:.15s;
 }
-.chip s{width:7px;height:7px;border-radius:99px;background:var(--k);display:block}
-.chip:hover{border-color:var(--ink-600);color:var(--tx-2)}
-.chip.on{background:color-mix(in srgb,var(--k) 15%,var(--ink-880));border-color:color-mix(in srgb,var(--k) 46%,transparent);color:#fff}
-.chip.off{opacity:.42}
-.chip.reset{color:var(--blue-400)}
+.ddbtn > svg:first-child{width:13px;height:13px;opacity:.75}
+.ddbtn > svg:last-child{width:13px;height:13px;opacity:.6;transition:transform .18s}
+.dd.open .ddbtn > svg:last-child{transform:rotate(180deg)}
+.ddbtn:hover{border-color:var(--ink-600);color:var(--tx-1)}
+.dd.open .ddbtn,.ddbtn.active{border-color:color-mix(in srgb,var(--blue) 55%,transparent);color:var(--tx-1)}
+.ddcount[hidden]{display:none}
+.ddcount{
+  min-width:17px;height:17px;padding:0 5px;border-radius:99px;display:grid;place-items:center;
+  background:var(--blue);color:var(--ivory);font-size:10px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+.ddmenu{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:80;min-width:212px;
+  padding:5px;border-radius:12px;background:var(--ink-860);
+  border:1px solid var(--ink-700);box-shadow:0 18px 44px rgba(0,0,0,.6);
+}
+.ddopt{
+  display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;border-radius:8px;
+  font-size:12.5px;font-weight:550;color:var(--tx-2);text-align:left;transition:.12s;
+}
+.ddopt s{width:8px;height:8px;border-radius:99px;background:var(--k);flex:none;display:block}
+.ddopt span{flex:1;min-width:0}
+.ddopt svg{width:13px;height:13px;flex:none;opacity:0;color:var(--blue);transition:opacity .12s}
+.ddopt:hover{background:var(--ink-700);color:var(--tx-1)}
+.ddopt.on{color:var(--tx-1)}
+.ddopt.on svg{opacity:1}
+.ddfoot{border-top:1px solid var(--ink-700);margin-top:4px;padding-top:4px}
+.ddclear{
+  width:100%;padding:6px 9px;border-radius:8px;text-align:left;
+  font-size:12px;font-weight:600;color:var(--blue-400);transition:.12s;
+}
+.ddclear:hover:not(:disabled){background:var(--ink-700)}
+.ddclear:disabled{opacity:.32;cursor:default}
 
 /* ============================================================
    TIMELINE SHELL
@@ -165,15 +191,6 @@ select:focus-visible{outline-offset:2px}
 .hero h1{font-size:40px;line-height:1.06;letter-spacing:-.034em;font-weight:700;margin-bottom:12px;text-wrap:balance}
 .hero h1 em{font-style:normal;color:var(--blue-400)}
 .hero p{font-size:15px;color:var(--tx-2);line-height:1.55;max-width:560px}
-.hero .meta{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;align-items:center}
-.selwrap{display:flex;align-items:center;gap:7px;padding:5px 7px 5px 13px;border-radius:10px;background:var(--ink-880);border:1px solid var(--ink-800)}
-.selwrap span{font-size:11.5px;color:var(--tx-3);font-weight:500}
-.selwrap select{
-  font:inherit;font-size:12.5px;font-weight:600;color:#fff;background:var(--ink-700);
-  border:1px solid var(--ink-600);border-radius:7px;padding:4px 8px;cursor:pointer;
-}
-.selwrap select option{background:var(--ink-880)}
-
 /* ---- GRADE SECTION ---- */
 .grade{position:relative;scroll-margin-top:118px}
 .ghead{
@@ -204,6 +221,13 @@ select:focus-visible{outline-offset:2px}
 
 /* ---- THE RAIL ---- */
 .body{position:relative}
+.railfill{
+  position:absolute;top:0;width:1.5px;height:0;z-index:1;pointer-events:none;
+  left:calc(var(--media-w) + var(--rail)/2);margin-left:-.75px;border-radius:2px;
+  background:linear-gradient(180deg,var(--blue-400),var(--blue));
+  box-shadow:0 0 9px rgba(47,98,232,.55);
+  transition:height .5s cubic-bezier(.4,0,.2,1), left .32s cubic-bezier(.4,0,.2,1);
+}
 .body::before{ /* the continuous vertical line */
   content:''; position:absolute; top:0; bottom:0;
   left:calc(var(--media-w) + var(--rail)/2); width:1.5px; margin-left:-.75px;
@@ -315,7 +339,7 @@ select:focus-visible{outline-offset:2px}
 }
 .acts{display:flex;gap:7px;margin-top:11px}
 .btn{
-  display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:9px;
+  display:inline-flex;align-items:center;gap:6px;padding:6px 15px;border-radius:99px;
   font-size:12.5px;font-weight:600;transition:.15s;
 }
 .btn.p{background:var(--blue);color:#fff}
@@ -474,6 +498,11 @@ select:focus-visible{outline-offset:2px}
   border:1px solid color-mix(in srgb,var(--k) 32%,transparent);
 }
 .btn.s svg{width:12px;height:12px}
+.btn.ico{width:32px;height:32px;padding:0;display:grid;place-items:center;border-radius:99px}
+.btn.ico svg{width:15px;height:15px}
+.btn.ico[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--ivory)}
+.btn.ico[aria-pressed="true"] svg{fill:currentColor}
+.task.contrib .btn.ico[aria-pressed="true"]{background:var(--k);border-color:var(--k);color:var(--ink-950)}
 .task.contrib .btn.p{background:var(--k);color:var(--ink-950)}
 .btn.p:hover{filter:brightness(1.1)}
 
@@ -560,7 +589,6 @@ select:focus-visible{outline-offset:2px}
 
 @media (max-width:720px){
   :root{--rail:30px;--cnt-pad:0px}
-  .brand .pg{display:none}
   .prog .lbl{display:none}
   .gnav button i{display:none}
   .gnav button{padding:6px 9px}
@@ -577,7 +605,7 @@ select:focus-visible{outline-offset:2px}
   .link::before{display:none}
   .cnt{grid-area:cnt;padding-left:0}
   .task.contrib .cnt{margin-left:0}
-  .body::before{left:calc(var(--rail)/2)}
+  .body::before,.railfill{left:calc(var(--rail)/2)}
 
   /* media heights stop tracking a width that no longer exists */
   [data-zoom="1"]{--media-h:92px}
@@ -622,8 +650,6 @@ select:focus-visible{outline-offset:2px}
         <path d="M11 13l10 10M21 15V23h-8" stroke="#2F62E8" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/>
       </svg>
       <b>Level All</b>
-      <span class="div"></span>
-      <span class="pg">College Journey</span>
     </div>
 
     <div class="spacer"></div>
@@ -657,17 +683,6 @@ select:focus-visible{outline-offset:2px}
     <div class="kick">4-Year Plan · Grades 9–12</div>
     <h1>Everything it takes to get into a <em>four-year college</em>.</h1>
     <p>Every deadline, application, test and campus visit from freshman orientation to move-in day — plus whatever your counselor, teachers and family add along the way.</p>
-    <div class="meta">
-      <div class="selwrap">
-        <span>I'm in</span>
-        <select id="gradesel" aria-label="Your current grade">
-          <option value="9">9th grade</option>
-          <option value="10">10th grade</option>
-          <option value="11" selected>11th grade</option>
-          <option value="12">12th grade</option>
-        </select>
-      </div>
-    </div>
   </section>
 
   <section class="inbox" id="inbox" hidden></section>
@@ -985,6 +1000,10 @@ function plate(kind, A, mo){
    ============================================================ */
 const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 8.4 6.3 11.5 12.8 4.8"/></svg>';
 const PLAY  = '<svg viewBox="0 0 12 12" fill="#fff"><path d="M3.4 2.2 9.6 6 3.4 9.8V2.2Z"/></svg>';
+const BOOKMARK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.6h8a.6.6 0 0 1 .6.6v10.2L8 10.9l-4.6 2.5V3.2a.6.6 0 0 1 .6-.6Z"/></svg>';
+const CARET = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5 8 10.5l4-4"/></svg>';
+const TICK  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4 6.3 11.3 12.8 4.8"/></svg>';
+const FUNNEL= '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 3.2h11.6L9.4 8.4v4.3l-2.8 1.3V8.4L2.2 3.2Z"/></svg>';
 
 const state = {
   zoom: 2,
@@ -993,9 +1012,11 @@ const state = {
   people: new Set(),
   rsvp: new Map(),      // id -> 'yes' | 'no'
   thanks: new Set(),
+  saved: new Set(),
   grade: 11,
 };
-try{ const s = localStorage.getItem('la-journey-done'); if(s) state.done = new Set(JSON.parse(s)); }catch(e){}
+try{ const s = localStorage.getItem('la-journey-done');  if(s) state.done  = new Set(JSON.parse(s)); }catch(e){}
+try{ const v = localStorage.getItem('la-journey-saved'); if(v) state.saved = new Set(JSON.parse(v)); }catch(e){}
 try{ const z = localStorage.getItem('la-journey-zoom'); if(z!==null) state.zoom = +z; }catch(e){}
 // deep link: #z2 / #z2g11  — shareable view state
 { const h = location.hash.match(/z([0-3])/); if(h) state.zoom = +h[1];
@@ -1062,7 +1083,8 @@ function itemHTML(t){
   let acts = '';
   if(K.check){
     acts = `<button class="btn p">${t.k === 'assign' ? 'Open assignment' : 'Start this task'}</button>
-            <button class="btn s">Save for later</button>`;
+            <button class="btn s ico" data-save="${t.id}" aria-pressed="false"
+              title="Save for later" aria-label="Save for later: ${esc(t.t)}">${BOOKMARK}</button>`;
   } else if(t.k === 'event'){
     acts = `<button class="btn p" data-rsvp="${t.id}">Going</button>
             <button class="btn s" data-rsvp-no="${t.id}">Can't make it</button>`;
@@ -1105,6 +1127,7 @@ function buildTimeline(){
         </div>
       </div>
       <div class="body">
+        <div class="railfill"></div>
         <div class="here" data-here="${G.g}" hidden>
           <div class="hl"></div><div class="hd"></div><div class="ht">You are here · August</div></div>`;
 
@@ -1150,18 +1173,29 @@ function buildNav(){
   document.getElementById('gnav').innerHTML = GRADES.map(G =>
     `<button data-jump="${G.g}"><span>Grade ${G.g}</span><i data-npct="${G.g}">0%</i></button>`).join('');
 }
-/* ---------- legend / filters ---------- */
+/* ---------- filter dropdown + guides ---------- */
 function buildLegend(){
-  const el = document.getElementById('legend');
-  el.innerHTML = `<span class="lb">Filter</span>` + Object.entries(CATS).map(([k,v]) =>
-    `<button class="chip" data-cat="${k}" style="--k:${v.c}"><s></s>${v.n}</button>`).join('')
-    + `<button class="chip reset" data-reset hidden>Clear filters</button>`
-    + `<span class="faces" id="faces"></span>`;
+  document.getElementById('legend').innerHTML = `
+    <div class="dd" id="catdd">
+      <button class="ddbtn" id="ddbtn" aria-expanded="false" aria-haspopup="true">
+        ${FUNNEL}<span>Categories</span>
+        <span class="ddcount" id="ddcount" hidden>0</span>
+        ${CARET}
+      </button>
+      <div class="ddmenu" id="ddmenu" hidden role="group" aria-label="Filter by category">
+        ${Object.entries(CATS).map(([k,v]) =>
+          `<button class="ddopt" data-cat="${k}" style="--k:${v.c}" role="checkbox" aria-checked="false">
+             <s></s><span>${v.n}</span>${TICK}</button>`).join('')}
+        <div class="ddfoot"><button class="ddclear" data-reset>Clear all</button></div>
+      </div>
+    </div>
+    <span class="faces" id="faces"></span>`;
+
   const you = PEOPLE.you;
   const sources = {levelall:{n:'Level All', r:'Your curated plan', i:'LA', c:'#2F62E8'},
                    rivera:PEOPLE.rivera, osei:PEOPLE.osei, dad:PEOPLE.dad};
   document.getElementById('faces').innerHTML =
-    `<span class="flab">Shared with</span>` +
+    `<span class="flab">Your Guides</span>` +
     `<span class="face owner" style="--f:${you.c}" title="${you.n} · owner">
        <span class="av">${you.i}</span>${you.n}</span>` +
     Object.entries(sources).map(([k,v]) =>
@@ -1169,14 +1203,63 @@ function buildLegend(){
          <span class="av">${v.i}</span>${v.n}</button>`).join('');
 }
 
+function setDD(open){
+  document.getElementById('ddmenu').hidden = !open;
+  document.getElementById('ddbtn').setAttribute('aria-expanded', open);
+  document.getElementById('catdd').classList.toggle('open', open);
+}
+
+/* Newest contributions, surfaced before the reader has to scroll for them. */
+function buildInbox(){
+  const fresh = ITEMS.filter(t => t.fresh);
+  if(!fresh.length) return;
+  const box = document.getElementById('inbox');
+  box.hidden = false;
+  box.innerHTML =
+    `<div class="ihead"><b>${fresh.length} new on your roadmap</b>
+       <span>added by your counselor and family this week</span></div>
+     <div class="icards">` +
+    fresh.map(t => {
+      const P = PEOPLE[t.by];
+      return `<button class="icard" data-goto="${t.id}" style="--k:${P.c}">
+        <span class="av">${P.i}</span>
+        <span class="ic"><span class="in">${t.t}</span>
+          <span class="iw">${P.n} · ${KINDS[t.k].n.toLowerCase()} · ${t.ago}</span></span>
+      </button>`;
+    }).join('') + `</div>`;
+}
+
+/* ---------- grade nav ---------- */
+function buildNav(){
+  document.getElementById('gnav').innerHTML = GRADES.map(G =>
+    `<button data-jump="${G.g}"><span>Grade ${G.g}</span><i data-npct="${G.g}">0%</i></button>`).join('');
+}
+
 /* ============================================================
    5. STATE / INTERACTION
    ============================================================ */
 function save(){
   try{
-    localStorage.setItem('la-journey-done', JSON.stringify([...state.done]));
+    localStorage.setItem('la-journey-done',  JSON.stringify([...state.done]));
+    localStorage.setItem('la-journey-saved', JSON.stringify([...state.saved]));
     localStorage.setItem('la-journey-zoom', String(state.zoom));
   }catch(e){}
+}
+
+function paintRails(){
+  document.querySelectorAll('.grade .body').forEach(body=>{
+    const fill = body.querySelector('.railfill');
+    if(!fill) return;
+    const done  = [...body.querySelectorAll('.task.done:not(.hidden)')];
+    const todo  = [...body.querySelectorAll('.task:not(.hidden)')]
+                    .filter(t => t.querySelector('.node[data-toggle]'));
+    if(!done.length){ fill.style.height = '0px'; return; }
+    if(done.length === todo.length){ fill.style.height = body.offsetHeight + 'px'; return; }
+    const node = done[done.length-1].querySelector('.node');
+    const top  = body.getBoundingClientRect().top;
+    const r    = node.getBoundingClientRect();
+    fill.style.height = Math.max(0, (r.top + r.height/2) - top) + 'px';
+  });
 }
 
 function refreshProgress(){
@@ -1206,7 +1289,7 @@ function toggle(id){
   const on = state.done.has(id);
   el.classList.toggle('done', on);
   el.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-pressed', on));
-  refreshProgress(); save();
+  refreshProgress(); paintRails(); save();
 }
 
 /* ---------- ZOOM (semantic level of detail) ---------- */
@@ -1246,6 +1329,7 @@ function setZoom(z, anim){
       if(me !== zTick) return;
       const d = a.el.getBoundingClientRect().top - a.off;
       if(Math.abs(d) > 0.5) window.scrollBy(0, d);
+      paintRails();
       if(performance.now() - t0 < 440) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -1273,15 +1357,21 @@ function applyFilters(){
     if(cur) cur.style.display = curCount ? '' : 'none';
     sec.style.display = vis ? '' : 'none';
   });
-  document.querySelectorAll('.chip[data-cat]').forEach(c=>{
-    c.classList.toggle('on', f.has(c.dataset.cat));
-    c.classList.toggle('off', f.size>0 && !f.has(c.dataset.cat));
+  document.querySelectorAll('.ddopt[data-cat]').forEach(c=>{
+    const on = f.has(c.dataset.cat);
+    c.classList.toggle('on', on);
+    c.setAttribute('aria-checked', on);
   });
+  const badge = document.getElementById('ddcount');
+  badge.hidden = f.size === 0;
+  badge.textContent = f.size;
+  document.getElementById('ddbtn').classList.toggle('active', f.size>0);
   document.querySelectorAll('.face').forEach(c=>{
     c.classList.toggle('on', ppl.has(c.dataset.person));
     c.classList.toggle('off', ppl.size>0 && !ppl.has(c.dataset.person));
   });
-  document.querySelector('[data-reset]').hidden = (f.size===0 && ppl.size===0);
+  document.querySelector('.ddclear').disabled = (f.size===0 && ppl.size===0);
+  paintRails();
 }
 
 const BASE_YEAR = 2026;   // August of the selected grade's school year
@@ -1312,20 +1402,27 @@ document.querySelectorAll('#stops i').forEach((s,i)=>{ s.className = i===state.z
 
 
 // restore completed state onto DOM
+state.saved.forEach(id=>{
+  const b = document.querySelector(`[data-save="${id}"]`);
+  if(b){ b.setAttribute('aria-pressed','true'); b.title='Saved'; }
+});
 state.done.forEach(id=>{
   const el = document.querySelector(`.task[data-id="${id}"]`);
   if(el){ el.classList.add('done'); el.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-pressed','true')); }
 });
 refreshProgress();
-document.getElementById('gradesel').value = String(state.grade);  // browsers restore form state on reload
-setHere(state.grade);
+paintRails();
+addEventListener('resize', paintRails);
+setHere(state.grade);   // 11th grade unless a #g11-style deep link says otherwise
 
 /* events */
 document.addEventListener('click', e=>{
   const t = e.target.closest('[data-toggle]');   if(t){ toggle(t.dataset.toggle); return; }
   const j = e.target.closest('[data-jump]');     if(j){ document.getElementById('grade-'+j.dataset.jump).scrollIntoView({behavior:'smooth',block:'start'}); return; }
   const z = e.target.closest('#stops i');        if(z){ setZoom(+z.dataset.z); return; }
-  const c = e.target.closest('.chip[data-cat]'); if(c){ state.filters.has(c.dataset.cat)?state.filters.delete(c.dataset.cat):state.filters.add(c.dataset.cat); applyFilters(); return; }
+  const c = e.target.closest('.ddopt[data-cat]'); if(c){ state.filters.has(c.dataset.cat)?state.filters.delete(c.dataset.cat):state.filters.add(c.dataset.cat); applyFilters(); return; }
+  if(e.target.closest('#ddbtn')){ setDD(document.getElementById('ddmenu').hidden); return; }
+  if(!e.target.closest('#catdd')) setDD(false);
   const f = e.target.closest('.face[data-person]');
   if(f){ const k=f.dataset.person; state.people.has(k)?state.people.delete(k):state.people.add(k); applyFilters(); return; }
   if(e.target.closest('[data-reset]')){ state.filters.clear(); state.people.clear(); applyFilters(); return; }
@@ -1334,6 +1431,7 @@ document.addEventListener('click', e=>{
   const ry = e.target.closest('[data-rsvp]');   if(ry){ setRsvp(ry.dataset.rsvp,'yes'); return; }
   const rn = e.target.closest('[data-rsvp-no]');if(rn){ setRsvp(rn.dataset.rsvpNo,'no'); return; }
   const th = e.target.closest('[data-thx]');    if(th){ toggleThanks(th.dataset.thx); return; }
+  const sv = e.target.closest('[data-save]');   if(sv){ toggleSave(sv.dataset.save); return; }
 });
 function jumpTo(id){
   const el = document.querySelector(`.task[data-id="${id}"]`);
@@ -1352,6 +1450,14 @@ function setRsvp(id, v){
   chip.textContent = cur === 'yes' ? "You're going" : cur === 'no' ? "You said you can't make it" : '';
   el.querySelectorAll('.acts .btn').forEach(b=>b.style.opacity = cur ? .55 : 1);
 }
+function toggleSave(id){
+  const on = !state.saved.has(id);
+  on ? state.saved.add(id) : state.saved.delete(id);
+  const b = document.querySelector(`[data-save="${id}"]`);
+  b.setAttribute('aria-pressed', on);
+  b.title = on ? 'Saved' : 'Save for later';
+  save();
+}
 function toggleThanks(id){
   const el = document.querySelector(`.task[data-id="${id}"]`);
   const on = !state.thanks.has(id);
@@ -1364,10 +1470,6 @@ function toggleThanks(id){
 
 document.getElementById('zin').addEventListener('click',()=>setZoom(state.zoom+1));
 document.getElementById('zout').addEventListener('click',()=>setZoom(state.zoom-1));
-document.getElementById('gradesel').addEventListener('change',e=>{
-  setHere(+e.target.value);
-  document.getElementById('grade-'+e.target.value).scrollIntoView({behavior:'smooth',block:'start'});
-});
 
 /* keyboard */
 addEventListener('keydown', e=>{
@@ -1375,6 +1477,7 @@ addEventListener('keydown', e=>{
   if(e.key==='+'||e.key==='='){ e.preventDefault(); setZoom(state.zoom+1); }
   if(e.key==='-'||e.key==='_'){ e.preventDefault(); setZoom(state.zoom-1); }
   if(e.key==='0'){ e.preventDefault(); setZoom(2); }
+  if(e.key==='Escape'){ setDD(false); }
 });
 /* ctrl/⌘ + wheel  (also captures trackpad pinch) */
 let wl = 0;
