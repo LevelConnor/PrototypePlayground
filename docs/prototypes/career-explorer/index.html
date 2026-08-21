@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--hero-fade:239,246,255;--navy:#0A0F2E;--blue:#0083FF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#EFF6FF;--mg:#BFDBFE;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px;
+:root{--hero-fade:239,246,255;--map-nodata:#E3E7EE;--navy:#0A0F2E;--blue:#0083FF;--white:#fff;--green:#68F4B8;--yellow:#FFD810;--purple:#AD6BFF;--pink:#F49FFB;--off:#EFF6FF;--mg:#BFDBFE;--lg:#F0F0ED;--ts:#5A5A6A;--rsm:8px;--rmd:14px;--rlg:20px;--rf:100px;
 /* Always-dark surface (header + toast + image placeholders) — stays
    dark in both themes regardless of how --navy gets swapped. */
 --header-bg:#0A0F2E;
@@ -20,7 +20,7 @@
    tokens and inverts the primary text color (--navy). Accent colors
    (blue, yellow, etc.) stay constant. */
 body.dark{
-  --hero-fade:0,23,59;--off:#00173B;        /* darkest navy — page background */
+  --hero-fade:0,23,59;--map-nodata:#1A2340;--off:#00173B;        /* darkest navy — page background */
   --white:#172554;      /* surface — search bar, filter fills, cards */
   --mg:#213168;         /* borders + hover surfaces */
   --lg:#213168;         /* secondary surface */
@@ -895,6 +895,9 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 .state-map{position:relative}
 .state-map-loading{padding:24px 20px;text-align:center;color:var(--ts);font-size:14px}
 .state-map svg{width:100%;height:auto;display:block}
+/* No hover treatment on states — the native title tooltip carries the state
+   name and outlook, so the stroke change was decoration. The transition
+   stays for .selected, which still animates its stroke. */
 .state-map svg path[data-state]{stroke:var(--mg);stroke-width:1.2;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
 /* The Wikimedia SVG carries a separate <g class="borders"> layer of
    between-state lines with an inline stroke:#FFFFFF. Repaint those to
@@ -913,8 +916,13 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 .state-map svg path[data-variant="good"]{fill:#0083FF;fill-opacity:1}
 .state-map svg path[data-variant="ok"]{fill:#0083FF;fill-opacity:.55}
 .state-map svg path[data-variant="low"]{fill:#0083FF;fill-opacity:.24}
-.state-map svg path[data-variant="none"]{fill:transparent;stroke:var(--mg);stroke-dasharray:2 2}
-.state-map svg path[data-state]:hover{stroke:var(--blue);stroke-width:1.4}
+/* No data is a flat neutral fill, not a dashed hollow. The old treatment
+   left the state transparent, so the dash was the only thing separating
+   it from the card; and because stroke-dasharray is in user units it
+   scaled with the SVG, breaking into coarse specks when zoomed —
+   worst on Alaska, whose Aleutian outline is hundreds of tiny segments.
+   --map-nodata sits off the blue ramp so it cannot be read as a value. */
+.state-map svg path[data-variant="none"]{fill:var(--map-nodata);stroke:var(--mg);stroke-width:1;vector-effect:non-scaling-stroke}
 .state-map svg path.selected{stroke:var(--blue);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(0,131,255,.45))}
 .state-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;font-size:12px;color:var(--ts);margin:14px 0 0}
 .state-map-legend span{display:inline-flex;align-items:center;gap:6px}
@@ -922,7 +930,7 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 .state-tile-mini[data-variant="good"]{background:#0083FF}
 .state-tile-mini[data-variant="ok"]{background:#0083FF;opacity:.55}
 .state-tile-mini[data-variant="low"]{background:#0083FF;opacity:.24}
-.state-tile-mini[data-variant="none"]{background:transparent;border:2px dashed var(--mg)}
+.state-tile-mini[data-variant="none"]{background:var(--map-nodata);border:1px solid var(--mg)}
 .state-outlook-foot{font-size:12px;color:var(--ts);line-height:1.5;margin:8px 0 0}
 /* Stat tiles are NEUTRAL by default. Green was the default here, which is
    why a "Below average" outlook and a plain salary both rendered bright
