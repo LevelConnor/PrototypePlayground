@@ -656,6 +656,10 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 /* Two gradient styles: default = primary-blue, .bright = sunrise.
    The class is added by buildLiveCard based on the Bright Outlook flag. */
 .ccard{position:relative;aspect-ratio:1.05/1;border-radius:20px;overflow:hidden;cursor:pointer;
+  /* --mg is the app-wide border colour (43 of 45 border declarations).
+     box-sizing is border-box globally, so this insets the artwork by 1px
+     rather than growing the card. */
+  border:1px solid var(--mg);
   /* Base layer is the solid hover color; the gradient sits on top via
      a ::before that we fade out on hover. Browsers can't tween between
      a linear-gradient and a solid color, so transitioning the `background`
