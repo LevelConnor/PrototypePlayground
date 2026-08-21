@@ -348,6 +348,7 @@ function certsForCode(code) {
   return CERT_MAP[c6] || CERT_MAP[c4] || CERT_MAP[c2] || [];
 }
 
+// `draw` is unused by the current blurb copy — kept as reference wording.
 const RI = {
   R:{name:'Realistic — The Builder',       short:'Realistic',     desc:'Hands-on work, tools, and physical tasks.',
      draw:'solving practical, hands-on problems',                 look:'hands-on work you can see and touch'},
@@ -377,12 +378,19 @@ function ipBlurb(sorted) {
     `<strong>${RI[k2].short}</strong>`,
     `<strong>${RI[k3].short}</strong>`
   );
-  const draws = oxford(RI[k1].draw, RI[k2].draw, RI[k3].draw);
-  const looks = oxford(RI[k1].look, RI[k2].look, RI[k3].look);
-  // Plain prose: this now sits in the results card's left column beside the
-  // score pills, so it no longer needs the collapsible <details> wrapper.
+  // Two of the six look phrases carry their own commas (Enterprising and
+  // Conventional), which makes a plain Oxford join read as one flat list.
+  // Escalate to semicolons only when a clause actually contains a comma.
+  const join3 = (a, b, c) => {
+    const sep = [a, b, c].some(t => t.includes(',')) ? '; ' : ', ';
+    return `${a}${sep}${b}${sep}and ${c}`;
+  };
+  const looks = join3(RI[k1].look, RI[k2].look, RI[k3].look);
+  // One sentence. The earlier copy also enumerated each area's `draw`
+  // phrase, but a type's draw and look say much the same thing, and six
+  // clauses ran past a dozen lines in the card's narrow column.
   return `<p class="ip-blurb-body">
-      Your top three — ${areas} — point you toward ${draws}. When you're weighing careers, favor roles that offer ${looks}.
+      Your top three — ${areas} — point you toward roles offering ${looks}.
     </p>`;
 }
 
