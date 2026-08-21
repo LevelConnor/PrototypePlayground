@@ -196,6 +196,45 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 .home-section{margin:36px 0 0}
 
+/* ── Home hero ─────────────────────────────────────────────────────────
+   Brand band under the header. Deliberately theme-independent, same as the
+   header itself, so the gradient reads identically in light and dark. */
+.hero{position:relative;overflow:hidden;
+  background:
+    radial-gradient(880px 300px at 30% 4%, rgba(180,172,255,.55) 0%, rgba(180,172,255,0) 62%),
+    linear-gradient(180deg,#7d82d4 0%,#5079d2 48%,#2b72c7 100%)}
+.hero[hidden]{display:none}
+.hero-inner{max-width:900px;margin:0 auto;padding:44px 20px 48px;
+  display:flex;align-items:center;justify-content:space-between;gap:36px}
+.hero-copy{min-width:0}
+.hero-title{font-size:clamp(26px,3.2vw,38px);font-weight:900;line-height:1.12;
+  letter-spacing:-.02em;color:#fff;margin:0 0 12px}
+.hero-sub{margin:0;font-size:16px;line-height:1.6;color:rgba(255,255,255,.84);max-width:56ch}
+.hero-icons{flex-shrink:0;display:grid;grid-template-columns:repeat(2,56px);gap:12px}
+.hero-icon{width:56px;height:56px;border-radius:14px;padding:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:#CFE0FF;
+  background:rgba(8,20,48,.40);border:1px solid rgba(255,255,255,.16);
+  transition:background .18s ease, border-color .18s ease, transform .18s ease}
+.hero-icon:hover{background:rgba(8,20,48,.62);border-color:rgba(255,255,255,.34);transform:translateY(-2px)}
+.hero-icon:active{transform:translateY(0) scale(.95)}
+.hero-icon:focus-visible{outline:2px solid #fff;outline-offset:3px}
+/* Lucide strokes drive the mask's alpha, so background:currentColor is what
+   actually colours the glyph. */
+.hero-icon-glyph{width:26px;height:26px;display:block;background:currentColor;
+  -webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+@keyframes heroPop{0%{transform:scale(.82)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.hero-icon--pop .hero-icon-glyph{animation:heroPop .28s ease}
+@media (max-width:760px){
+  .hero-inner{flex-direction:column;align-items:flex-start;gap:24px;padding:32px 14px 34px}
+  .hero-sub{font-size:15px}
+}
+/* No motion guard existed anywhere in this file; scope one to what the hero adds. */
+@media (prefers-reduced-motion:reduce){
+  .hero-icon{transition:none}
+  .hero-icon:hover,.hero-icon:active{transform:none}
+  .hero-icon--pop .hero-icon-glyph{animation:none}
+}
+
 /* ── Home journey stepper ──────────────────────────────────────────────
    Four stages down a progress rail. The marker column is a fixed 28px so
    the rail (drawn as .step::before) lines up on its centre at left:13px.
@@ -203,8 +242,6 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    read as a pair — change all four together if either size moves.
    A stage gains .step--done from syncSteps() when its outcome exists,
    which turns both the marker and the rail segment below it green. */
-#panel-home .pt-eyebrow{font-size:20px;font-weight:700;color:var(--blue);letter-spacing:-.01em;text-transform:none;margin-bottom:4px}
-#panel-home .pt{font-size:24px;font-weight:800;letter-spacing:-.01em;margin-bottom:0}
 .steps{margin:26px 0 0}
 .step{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:16px;padding-bottom:26px}
 .step:last-child{padding-bottom:0}
@@ -594,7 +631,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .riasec-table tr:last-child td{border-bottom:none}
 .riasec-table .rt-code{font-size:15px;font-weight:900;color:var(--navy);white-space:nowrap;padding-right:14px}
 .riasec-table .rt-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle;flex-shrink:0}
-@media print{header,nav,.mock-note,.sav,.tov,.tpn,.toast,.modal-overlay,#afw{display:none!important}.panel{display:block!important}body{background:#fff}.pt{font-size:20px}}
+@media print{header,nav,.hero,.mock-note,.sav,.tov,.tpn,.toast,.modal-overlay,#afw{display:none!important}.panel{display:block!important}body{background:#fff}.pt{font-size:20px}}
 #print-header{display:none;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--blue)}
 #print-footer{display:none;margin-top:32px;padding-top:16px;border-top:1px solid #BFDBFE;font-size:11px;color:#666;}
 #print-restore-url{font-size:11px;word-break:break-all;color:#333;margin-top:4px}
@@ -912,14 +949,33 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   </div>
 </header>
 
+<!-- Home hero. Sits OUTSIDE <main> so the gradient runs edge to edge while
+     .hero-inner still aligns to main's 900px column. It belongs to the Home
+     panel only, so switchTab() toggles it. The four tiles are buttons: each
+     click advances that tile to the next career icon not already showing in
+     another tile (see heroCycle in app.js). Glyphs are Lucide SVGs applied
+     as a CSS mask, so currentColor tints them — an <img> would render black. -->
+<section class="hero" id="home-hero" aria-labelledby="hero-title">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <h1 class="hero-title" id="hero-title">Let's figure out what you want to do.</h1>
+      <p class="hero-sub">Some people have it all figured out at five. Most of us take a while longer. Wherever you're at, it starts with a little self-reflection, then it takes action. Let's get started.</p>
+    </div>
+    <div class="hero-icons">
+      <button class="hero-icon" type="button" data-hero-i="0"><span class="hero-icon-glyph" aria-hidden="true"></span></button>
+      <button class="hero-icon" type="button" data-hero-i="1"><span class="hero-icon-glyph" aria-hidden="true"></span></button>
+      <button class="hero-icon" type="button" data-hero-i="2"><span class="hero-icon-glyph" aria-hidden="true"></span></button>
+      <button class="hero-icon" type="button" data-hero-i="3"><span class="hero-icon-glyph" aria-hidden="true"></span></button>
+    </div>
+  </div>
+</section>
+
 <main>
 
 <!-- ASSESSMENT -->
 <!-- HOME (landing) — default active. Everything else is reachable from
      here via the big link cards or the header nav tabs. -->
 <div class="panel active" id="panel-home">
-  <div class="pt-eyebrow">Career Finder</div>
-  <div class="pt" id="home-pt">Let's figure out what you want to do.</div>
 
   <!-- The home page is a four-stage journey. Every stage stays visible from
        the start so a first-time visitor can see the whole arc; stages that

@@ -75,6 +75,8 @@ document.addEventListener('click', function(e) {
   // icon targets the svg/path rather than the button. It matched by id
   // only while the content was a bare emoji (text nodes aren't targets).
   if (t.closest('#btn-theme')) { toggleTheme(); return; }
+  const heroBtn = t.closest('.hero-icon');
+  if (heroBtn) { heroCycle(Number(heroBtn.dataset.heroI)); return; }
   if (t.id === 'btn-close-tray') { closeTray(); return; }
   if (t.id === 'tov') { closeTray(); return; }
   if (t.id === 'btn-tray-link') { copyTrayLink(); return; }
@@ -410,6 +412,9 @@ function switchTab(id, btn) {
   document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
   const panel = document.getElementById('panel-' + id);
   if (panel) panel.classList.add('active');
+  // Hero lives outside <main>, so it isn't a .panel — toggle it by hand.
+  const hero = document.getElementById('home-hero');
+  if (hero) hero.hidden = (id !== 'home');
   // The top nav is gone (users navigate via Home cards + Back buttons),
   // but keep this branch working for any legacy .nt tab still on the
   // page.
@@ -3102,6 +3107,50 @@ function handleZipSearch(pid, careerTitle, onetCode) {
   }, 800);
 }
 
+/* ══ HOME HERO ICONS ══ */
+// Every name here was checked against the CDN — a missing one fails silently
+// (an empty mask paints nothing), so don't add to this list unverified.
+// Lucide has no "basketball"; "volleyball" is the ball-with-curves glyph.
+const HERO_ICON_BASE = 'https://unpkg.com/lucide-static@latest/icons/';
+const HERO_ICONS = [
+  'stethoscope','volleyball','palette','telescope','wrench','code','scale',
+  'graduation-cap','chef-hat','camera','plane','microscope','hammer',
+  'calculator','music','sprout','heart-pulse','gavel','drafting-compass',
+  'flask-conical','briefcase',
+];
+// Which pool entry each of the four tiles is showing. Opens on the first
+// four, matching the design.
+let heroIdx = [0, 1, 2, 3];
+
+function heroPaint(i) {
+  const btn = document.querySelector('.hero-icon[data-hero-i="' + i + '"]');
+  if (!btn) return;
+  const name = HERO_ICONS[heroIdx[i]];
+  btn.querySelector('.hero-icon-glyph')
+     .style.setProperty('--icon', 'url("' + HERO_ICON_BASE + name + '.svg")');
+  // The glyph is decorative, so the button needs its own name for SRs.
+  btn.setAttribute('aria-label', name.replace(/-/g, ' ') + ' — tap for another career icon');
+  btn.title = 'Tap for another career icon';
+}
+
+// Advance to the next icon that no other tile is showing, so the four never
+// collide. The pool is far larger than four, so this always terminates.
+function heroCycle(i) {
+  const taken = new Set(heroIdx.filter((_, j) => j !== i));
+  let n = heroIdx[i];
+  do { n = (n + 1) % HERO_ICONS.length; } while (taken.has(n));
+  heroIdx[i] = n;
+  heroPaint(i);
+  const btn = document.querySelector('.hero-icon[data-hero-i="' + i + '"]');
+  if (btn) { btn.classList.remove('hero-icon--pop'); void btn.offsetWidth; btn.classList.add('hero-icon--pop'); }
+}
+
+function heroInit() {
+  heroIdx.forEach((_, i) => heroPaint(i));
+  // Warm the cache so the first cycle doesn't flash an empty tile.
+  HERO_ICONS.forEach(n => { const im = new Image(); im.src = HERO_ICON_BASE + n + '.svg'; });
+}
+
 /* ══ THEME ══ */
 const THEME_ICON = {
   moon: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="#DBEAFE"/></svg>',
@@ -3132,6 +3181,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   applyTheme(saved || (prefersDark ? 'dark' : 'light'));
 
+  heroInit();
   restoreFromURL();
   renderClusterGrid();
   syncProfileUI();
