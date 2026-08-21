@@ -228,7 +228,8 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .home-card--tile .home-card-body{display:contents}
 .home-card--tile .home-card-title{grid-area:title;align-self:end}
 .home-card--tile .home-card-desc{grid-area:desc;align-self:end}
-.home-card--tile .home-card-cta{grid-area:cta}
+.home-card--tile .home-card-cta{grid-area:cta;width:44px;height:44px;padding:0;gap:0;border-radius:50%;justify-content:center}
+.home-card--tile .home-card-cta svg{width:16px;height:16px}
 
 /* Placeholder row for a stage with nothing in it yet — shared by stage 4
    and the stage-3 empty state that renderHomeSaved() paints. */
@@ -238,7 +239,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 @media(max-width:760px){
   .step-grid{grid-template-columns:minmax(0,1fr)}
   .home-card--tile{grid-template-columns:minmax(0,1fr);grid-template-areas:'icon' 'title' 'desc' 'cta';align-items:stretch}
-  .home-card--tile .home-card-cta{width:auto;justify-self:start;text-align:left}
+  .home-card--tile .home-card-cta{justify-self:start}
 }
 
 
@@ -958,7 +959,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                 <h2 class="home-card-title">Browse Careers</h2>
                 <p class="home-card-desc">See your matches and browse all careers.</p>
               </div>
-              <span class="home-card-cta">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
+              <span class="home-card-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
             </button>
           <button class="home-card home-card--tile" data-tab-target="clusters" type="button">
               <div class="home-card-icon home-icon-clusters" aria-hidden="true">
@@ -968,7 +969,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                 <h2 class="home-card-title">Explore Career Clusters</h2>
                 <p class="home-card-desc">Browse 14 industries.</p>
               </div>
-              <span class="home-card-cta">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
+              <span class="home-card-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
             </button>
         </div>
       </div>
