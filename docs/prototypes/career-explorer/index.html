@@ -34,6 +34,10 @@ body.dark{
 body.dark .pt,
 body.dark .t-eyebrow{color:#fff}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* The hidden attribute is only a UA-stylesheet display:none, so any author
+   display rule beats it — .step-empty{display:flex} silently did, leaving
+   stage 4's placeholder on screen underneath the Next Moves cards. */
+[hidden]{display:none!important}
 body{background:var(--off);color:var(--navy);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 /* ─────────────────────────────────────────────────────────────
@@ -991,14 +995,15 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <div class="step-marker" aria-hidden="true"><span class="step-num">4</span><svg class="step-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4.5 4.5L19 7"/></svg></div>
       <div class="step-head"><h2 class="step-title">Take Your Next Steps</h2></div>
       <div class="step-body">
-        <div class="step-empty">
+        <div class="step-empty" id="nm-empty">
           <div class="home-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></div>
           <p>Once you save careers, we'll show you how to get there.</p>
         </div>
-        <!-- Parked for a later pass: the three Next Moves cards are kept here,
-             hidden, so they can be brought back without rebuilding them. -->
-        <div class="home-section" id="home-next-moves" hidden>
-            <h2 class="home-section-heading">Your Next Moves</h2>
+        <!-- Swapped in for #nm-empty by renderHomeSaved() once a career is
+             saved. Not a .home-section any more: that carries a 36px top
+             margin meant for a top-level section, and the stage heading above
+             already titles this block. -->
+        <div id="home-next-moves" hidden>
             <p class="home-section-sub">Recommendations based on the careers you've saved.</p>
             <div class="home-nm-grid home-nm-grid--3">
               <button class="home-nm-card" data-nm="courses" type="button">

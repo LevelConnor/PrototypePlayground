@@ -2743,8 +2743,13 @@ function renderHomeSaved() {
   const count = document.getElementById('home-priority-count');
   if (chip) chip.style.display = sorted.length ? '' : 'none';
   if (count) count.textContent = topPicks.size;
-  // Stage 4 always shows its placeholder for now; the three Next Moves cards
-  // stay parked (hidden) in the markup until that pass is picked back up.
+  // Stage 4 swaps its placeholder for the three Next Moves cards as soon as
+  // there is a saved career for them to draw on. This toggle was lost when
+  // the stepper was built and the cards were parked behind the placeholder.
+  const nm = document.getElementById('home-next-moves');
+  const nmEmpty = document.getElementById('nm-empty');
+  if (nm) nm.hidden = !sorted.length;
+  if (nmEmpty) nmEmpty.hidden = !!sorted.length;
   syncSteps();
 }
 
