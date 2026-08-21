@@ -556,7 +556,12 @@ function submitAssessment() {
 // outcome to point at yet, so it stays numbered.
 function syncSteps() {
   const savedCount = [...saved].filter(k => typeof k === 'string' && k.startsWith('live-')).length;
-  const flags = { 'step-1': !!lastResults, 'step-2': savedCount > 0, 'step-3': savedCount > 0 };
+  const flags = {
+    'step-1': !!lastResults,
+    'step-2': savedCount > 0,
+    'step-3': savedCount > 0,
+    'step-4': nmEverOpened,
+  };
   Object.entries(flags).forEach(([id, done]) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('step--done', done);
@@ -818,6 +823,7 @@ function getStateUrl() {
     results:  lastResults,
     saved:    [...saved],
     topPicks: [...topPicks],
+    nmSeen:   nmEverOpened,
   }));
   return location.href.split('?')[0] + '?state=' + data;
 }
@@ -2495,6 +2501,10 @@ async function ensureSavedMeta() {
 // { 'code|slice': Promise resolving to parsed JSON }
 const nmSliceCache = new Map();
 let nmOpenType = null; // 'courses' | 'skills' | 'pathways'
+// Stage 4's outcome is "you looked at your next steps", so opening any of the
+// three cards completes it. Rides along in the shared state so a copied link
+// restores the same stepper, exactly like saves and the top career.
+let nmEverOpened = false;
 
 function nmSlice(code, slice) {
   const key = code + '|' + slice;
@@ -2523,6 +2533,8 @@ const NM_TYPES = {
 function openNextMoves(type) {
   if (!NM_TYPES[type]) return;
   nmOpenType = type;
+  nmEverOpened = true;
+  syncSteps();
   const overlay = document.getElementById('nm-overlay');
   if (!overlay) return;
   overlay.classList.add('open');
@@ -2878,6 +2890,7 @@ function restoreFromURL() {
         if (typeof k === 'string' && k.startsWith('live-')) saved.add(k);
       });
     }
+    if (d.nmSeen) nmEverOpened = true;
     // Top career restored alongside the saves. Bare career codes. Only one
     // slot exists now, so a link written by an older build (which could carry
     // up to five) restores the first that is still saved and drops the rest.
