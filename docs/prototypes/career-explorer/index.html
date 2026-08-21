@@ -878,10 +878,15 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 .state-map svg path[data-state]{stroke:var(--mg);stroke-width:1.2;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
 /* The Wikimedia SVG carries a separate <g class="borders"> layer of
    between-state lines with an inline stroke:#FFFFFF. Repaint those to
-   match the card border, and bump the width so they don't get lost. */
+   match the card border.
+   non-scaling-stroke is the important part: the 959-wide viewBox renders
+   about 725px on desktop, so a declared 1.6 came out as 1.21 real pixels —
+   and on a phone, where the scale drops to roughly a quarter, it thinned to
+   under half a pixel and effectively vanished. With the vector effect the
+   width is screen pixels, so the borders hold up at any card size. */
 .state-map svg g.borders,
 .state-map svg g.borders path,
-.state-map svg .separator1{stroke:var(--mg);stroke-width:1.6}
+.state-map svg .separator1{stroke:var(--mg);stroke-width:2;vector-effect:non-scaling-stroke}
 /* Solid palette so the map reads the same on light + dark backgrounds
    (alpha overlays disappeared into the dark modal surface). Sequential
    green: brighter = more opportunity. */
