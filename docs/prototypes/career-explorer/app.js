@@ -3228,6 +3228,20 @@ function heroCycle(i) {
 
 function heroInit() {
   heroIdx.forEach((_, i) => heroPaint(i));
+
+  // Hover swaps as well as click. Bound directly rather than delegated:
+  // mouseenter doesn't bubble, and a delegated mouseover would re-fire on
+  // every pointer move inside the tile and spin the icons. The tiles are
+  // static markup, so binding once here is safe.
+  // Gated on a real hover device — on touch, a tap synthesises mouseenter
+  // and would advance twice, once for the fake hover and once for the click.
+  const canHover = !window.matchMedia || window.matchMedia('(hover: hover)').matches;
+  if (canHover) {
+    document.querySelectorAll('.hero-icon').forEach(btn => {
+      btn.addEventListener('mouseenter', () => heroCycle(Number(btn.dataset.heroI)));
+    });
+  }
+
   // Warm the cache so the first cycle doesn't flash an empty tile.
   HERO_ICONS.forEach(n => { const im = new Image(); im.src = HERO_ICON_BASE + n + '.svg'; });
 }
