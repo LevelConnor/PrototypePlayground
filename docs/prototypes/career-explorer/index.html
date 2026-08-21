@@ -321,7 +321,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    Collapses to a single column on narrow screens. */
 .ip-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:26px;align-items:start}
 .ip-side{display:flex;flex-direction:column;gap:10px;min-width:0}
-.ip-main{min-width:0;background:var(--off);border:1px solid var(--mg);border-radius:16px;padding:16px}
+.ip-main{min-width:0;background:var(--off);border:1px solid var(--mg);border-radius:16px;padding:32px}
 @media(max-width:760px){
   .ip-layout{grid-template-columns:minmax(0,1fr);gap:18px}
 }
@@ -373,9 +373,9 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 /* Footer row, now nested inside the white .ip-card. Sits under a thin
    divider that visually separates the actions from the score stack.
    Show-all toggle on the left, action icons + Retake pill on the right. */
-.ip-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 0;padding:0}
+.ip-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:32px 0 0;padding:0}
 .ip-foot-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ip-toggle-pill{display:inline-flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--mg);border-radius:100px;padding:6px 8px 6px 16px;font-size:14px;font-weight:600;color:var(--navy)}
+.ip-toggle-pill{display:inline-flex;align-items:center;gap:10px;background:none;border:none;border-radius:100px;padding:6px 8px 6px 16px;font-size:14px;font-weight:600;color:var(--ts)}
 .ip-switch{position:relative;width:38px;height:22px;border-radius:100px;border:none;background:var(--mg);cursor:pointer;padding:0;transition:background .2s ease;flex-shrink:0}
 .ip-switch-dot{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(10,15,46,.18);transition:transform .2s ease}
 .ip-switch[aria-pressed="true"]{background:var(--blue)}
@@ -383,12 +383,18 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-action-btn{width:38px;height:38px;border-radius:50%;background:var(--white);border:1.5px solid var(--mg);color:var(--navy);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s, border-color .15s, color .15s}
 .ip-action-btn:hover{background:var(--off);border-color:var(--blue);color:var(--blue)}
 .ip-action-btn svg{width:16px;height:16px}
-.ip-action-pill{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--mg);border-radius:100px;padding:8px 18px;font-size:14px;font-weight:700;color:var(--navy);cursor:pointer;transition:background .15s, border-color .15s, color .15s}
-.ip-action-pill:hover{background:var(--off);border-color:var(--blue);color:var(--blue)}
+.ip-action-pill{display:inline-flex;align-items:center;gap:8px;background:none;border:none;border-radius:100px;padding:8px 18px;font-size:14px;font-weight:700;color:var(--ts);cursor:pointer;transition:background .15s, border-color .15s, color .15s}
+.ip-action-pill:hover{color:var(--blue)}
+/* the border was the only affordance on these; keep a visible focus ring */
+.ip-action-pill:focus-visible,.ip-toggle-pill:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .ip-action-pill svg{width:14px;height:14px}
 
 @media (max-width:720px){
   .ip-card{padding:18px}
+  /* 32px of inset costs 64px of a ~266px panel on a phone; ease it so the
+     bars keep a usable width. Desktop keeps the designed 32px. */
+  .ip-main{padding:20px}
+  .ip-foot{margin-top:20px}
   .ip-row-pill{min-width:min(320px, 100%);padding:5px 18px 5px 5px}
   .ip-row-avatar{width:32px;height:32px;font-size:13px}
   .ip-row-name{font-size:14px}
