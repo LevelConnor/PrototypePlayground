@@ -588,7 +588,7 @@ function syncProfileUI() {
         </div>
         <div class="home-card-body">
           <h2 class="home-card-title">Take The Interests Assessment</h2>
-          <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
+          <p class="home-card-desc">Answer questions and get matched with careers.</p>
         </div>
         <span class="home-card-cta">Take The Quiz <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
       </button>`;

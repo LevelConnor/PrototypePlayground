@@ -333,7 +333,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
    proportional to the O*NET score (with a min-width that always fits
    the description). The numeric score sits OUTSIDE the pill on the
    right. Toggling "Show All" off collapses rows 4-6. */
-.ip-stack{display:flex;flex-direction:column;gap:6px}
+/* --ip-gap is shared with .ip-row--hidden below: a collapsed row has to
+   cancel exactly one flex gap, otherwise the stack measures shorter than
+   the pills it contains and the footer rides up over the last one. */
+.ip-stack{display:flex;flex-direction:column;--ip-gap:6px;gap:var(--ip-gap)}
 
 
 
@@ -345,7 +348,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .ip-row{display:flex;align-items:center;gap:16px;overflow:hidden;cursor:default;
   max-height:120px;opacity:1;
   transition:max-height .35s ease, opacity .25s ease, margin .25s ease}
-.ip-row--hidden{max-height:0;opacity:0;margin-top:-12px}
+.ip-row--hidden{max-height:0;opacity:0;margin-top:calc(-1 * var(--ip-gap))}
 .ip-row-pill{display:flex;align-items:center;gap:14px;
   background:var(--rc,#999);
   border-radius:100px;
@@ -922,7 +925,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
               </div>
               <div class="home-card-body">
                 <h2 class="home-card-title">Take The Interests Assessment</h2>
-                <p class="home-card-desc">Answer questions and get a personalized list of careers that match your interests.</p>
+                <p class="home-card-desc">Answer questions and get matched with careers.</p>
               </div>
               <span class="home-card-cta">Take The Quiz <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
             </button>
@@ -935,7 +938,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 
     <section class="step" id="step-2">
       <div class="step-marker" aria-hidden="true"><span class="step-num">2</span><svg class="step-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4.5 4.5L19 7"/></svg></div>
-      <div class="step-head"><h2 class="step-title">Find Your Career Matches</h2></div>
+      <div class="step-head"><h2 class="step-title">Explore Careers</h2></div>
       <div class="step-body">
         <div class="step-grid">
           <button class="home-card home-card--tile" data-tab-target="search" type="button">
@@ -943,10 +946,10 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.6-3.6"/></svg>
               </div>
               <div class="home-card-body">
-                <h2 class="home-card-title">See Your Matches</h2>
+                <h2 class="home-card-title">Browse Careers</h2>
                 <p class="home-card-desc">See your matches and browse all careers.</p>
               </div>
-              <span class="home-card-cta">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
+              <span class="home-card-cta">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
             </button>
           <button class="home-card home-card--tile" data-tab-target="clusters" type="button">
               <div class="home-card-icon home-icon-clusters" aria-hidden="true">
@@ -956,7 +959,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                 <h2 class="home-card-title">Explore Career Clusters</h2>
                 <p class="home-card-desc">Browse 14 industries.</p>
               </div>
-              <span class="home-card-cta">Browse <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
+              <span class="home-card-cta">Explore <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg></span>
             </button>
         </div>
       </div>
