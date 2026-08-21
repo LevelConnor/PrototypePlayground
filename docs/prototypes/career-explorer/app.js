@@ -71,7 +71,10 @@ document.addEventListener('click', function(e) {
   // Lets the header heart + the in-page hearts (Search Careers, Career
   // Clusters top rows) share a single handler.
   if (t.closest('[data-open-tray]')) { openTray(); return; }
-  if (t.id === 'btn-theme') { toggleTheme(); return; }
+  // closest, not t.id: the button holds an inline SVG, so a click on the
+  // icon targets the svg/path rather than the button. It matched by id
+  // only while the content was a bare emoji (text nodes aren't targets).
+  if (t.closest('#btn-theme')) { toggleTheme(); return; }
   if (t.id === 'btn-close-tray') { closeTray(); return; }
   if (t.id === 'tov') { closeTray(); return; }
   if (t.id === 'btn-tray-link') { copyTrayLink(); return; }
