@@ -254,7 +254,6 @@ const saved = new Set();
 // prefixed with 'live-' like `saved` uses). Capped at 5 by
 // toggleTopPick. Persisted alongside saved in the URL restore payload.
 const topPicks = new Set();
-const TOP_PICKS_MAX = 5;
 // Answers keyed by O*NET question index (1..60). Value: {area, val}.
 // Keyed by index (not row position) so switching Quick <-> Full preserves
 // what the user has already answered.
@@ -1583,8 +1582,7 @@ function careerImageFallback(code) {
 function buildLiveCard(c, cached, code, prefix, isSaved) {
   const tags = (cached && cached.tags) || c.tags || {};
   const sal = cached && cached.salary && cached.salary.median;
-  const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
-  const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+  const salPill = salaryPill(sal, tags.brightOutlook);
   const brightCls = tags.brightOutlook ? ' bright' : '';
   const imgUrl = careerImageUrl(code, c.title);
   const imgFb  = careerImageFallback(code);
@@ -1595,7 +1593,9 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   let fitBadge = '';
   if (grade === 'Best')  fitBadge = `<div class="ccard-match ccard-match--best">Best Fit</div>`;
   else if (grade === 'Great') fitBadge = `<div class="ccard-match ccard-match--great">Great Fit</div>`;
-  else if (grade === 'Good')  fitBadge = `<div class="ccard-match ccard-match--good">Good Fit</div>`;
+  // Good is deliberately unbadged. It's the lowest of O*NET's three fit
+  // grades and by far the most common, so badging it put a badge on nearly
+  // every card and cost Best/Great their signal. The modal still names it.
   // onerror: try the cluster fallback URL once; on second failure hide.
   const imgOnErr = `if(!this.dataset.fb){this.dataset.fb=1;this.src=&quot;${imgFb}&quot;}else{this.style.display=&#39;none&#39;}`;
   // Star button — only renders once the career is saved. Filled when
@@ -1603,7 +1603,7 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
   const isTop = topPicks.has(code);
   const topPickCls = isTop ? ' is-top-pick' : '';
   const starBtn = isSaved
-    ? `<button class="ccard-star${isTop?' top':''}" data-live-code="${code}" aria-label="${isTop?'Remove from top picks':'Add to top picks'}" aria-pressed="${isTop}">${starIcon(isTop)}</button>`
+    ? `<button class="ccard-star${isTop?' top':''}" data-live-code="${code}" aria-label="${isTop?'Remove as your top career':'Set as your top career'}" aria-pressed="${isTop}">${starIcon(isTop)}</button>`
     : '';
   return `<div class="ccard has-image${brightCls}${topPickCls}" data-live-code="${code}" data-prefix="${prefix||'sd'}">
     <img class="ccard-img" src="${imgUrl}" alt="${c.title || ''}" loading="lazy" onerror="${imgOnErr}">
@@ -1613,7 +1613,7 @@ function buildLiveCard(c, cached, code, prefix, isSaved) {
     <button class="ccard-bm${isSaved?' saved':''}" data-live-code="${code}" aria-label="${isSaved?'Saved':'Save career'}">${heartIcon(isSaved)}</button>
     <div class="ccard-body">
       <h3 class="ccard-title">${c.title}</h3>
-      <div class="ccard-pills">${salPill}${boPill}</div>
+      <div class="ccard-pills">${salPill}</div>
     </div>
   </div>`;
 }
@@ -1692,9 +1692,7 @@ function prefetchSummaries(list, prefix) {
         if (!pills) return;
         const sal = detailCache[c.code].salary && detailCache[c.code].salary.median;
         const tags = detailCache[c.code].tags || {};
-        const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
-        const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
-        pills.innerHTML = salPill + boPill;
+        pills.innerHTML = salaryPill(sal, tags.brightOutlook);
       });
       // Re-apply Salary/Education filters now that this card has data.
       applyClientFilters();
@@ -1899,9 +1897,7 @@ async function openLiveDetail(code, prefix) {
       if (!pills) return;
       const sal = detail.salary && detail.salary.median;
       const tags = detail.tags || {};
-      const salPill = sal ? `<span class="ccard-pill">$${sal.toLocaleString()}/yr</span>` : '';
-      const boPill = tags.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
-      pills.innerHTML = salPill + boPill;
+      pills.innerHTML = salaryPill(sal, tags.brightOutlook);
     });
 
     // Only paint into the modal if it's still showing THIS career (user
@@ -2073,11 +2069,15 @@ function buildModalDetail(d, code) {
   const sal = d.salary  || {};
   const out = d.outlook || {};
   const eb  = d.eduBreakdown || [];
+  // Green marks a positive outcome and nothing else. O*NET returns exactly
+  // three outlook categories — Bright / Average / Below Average — so only
+  // the first earns colour; the other two stay on the neutral tile.
+  const outlookPos = /bright/i.test(out.growth || '');
+  const posCls = outlookPos ? ' cmodal-stat--pos' : '';
   const tk  = d.tasks    || [];
   const slo = sal.low  || 0;
   const shi = sal.high || 0;
-  const salPill = sal.median ? `<span class="ccard-pill">$${sal.median.toLocaleString()}/yr</span>` : '';
-  const boPill  = d.tags?.brightOutlook ? `<span class="ccard-pill bo">☀ Bright Outlook</span>` : '';
+  const salPill = salaryPill(sal.median, d.tags?.brightOutlook);
   // Fit grade is stashed on detailCache when the render list is built
   // in renderRiasecIntoSlist so the modal shows the same tier as the
   // card. (Old logic derived a badge from bright-outlook, which is a
@@ -2110,7 +2110,7 @@ function buildModalDetail(d, code) {
           <p class="cmodal-desc" data-desc>${d.description}</p>
           <button type="button" class="cmodal-desc-toggle" data-desc-toggle hidden>Read more</button>
         </div>` : ''}
-        <div class="cmodal-head-pills">${salPill}${boPill}</div>
+        <div class="cmodal-head-pills">${salPill}</div>
       </div>
       <div class="cmodal-head-right" data-head-media>
         <video class="cmodal-head-video" controls preload="metadata" playsinline
@@ -2164,7 +2164,7 @@ function buildModalDetail(d, code) {
           <div class="cmodal-stat-value">$${sal.median.toLocaleString()}</div>
           <div class="cmodal-stat-foot">per year</div>
         </div>` : ''}
-        ${out.growth ? `<div class="cmodal-stat">
+        ${out.growth ? `<div class="cmodal-stat${posCls}">
           <div class="cmodal-stat-label">Job Growth</div>
           <div class="cmodal-stat-value">${out.growth}</div>
           <div class="cmodal-stat-foot">${out.descriptor || ''}</div>
@@ -2191,14 +2191,14 @@ function buildModalDetail(d, code) {
       ${sal.median ? `
         <div class="cmodal-section-title" style="margin-bottom:14px">How much do ${d.title} earn yearly?</div>
         <div class="cmodal-stats cmodal-stats--row" style="margin-bottom:18px">
-          <div class="cmodal-stat cmodal-stat--white"><div class="cmodal-stat-label">Low (10%)</div><div class="cmodal-stat-value">$${slo.toLocaleString()}</div></div>
+          <div class="cmodal-stat"><div class="cmodal-stat-label">Low (10%)</div><div class="cmodal-stat-value">$${slo.toLocaleString()}</div></div>
           <div class="cmodal-stat"><div class="cmodal-stat-label">Median (50%)</div><div class="cmodal-stat-value">$${sal.median.toLocaleString()}</div></div>
-          <div class="cmodal-stat cmodal-stat--white"><div class="cmodal-stat-label">High (90%)</div><div class="cmodal-stat-value">$${shi.toLocaleString()}</div></div>
+          <div class="cmodal-stat"><div class="cmodal-stat-label">High (90%)</div><div class="cmodal-stat-value">$${shi.toLocaleString()}</div></div>
         </div>
       ` : '<p style="color:var(--ts);font-size:15px">Salary data not available.</p>'}
       ${out.growth ? `<div class="cmodal-section">
         <div class="cmodal-section-title">Projected Growth</div>
-        <div class="cmodal-stat" style="max-width:380px"><div class="cmodal-stat-label">Outlook</div><div class="cmodal-stat-value">${out.growth}</div>${out.descriptor ? `<div class="cmodal-stat-foot">${out.descriptor}</div>` : ''}</div>
+        <div class="cmodal-stat${posCls}" style="max-width:380px"><div class="cmodal-stat-label">Outlook</div><div class="cmodal-stat-value">${out.growth}</div>${out.descriptor ? `<div class="cmodal-stat-foot">${out.descriptor}</div>` : ''}</div>
       </div>` : ''}
       ${(() => {
         const list = (d.stateOutlook || []).filter(s => s && s.code && s.name);
@@ -2227,17 +2227,31 @@ function buildModalDetail(d, code) {
     <div class="cmodal-pane" data-mpane="ed" hidden>
       ${eb.length ? `
         <div class="cmodal-section-title" style="margin-bottom:14px">What education level do ${d.title} have?</div>
-        <div class="cmodal-stats cmodal-stats--row" style="margin-bottom:18px">
-          ${(() => {
-            // Highlight the most common education level in green (mirrors
-            // how the Median salary card pops on the Income tab).
-            const topIdx = eb.reduce((best, e, i) => (e.pct||0) > (eb[best].pct||0) ? i : best, 0);
-            return eb.map((e, i) => `<div class="cmodal-stat${i===topIdx?'':' cmodal-stat--white'}">
-              <div class="cmodal-stat-label">${e.level}</div>
-              <div class="cmodal-stat-value">${(e.pct||0).toFixed(1)}%</div>
-            </div>`).join('');
-          })()}
-        </div>
+        ${(() => {
+          const withPct = eb.filter(e => typeof e.pct === 'number' && e.pct > 0);
+          // Some careers come back as bare level names with no percentages;
+          // there is nothing to draw a bar from, so list them as chips.
+          if (!withPct.length) {
+            return `<div class="cmodal-chips" style="margin-bottom:18px">${
+              eb.map(e => `<div class="cmodal-chip">${e.level}</div>`).join('')}</div>`;
+          }
+          const fmt = n => (Math.round(n * 10) / 10).toString();
+          const rows = withPct.slice().sort((a, b) => b.pct - a.pct);
+          // O*NET reports only its top few levels, so the remainder is a real
+          // gap — 26% for some careers. Naming it stops the bars implying the
+          // listed levels account for everyone.
+          const gap = Math.round((100 - rows.reduce((t, e) => t + e.pct, 0)) * 10) / 10;
+          if (gap >= 0.5) rows.push({ level: 'Unknown', pct: gap, unknown: true });
+          return `<div class="pctlist" style="margin-bottom:18px">${rows.map(e => `
+            <div class="pctrow${e.unknown ? ' pctrow--unknown' : ''}" style="--pct:${Math.min(100, e.pct)}%"
+                 role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${fmt(e.pct)}"
+                 aria-label="${e.level}: ${fmt(e.pct)}% of workers"
+                 title="${e.level} — ${fmt(e.pct)}% of workers">
+              <span class="pctrow-fill" aria-hidden="true"></span>
+              <span class="pctrow-label">${e.level}</span>
+              <span class="pctrow-value">${fmt(e.pct)}%</span>
+            </div>`).join('')}</div>`;
+        })()}
       ` : '<p style="color:var(--ts);font-size:15px">Education data not available.</p>'}
       ${d.tags?.apprenticeship ? `<div class="cmodal-section">
         <div class="cmodal-chip" style="background:rgba(255,216,16,.14);border-color:rgba(255,216,16,.4);display:flex;flex-direction:column;gap:8px;align-items:flex-start">
@@ -2366,22 +2380,26 @@ function toggleLiveSave(code) {
   renderHomeSaved();
 }
 
-// Promote / demote a saved career to Top Picks. Capped at TOP_PICKS_MAX.
+// Exactly one career can be the top career. Starring a second one moves the
+// spot rather than refusing, so the user never has to un-star first. Kept as
+// a Set because the URL state, sort helpers and card chrome all read it that
+// way — it just never holds more than one entry.
 function toggleTopPick(code) {
   if (!code) return;
   // Star only ever shows on saved cards, so this guard is defensive.
   if (!saved.has('live-' + code)) return;
+  let demoted = [];
   if (topPicks.has(code)) {
     topPicks.delete(code);
-    toast('Removed from top picks');
+    toast('Removed as your top career');
   } else {
-    if (topPicks.size >= TOP_PICKS_MAX) {
-      toast(`Top picks capped at ${TOP_PICKS_MAX} — unstar another one first`);
-      return;
-    }
+    demoted = [...topPicks];
+    topPicks.clear();
     topPicks.add(code);
-    toast('★ Added to top picks');
+    toast('★ Set as your top career');
   }
+  // The demoted card needs repainting too, or its star and ring stay on.
+  demoted.forEach(c => { if (c !== code) repaintCardChrome(c); });
   repaintCardChrome(code);
   renderHomeSaved();
   if (document.getElementById('tpn').classList.contains('open')) renderTray();
@@ -2414,7 +2432,7 @@ function repaintCardChrome(code) {
     }
     if (star) {
       star.classList.toggle('top', isTop);
-      star.setAttribute('aria-label', isTop ? 'Remove from top picks' : 'Add to top picks');
+      star.setAttribute('aria-label', isTop ? 'Remove as your top career' : 'Set as your top career');
       star.setAttribute('aria-pressed', String(isTop));
       star.innerHTML = starIcon(isTop);
     }
@@ -2498,7 +2516,7 @@ const NM_TYPES = {
   },
   pathways: {
     title: 'Programs & Pathways',
-    subtitle: 'The typical education level and pathway for each of your saved careers.',
+    subtitle: 'The typical education level and pathway for your top career.',
   },
 };
 
@@ -2537,6 +2555,17 @@ function nmSavedCodes() {
     .map(k => k.slice('live-'.length));
 }
 
+// Next Moves speaks only about the one prioritized career. Returns null when
+// nothing is starred, which drives the "choose one" empty state.
+function nmTopCode() {
+  const [code] = [...topPicks];
+  return code && saved.has('live-' + code) ? code : null;
+}
+function nmScopedCodes() {
+  const top = nmTopCode();
+  return top ? [top] : [];
+}
+
 // Career title, resolving from any of the metadata sources we might have.
 function nmCareerTitle(code) {
   const meta = savedMeta.get(code);
@@ -2551,7 +2580,7 @@ function renderNextMoves() {
   if (!modal) return;
   const type = nmOpenType;
   const cfg = NM_TYPES[type];
-  const codes = nmSavedCodes();
+  const codes = nmScopedCodes();
   const head = `
     <div class="nm-head">
       <div class="nm-head-l">
@@ -2563,7 +2592,9 @@ function renderNextMoves() {
   if (!codes.length) {
     modal.innerHTML = head + `
       <div class="nm-body">
-        <div class="nm-empty">You haven't saved any careers yet. Save a career from your quiz results, the explore page, or a cluster to see recommendations here.</div>
+        <div class="nm-empty">${nmSavedCodes().length
+          ? 'Star one of your saved careers as your top career and this will show you how to get there.'
+          : "You haven't saved any careers yet. Save a career from your quiz results, the explore page, or a cluster to see recommendations here."}</div>
       </div>`;
     return;
   }
@@ -2747,17 +2778,38 @@ function renderHomeSaved() {
   }
   // 'X of 5 prioritized' chip on the Home Saved section header —
   // hidden entirely until at least one save exists.
-  const chip = document.getElementById('home-priority-chip');
-  const count = document.getElementById('home-priority-count');
-  if (chip) chip.style.display = sorted.length ? '' : 'none';
-  if (count) count.textContent = topPicks.size;
-  // Stage 4 swaps its placeholder for the three Next Moves cards as soon as
-  // there is a saved career for them to draw on. This toggle was lost when
-  // the stepper was built and the cards were parked behind the placeholder.
+  // Stage 4 is about ONE career, so it unlocks on the top pick rather than on
+  // any save. Its placeholder has two states: nothing saved yet, versus saved
+  // but nothing starred.
   const nm = document.getElementById('home-next-moves');
   const nmEmpty = document.getElementById('nm-empty');
-  if (nm) nm.hidden = !sorted.length;
-  if (nmEmpty) nmEmpty.hidden = !!sorted.length;
+  const hasTop = !!nmTopCode();
+  if (nm) nm.hidden = !hasTop;
+  if (nmEmpty) {
+    nmEmpty.hidden = hasTop;
+    const msg = nmEmpty.querySelector('p');
+    if (msg) msg.textContent = sorted.length
+      ? 'Star one saved career as your top career to see how to get there.'
+      : "Once you save careers, we'll show you how to get there.";
+  }
+  // Chip names the state of the single top-career slot.
+  const pchip = document.getElementById('home-priority-chip');
+  const plabel = document.getElementById('home-priority-label');
+  if (pchip) pchip.style.display = sorted.length ? '' : 'none';
+  if (plabel) plabel.textContent = hasTop ? '★ Top career set' : 'Pick your top career';
+  // Name the career in the stage-4 subtitle so it's obvious what the three
+  // cards below are scoped to.
+  const nmSub = document.getElementById('nm-sub');
+  if (nmSub) {
+    // nmCareerTitle falls back to the bare SOC code until ensureSavedMeta
+    // backfills the title, so only name the career once we actually have a
+    // name — otherwise the subtitle reads "Recommendations for 15-1252.00."
+    const top = nmTopCode();
+    const t = hasTop ? nmCareerTitle(top) : '';
+    nmSub.textContent = (t && t !== top)
+      ? `Recommendations for ${t}.`
+      : 'Recommendations for your top career.';
+  }
   syncSteps();
 }
 
@@ -2826,13 +2878,12 @@ function restoreFromURL() {
         if (typeof k === 'string' && k.startsWith('live-')) saved.add(k);
       });
     }
-    // Top picks restored alongside the saves. Bare career codes.
+    // Top career restored alongside the saves. Bare career codes. Only one
+    // slot exists now, so a link written by an older build (which could carry
+    // up to five) restores the first that is still saved and drops the rest.
     if (Array.isArray(d.topPicks)) {
-      d.topPicks.forEach(c => {
-        if (typeof c === 'string' && saved.has('live-' + c) && topPicks.size < TOP_PICKS_MAX) {
-          topPicks.add(c);
-        }
-      });
+      const first = d.topPicks.find(c => typeof c === 'string' && saved.has('live-' + c));
+      if (first) topPicks.add(first);
     }
     // Every count badge with class .tc gets the number so header + in-page
   // tray triggers all stay in sync.
@@ -3105,6 +3156,23 @@ function handleZipSearch(pid, careerTitle, onetCode) {
       </div>
       <p style="font-size:11px;color:var(--ts);margin-top:10px;line-height:1.5">🔧 Mock data for demo. Real results via CareerOneStop Training Finder API using zip ${zip} + O*NET code <code style="font-size:11px">${onetCode}</code>.</p>`;
   }, 800);
+}
+
+/* ══ CAREER CARD CHIPS ══ */
+// The salary chip carries the Bright Outlook signal, so cards no longer show
+// a separate yellow BO chip: green + trend arrow for Bright Outlook, primary
+// blue otherwise. Colour and an icon are not enough on their own, so the
+// Bright Outlook case also carries an .sr-only phrase for screen readers.
+const TREND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>';
+
+function salaryPill(sal, brightOutlook) {
+  if (!sal) return '';
+  const bo = !!brightOutlook;
+  return '<span class="ccard-pill' + (bo ? ' ccard-pill--bo' : '') + '">'
+    + (bo ? TREND_ICON : '')
+    + '$' + sal.toLocaleString() + '/yr'
+    + (bo ? '<span class="sr-only"> — Bright Outlook career</span>' : '')
+    + '</span>';
 }
 
 /* ══ HOME HERO ICONS ══ */

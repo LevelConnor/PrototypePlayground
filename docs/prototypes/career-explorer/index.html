@@ -642,7 +642,8 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    Shows a yellow Bright Outlook badge + one-line definition so users
    understand what the ☀ pill on individual cards means. */
 .bo-explainer{display:flex;align-items:center;gap:14px;background:transparent;border:1.5px solid var(--mg);border-radius:var(--rlg);padding:12px 18px;margin:0 0 18px;flex-wrap:wrap}
-.bo-badge{background:var(--yellow);color:var(--ink);padding:6px 14px;border-radius:var(--rf);font-size:13px;font-weight:900;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
+.bo-badge{background:#7FE7B8;color:var(--ink);padding:6px 14px;border-radius:var(--rf);font-size:13px;font-weight:900;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
+.bo-badge svg{width:14px;height:14px;flex-shrink:0}
 .bo-explainer p{font-size:14px;color:var(--ts);line-height:1.45;margin:0;flex:1;min-width:200px}
 
 /* ─── Career card grid (editorial) ──────────────────────────────────────
@@ -711,15 +712,20 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .ccard-body{position:absolute;left:18px;right:18px;bottom:18px;color:#fff;z-index:2}
 .ccard-title{font-size:20px;font-weight:900;line-height:1.2;color:#fff;margin:0 0 10px;letter-spacing:-.01em;text-shadow:0 2px 6px rgba(10,15,46,.55)}
 .ccard-pills{display:flex;flex-wrap:wrap;gap:6px}
-.ccard-pill{padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;line-height:1.2;background:#7FE7B8;color:var(--ink);white-space:nowrap}
-.ccard-pill.bo{background:var(--yellow)}
-.ccard-pill.match{background:#FF96E3}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* The salary chip encodes outlook, which is why cards no longer carry a
+   separate Bright Outlook chip: green + trend arrow = Bright Outlook,
+   primary blue = not. Colour alone is not an accessible signal, so
+   salaryPill() also emits an .sr-only phrase for Bright Outlook. */
+.ccard-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;line-height:1.2;background:var(--blue);color:#fff;white-space:nowrap}
+.ccard-pill--bo{background:#7FE7B8;color:var(--ink)}
+.ccard-pill svg{width:12px;height:12px;flex-shrink:0}
+.ccard-pill.match{background:#FF96E3;color:var(--ink)}
 .ccard-match{position:absolute;top:14px;left:14px;padding:5px 10px;border-radius:var(--rf);font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;z-index:3;background:#FF96E3;color:var(--ink)}
 /* Fit-grade variants. Best Fit stands out in yellow; Great and Good
    share the primary blue so 'Best' remains the visual peak. */
 .ccard-match--best{background:var(--yellow);color:var(--ink)}
-.ccard-match--great,
-.ccard-match--good{background:var(--blue);color:#fff}
+.ccard-match--great{background:var(--blue);color:#fff}
 .ccard-bm{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.88);border:none;color:var(--blue);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s, background .15s;z-index:3}
 /* Star (Top Picks) button. Sits next to the heart on saved cards.
    Outline = saved but not a top pick; filled yellow = top pick. */
@@ -732,6 +738,17 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 .ccard.is-top-pick{outline:2px solid var(--yellow);outline-offset:2px}
 .ccard-bm:hover{background:#fff;transform:scale(1.05)}
 .ccard-bm.saved{background:var(--yellow);color:var(--ink)}
+/* .ccard-bm and .ccard-star hard-code a white glass fill, so they stayed
+   white in dark mode while every other button flips through the theme
+   tokens. Match .page-tray-btn: dark translucent fill, light-blue glyph.
+   The :not() guards matter — body.dark .ccard-bm (0,2,1) outranks
+   .ccard-bm.saved (0,2,0), so without them the yellow saved and
+   top-pick states would be overwritten in dark mode. Inset shadow
+   rather than a border, since these are border:none. */
+body.dark .ccard-bm:not(.saved),
+body.dark .ccard-star:not(.top){background:rgba(10,15,46,.62);color:var(--ts);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+body.dark .ccard-bm:not(.saved):hover,
+body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 
 /* ─── Career detail modal ───────────────────────────────────────────────
    Centered overlay. Image-banner header with title + description + pills
@@ -864,22 +881,26 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
 /* Solid palette so the map reads the same on light + dark backgrounds
    (alpha overlays disappeared into the dark modal surface). Sequential
    green: brighter = more opportunity. */
-.state-map svg path[data-variant="good"]{fill:#68F4B8}
-.state-map svg path[data-variant="ok"]{fill:#3EB88C}
-.state-map svg path[data-variant="low"]{fill:#1F5E4E}
+.state-map svg path[data-variant="good"]{fill:#0083FF;fill-opacity:1}
+.state-map svg path[data-variant="ok"]{fill:#0083FF;fill-opacity:.55}
+.state-map svg path[data-variant="low"]{fill:#0083FF;fill-opacity:.24}
 .state-map svg path[data-variant="none"]{fill:transparent;stroke:var(--mg);stroke-dasharray:2 2}
 .state-map svg path[data-state]:hover{stroke:var(--blue);stroke-width:1.4}
 .state-map svg path.selected{stroke:var(--blue);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(0,131,255,.45))}
 .state-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;font-size:12px;color:var(--ts);margin:14px 0 0}
 .state-map-legend span{display:inline-flex;align-items:center;gap:6px}
 .state-tile-mini{width:14px;height:14px;border-radius:4px;flex-shrink:0}
-.state-tile-mini[data-variant="good"]{background:#68F4B8}
-.state-tile-mini[data-variant="ok"]{background:#3EB88C}
-.state-tile-mini[data-variant="low"]{background:#1F5E4E}
+.state-tile-mini[data-variant="good"]{background:#0083FF}
+.state-tile-mini[data-variant="ok"]{background:#0083FF;opacity:.55}
+.state-tile-mini[data-variant="low"]{background:#0083FF;opacity:.24}
 .state-tile-mini[data-variant="none"]{background:transparent;border:2px dashed var(--mg)}
 .state-outlook-foot{font-size:12px;color:var(--ts);line-height:1.5;margin:8px 0 0}
-.cmodal-stat{background:#7FE7B8;border-radius:18px;padding:22px 24px;color:var(--ink)}
-.cmodal-stat--white{background:var(--white);color:var(--navy)}
+/* Stat tiles are NEUTRAL by default. Green was the default here, which is
+   why a "Below average" outlook and a plain salary both rendered bright
+   green — the colour meant "this is a stat", not "this is good". Green is
+   now opt-in via --pos and only Bright Outlook earns it. */
+.cmodal-stat{background:var(--white);color:var(--navy);border:1.5px solid var(--mg);border-radius:18px;padding:22px 24px}
+.cmodal-stat--pos{background:#7FE7B8;color:var(--ink);border-color:#7FE7B8}
 .cmodal-stat-label{font-size:14px;font-weight:700;margin-bottom:6px;opacity:.92}
 .cmodal-stat-value{font-size:28px;font-weight:900;line-height:1.1;margin-bottom:4px}
 .cmodal-stat-foot{font-size:13px;line-height:1.4;opacity:.85}
@@ -887,10 +908,34 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
    Income & Outlook tab's Low/Median/High percentile cards. */
 .cmodal-stats--row{grid-template-columns:1fr;gap:10px}
 .cmodal-stats--row .cmodal-stat{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;gap:12px}
-.cmodal-stats--row .cmodal-stat-label{font-size:16px;font-weight:600;margin-bottom:0;opacity:1}
+.cmodal-stats--row .cmodal-stat-label{font-size:16px;font-weight:600;margin-bottom:0;opacity:1;color:var(--ts)}
+.cmodal-stats--row .cmodal-stat--pos .cmodal-stat-label{color:var(--ink)}
 .cmodal-stats--row .cmodal-stat-value{font-size:22px;margin-bottom:0;line-height:1}
-.cmodal-stats--row .cmodal-stat--white .cmodal-stat-label{color:var(--ts)}
 .cmodal-stats--row .cmodal-stat-foot{display:none}
+/* ── Percentage rows ───────────────────────────────────────────────────
+   Only parts-of-a-whole percentages get a bar; currency rows stay plain
+   tiles, so a salary row and a share-of-workers row can no longer be
+   mistaken for the same chart. Fill is a blue tint, never green — green
+   is reserved for Bright Outlook — and the width is the actual value, so
+   a 41% row now looks 41% full instead of completely full. */
+.pctlist{display:flex;flex-direction:column;gap:10px}
+.pctrow{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border:1.5px solid var(--mg);border-radius:14px;background:var(--white);transition:border-color .15s ease,transform .15s ease}
+.pctrow-fill{position:absolute;top:0;bottom:0;left:0;width:var(--pct,0%);background:rgba(0,131,255,.16);border-right:1.5px solid rgba(0,131,255,.32);z-index:0;transition:width .55s cubic-bezier(.4,0,.2,1),background .15s ease}
+.pctrow-label,.pctrow-value{position:relative;z-index:1}
+.pctrow-label{font-size:16px;font-weight:600;color:var(--navy);min-width:0}
+.pctrow-value{font-size:18px;font-weight:900;color:var(--navy);flex-shrink:0;font-variant-numeric:tabular-nums}
+.pctrow:hover{border-color:var(--blue);transform:translateX(2px)}
+.pctrow:hover .pctrow-fill{background:rgba(0,131,255,.28)}
+/* Unknown is a data gap, not a measured share — dashed and unfilled so it
+   never reads as a real category. */
+.pctrow--unknown{border-style:dashed}
+.pctrow--unknown .pctrow-fill{background:transparent;border-right:0}
+.pctrow--unknown .pctrow-label,.pctrow--unknown .pctrow-value{color:var(--ts)}
+.pctrow--unknown:hover .pctrow-fill{background:transparent}
+@media (prefers-reduced-motion:reduce){
+  .pctrow,.pctrow-fill{transition:none}
+  .pctrow:hover{transform:none}
+}
 .cmodal-section{margin-top:24px}
 .cmodal-section-title{font-size:16px;font-weight:700;color:var(--ts);margin-bottom:12px}
 /* Ways To Prepare pane — Suggested Courses list + cert cards. */
@@ -1039,8 +1084,8 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       <div class="step-marker" aria-hidden="true"><span class="step-num">3</span><svg class="step-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4.5 4.5L19 7"/></svg></div>
       <div class="step-head"><h2 class="step-title">Save &amp; Prioritize Careers</h2>
         <div class="home-priority-chip" id="home-priority-chip" style="display:none">
-                <span id="home-priority-count">0</span> of 5 prioritized
-              </div>
+          <span id="home-priority-label">Pick your top career</span>
+        </div>
       </div>
       <div class="step-body">
         <div id="home-saved"></div>
@@ -1060,14 +1105,14 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
              margin meant for a top-level section, and the stage heading above
              already titles this block. -->
         <div id="home-next-moves" hidden>
-            <p class="home-section-sub">Recommendations based on the careers you've saved.</p>
+            <p class="home-section-sub" id="nm-sub">Recommendations for your top career.</p>
             <div class="home-nm-grid home-nm-grid--3">
               <button class="home-nm-card" data-nm="courses" type="button">
                 <div class="home-nm-icon home-nm-icon--blue" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3V4z"/><path d="M18 19v-6"/><path d="M4 16a3 3 0 0 1 3-3h11"/></svg>
                 </div>
                 <h3>Courses To Take</h3>
-                <p>Academic subjects that map to the careers you've saved — the classes worth prioritizing.</p>
+                <p>Academic subjects that map to your top career — the classes worth prioritizing.</p>
                 <span class="home-nm-cta">See subjects →</span>
               </button>
               <button class="home-nm-card" data-nm="skills" type="button">
@@ -1075,7 +1120,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.5-5-2.7L7 18.3l1-5.5-4-4 5.5-.8z"/></svg>
                 </div>
                 <h3>Skills and Experiences</h3>
-                <p>Abilities to practice and hands-on experiences that lead to your saved careers.</p>
+                <p>Abilities to practice and hands-on experiences that lead to your top career.</p>
                 <span class="home-nm-cta">See skills →</span>
               </button>
               <button class="home-nm-card" data-nm="pathways" type="button">
@@ -1083,7 +1128,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg>
                 </div>
                 <h3>Programs & Pathways</h3>
-                <p>Education levels, apprenticeships, and industry pathways that lead toward each saved career.</p>
+                <p>Education levels, apprenticeships, and industry pathways that lead toward your top career.</p>
                 <span class="home-nm-cta">See pathways →</span>
               </button>
             </div>
@@ -1197,7 +1242,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
   </div>
   </div>
   <div class="bo-explainer">
-    <span class="bo-badge">☀ Bright Outlook</span>
+    <span class="bo-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Bright Outlook</span>
     <p>Bright Outlook careers are expected to grow fast, have many job openings, or are emerging careers.</p>
   </div>
   <div id="slist"></div>
@@ -1254,7 +1299,7 @@ body.dark .fb.has-value .fb-btn{background:var(--white)}
       </div>
     </div>
     <div class="bo-explainer">
-      <span class="bo-badge">☀ Bright Outlook</span>
+      <span class="bo-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Bright Outlook</span>
       <p>Bright Outlook careers are expected to grow fast, have many job openings, or are emerging careers.</p>
     </div>
     <div id="cluster-list"></div>
