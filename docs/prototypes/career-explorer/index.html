@@ -193,25 +193,27 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 .home-section{margin:36px 0 0}
 
 /* ── Home journey stepper ──────────────────────────────────────────────
-   Four stages down a progress rail. The marker column is a fixed 26px so
-   the rail (drawn as .step::before) lines up on its centre at left:12px.
+   Four stages down a progress rail. The marker column is a fixed 28px so
+   the rail (drawn as .step::before) lines up on its centre at left:13px.
+   28px also matches the 20px title's 26px line box, so circle and heading
+   read as a pair — change all four together if either size moves.
    A stage gains .step--done from syncSteps() when its outcome exists,
    which turns both the marker and the rail segment below it green. */
 #panel-home .pt-eyebrow{font-size:20px;font-weight:700;color:var(--blue);letter-spacing:-.01em;text-transform:none;margin-bottom:4px}
 #panel-home .pt{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-bottom:0}
 .steps{margin:26px 0 0}
-.step{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:16px;padding-bottom:26px}
+.step{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:16px;padding-bottom:26px}
 .step:last-child{padding-bottom:0}
-.step::before{content:'';position:absolute;left:12px;top:30px;bottom:0;width:2px;background:var(--mg);border-radius:2px}
+.step::before{content:'';position:absolute;left:13px;top:32px;bottom:0;width:2px;background:var(--mg);border-radius:2px}
 .step:last-child::before{display:none}
 .step--done::before{background:var(--green)}
-.step-marker{position:relative;z-index:1;width:26px;height:26px;border-radius:50%;background:var(--mg);color:var(--ts);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.step-marker{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;background:var(--mg);color:var(--ts);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
 .step--done .step-marker{background:var(--green);color:#0A0F2E}
-.step-check{display:none;width:15px;height:15px}
+.step-check{display:none;width:16px;height:16px}
 .step--done .step-num{display:none}
 .step--done .step-check{display:block}
-.step-head{grid-column:2;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:26px}
-.step-title{font-size:16px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin:0;line-height:1.3}
+.step-head{grid-column:2;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:28px}
+.step-title{font-size:20px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin:0;line-height:1.3}
 .step-body{grid-column:2;margin-top:12px}
 .step-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 

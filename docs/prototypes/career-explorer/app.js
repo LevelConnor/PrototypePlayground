@@ -544,11 +544,12 @@ function submitAssessment() {
 // (in case state was restored from a saved URL).
 // Marks a journey stage complete on the Home stepper. Only stages with a
 // real completion signal are marked: stage 1 once the quiz has results, and
-// stage 3 once at least one career is saved. Stages 2 and 4 are navigation,
-// so they stay numbered rather than claiming a state they don't have.
+// stages 2 and 3 once at least one career is saved — you cannot have saved
+// one without having explored, so a save completes both. Stage 4 has no
+// outcome to point at yet, so it stays numbered.
 function syncSteps() {
   const savedCount = [...saved].filter(k => typeof k === 'string' && k.startsWith('live-')).length;
-  const flags = { 'step-1': !!lastResults, 'step-3': savedCount > 0 };
+  const flags = { 'step-1': !!lastResults, 'step-2': savedCount > 0, 'step-3': savedCount > 0 };
   Object.entries(flags).forEach(([id, done]) => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('step--done', done);
