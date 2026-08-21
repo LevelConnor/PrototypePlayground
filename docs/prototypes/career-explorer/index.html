@@ -898,7 +898,7 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
 /* No hover treatment on states — the native title tooltip carries the state
    name and outlook, so the stroke change was decoration. The transition
    stays for .selected, which still animates its stroke. */
-.state-map svg path[data-state]{stroke:var(--mg);stroke-width:1.2;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
+.state-map svg path[data-state]{stroke:var(--off);stroke-width:1.2;transition:stroke .12s ease,stroke-width .12s ease;cursor:default}
 /* The Wikimedia SVG carries a separate <g class="borders"> layer of
    between-state lines with an inline stroke:#FFFFFF. Repaint those to
    match the card border.
@@ -908,7 +908,9 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
    under half a pixel and effectively vanished. With the vector effect the
    width is screen pixels, so the borders hold up at any card size. */
 .state-map svg g.borders,
-.state-map svg g.borders path,
+.state-map svg g.borders path{stroke:var(--off);stroke-width:2;vector-effect:non-scaling-stroke}
+/* .separator1 frames the displaced Alaska and Hawaii insets rather than
+   dividing states, so it stays on --mg; matching the card would erase it. */
 .state-map svg .separator1{stroke:var(--mg);stroke-width:2;vector-effect:non-scaling-stroke}
 /* Solid palette so the map reads the same on light + dark backgrounds
    (alpha overlays disappeared into the dark modal surface). Sequential
@@ -922,7 +924,7 @@ body.dark .ccard-star:not(.top):hover{background:rgba(10,15,46,.88);color:#fff}
    scaled with the SVG, breaking into coarse specks when zoomed —
    worst on Alaska, whose Aleutian outline is hundreds of tiny segments.
    --map-nodata sits off the blue ramp so it cannot be read as a value. */
-.state-map svg path[data-variant="none"]{fill:var(--map-nodata);stroke:var(--mg);stroke-width:1;vector-effect:non-scaling-stroke}
+.state-map svg path[data-variant="none"]{fill:var(--map-nodata);stroke:var(--off);stroke-width:1;vector-effect:non-scaling-stroke}
 .state-map svg path.selected{stroke:var(--blue);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(0,131,255,.45))}
 .state-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;font-size:12px;color:var(--ts);margin:14px 0 0}
 .state-map-legend span{display:inline-flex;align-items:center;gap:6px}
