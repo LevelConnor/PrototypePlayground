@@ -336,7 +336,7 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 /* --ip-gap is shared with .ip-row--hidden below: a collapsed row has to
    cancel exactly one flex gap, otherwise the stack measures shorter than
    the pills it contains and the footer rides up over the last one. */
-.ip-stack{display:flex;flex-direction:column;--ip-gap:6px;gap:var(--ip-gap)}
+.ip-stack{display:flex;flex-direction:column;--ip-gap:12px;gap:var(--ip-gap)}
 
 
 
@@ -349,25 +349,26 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
   max-height:120px;opacity:1;
   transition:max-height .35s ease, opacity .25s ease, margin .25s ease}
 .ip-row--hidden{max-height:0;opacity:0;margin-top:calc(-1 * var(--ip-gap))}
-.ip-row-pill{display:flex;align-items:center;gap:14px;
+.ip-row-pill{display:flex;align-items:center;gap:10px;
   background:var(--rc,#999);
   border-radius:100px;
-  padding:8px 28px 8px 8px;
+  /* 36px avatar + 6px top/bottom = a 48px pill */
+  padding:6px 22px 6px 6px;
   width:var(--pw,60%);
   min-width:min(260px, 100%);
   flex-shrink:0;
   transition:width .55s cubic-bezier(.4,0,.2,1)}
-.ip-row-avatar{width:48px;height:48px;border-radius:50%;background:var(--ink);color:var(--rc,#fff);display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0}
+.ip-row-avatar{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--rc,#fff);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}
 .ip-row-body{flex:1;min-width:0;color:var(--ink)}
-.ip-row-name{font-size:18px;font-weight:900;line-height:1.2;color:var(--ink)}
+.ip-row-name{font-size:15px;font-weight:900;line-height:1.2;color:var(--ink)}
 /* Hidden until the row is hovered. The pill's height is anchored by the
    avatar (48px circle + padding), so the body has slack vertically. When
    the desc fades in below the title, the flex's align-items:center
    re-centers the body, which visually slides the title upward — exactly
    the requested animation. */
-.ip-row-desc{font-size:13px;font-weight:500;line-height:1.35;color:var(--ink);opacity:0;max-height:0;margin-top:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .25s ease, max-height .3s cubic-bezier(.4,0,.2,1), margin-top .3s ease}
-.ip-row-pill:hover .ip-row-desc{opacity:.85;max-height:20px;margin-top:2px}
-.ip-row-score{font-size:22px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0;margin-left:auto;padding-left:12px}
+.ip-row-desc{font-size:11px;font-weight:500;line-height:1.35;color:var(--ink);opacity:0;max-height:0;margin-top:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .25s ease, max-height .3s cubic-bezier(.4,0,.2,1), margin-top .3s ease}
+.ip-row-pill:hover .ip-row-desc{opacity:.85;max-height:13px;margin-top:1px}
+.ip-row-score{font-size:18px;font-weight:900;color:var(--ink);line-height:1;flex-shrink:0;margin-left:auto;padding-left:10px}
 
 /* Footer row, now nested inside the white .ip-card. Sits under a thin
    divider that visually separates the actions from the score stack.
@@ -388,10 +389,10 @@ main{max-width:900px;margin:0 auto;padding:36px 20px 80px}
 
 @media (max-width:720px){
   .ip-card{padding:18px}
-  .ip-row-pill{min-width:min(320px, 100%);padding:6px 22px 6px 6px}
-  .ip-row-avatar{width:42px;height:42px;font-size:16px}
-  .ip-row-name{font-size:16px}
-  .ip-row-desc{font-size:12px}
+  .ip-row-pill{min-width:min(320px, 100%);padding:5px 18px 5px 5px}
+  .ip-row-avatar{width:32px;height:32px;font-size:13px}
+  .ip-row-name{font-size:14px}
+  .ip-row-desc{font-size:10px}
 }
 /* Dev shortcut button — random-fills the assessment + submits. Lives at
    the bottom-right of the viewport. Only visible while the Assessment
