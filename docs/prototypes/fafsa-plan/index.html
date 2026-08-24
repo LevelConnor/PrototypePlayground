@@ -384,47 +384,16 @@ summary::-webkit-details-marker { display:none; }
                 </sc-if>
                 <sc-if value="{{ flaggedYesSel }}" hint-placeholder-val="{{ false }}">
                 <div style="background:var(--ap-task-bg); border-left:3px solid var(--ap-warn); border-radius:8px; padding:14px 16px; margin-top:12px; animation:fade .3s ease;">
-                  <div style="font-size:12.5px; font-weight:600; color:var(--ap-link); letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px;">1 · Get your info together</div>
-                  <div style="display:flex; flex-direction:column; gap:2px;">
-                    <sc-for list="{{ verifyItems }}" as="vi" hint-placeholder-count="5">
-                      <div onClick="{{ vi.toggle }}" style="display:flex; gap:10px; align-items:flex-start; padding:6px 0; cursor:pointer;">
-                        <sc-if value="{{ vi.done }}" hint-placeholder-val="{{ false }}">
-                          <div style="width:18px; height:18px; border:2px solid #0083FF; background:#0083FF; border-radius:5px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </div>
-                        </sc-if>
-                        <sc-if value="{{ vi.open }}" hint-placeholder-val="{{ true }}">
-                          <div style="width:18px; height:18px; border:2px solid var(--ap-border-strong); border-radius:5px; flex-shrink:0; margin-top:1px;"></div>
-                        </sc-if>
-                        <sc-if value="{{ vi.done }}" hint-placeholder-val="{{ false }}">
-                          <div style="font-size:12.5px; color:var(--ap-subtle); text-decoration:line-through;">{{ vi.t }}</div>
-                        </sc-if>
-                        <sc-if value="{{ vi.open }}" hint-placeholder-val="{{ true }}">
-                          <div style="font-size:12.5px; color:var(--ap-muted);">{{ vi.t }}</div>
-                        </sc-if>
-                      </div>
-                    </sc-for>
-                  </div>
-                  <div style="font-size:12.5px; font-weight:600; color:var(--ap-link); letter-spacing:0.04em; text-transform:uppercase; margin:16px 0 8px;">2 · Complete the Verification Process</div>
-                  <div style="display:flex; flex-direction:column; gap:2px;">
-                    <sc-for list="{{ verifyActions }}" as="va" hint-placeholder-count="3">
-                      <div onClick="{{ va.toggle }}" style="display:flex; gap:10px; align-items:flex-start; padding:6px 0; cursor:pointer;">
-                        <sc-if value="{{ va.done }}" hint-placeholder-val="{{ false }}">
-                          <div style="width:18px; height:18px; border:2px solid #0083FF; background:#0083FF; border-radius:5px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </div>
-                        </sc-if>
-                        <sc-if value="{{ va.open }}" hint-placeholder-val="{{ true }}">
-                          <div style="width:18px; height:18px; border:2px solid var(--ap-border-strong); border-radius:5px; flex-shrink:0; margin-top:1px;"></div>
-                        </sc-if>
-                        <sc-if value="{{ va.done }}" hint-placeholder-val="{{ false }}">
-                          <div style="font-size:12.5px; color:var(--ap-subtle); text-decoration:line-through;">{{ va.t }}</div>
-                        </sc-if>
-                        <sc-if value="{{ va.open }}" hint-placeholder-val="{{ true }}">
-                          <div style="font-size:12.5px; color:var(--ap-muted);">{{ va.t }}</div>
-                        </sc-if>
-                      </div>
-                    </sc-for>
+                  <div style="font-size:13px; color:var(--ap-muted); margin-bottom:12px;">Complete the Financial Aid Verification project.</div>
+                  <div style="background:var(--ap-card); border:1px solid var(--ap-border); border-radius:16px; padding:16px 18px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+                    <div style="width:38px; height:38px; border-radius:11px; background:#0083FF; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <div style="flex:1 1 12em; min-width:0;">
+                      <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:11px; font-weight:700; color:var(--ap-mint); letter-spacing:0.12em; text-transform:uppercase;">Level All project</div>
+                      <div style="font-size:15.5px; font-weight:600; color:var(--ap-fg); margin-top:4px;">Financial Aid Verification</div>
+                    </div>
+                    <a href="https://app.levelall.com/projects/afcol-financial-aid-verification?step=019fb92b-6c37-7570-852b-fe62751802c5" target="_blank" rel="noopener" style="flex-shrink:0; font-family:inherit; font-size:13.5px; font-weight:600; background:#0083FF; color:#FFFFFF; text-decoration:none; padding:11px 20px; border-radius:8px; white-space:nowrap; transition:background .15s ease-out, transform .1s;" style-hover="background:#1A8FFF; text-decoration:none" style-active="background:#0072E0; transform:scale(0.98)">Start Project →</a>
                   </div>
                   <div style="font-size:12.5px; color:var(--ap-muted); margin-top:10px;">Schools usually take two to four weeks to review, and an incomplete packet restarts that clock. Nothing disburses until verification closes, so a slow response can push your bill past its due date. If the deadline is close, tell the aid office; they can often note that your documents are in.</div>
                 </div>
@@ -474,7 +443,7 @@ class Component extends DCLogic {
     screen: 0, tab: 0,
     sc: {},
     spouse: null, parentStatus: null, supportParent: null,
-    filed: {}, docsDone: {}, verifyDone: {}, flagged: null,
+    filed: {}, docsDone: {}, flagged: null,
     theme: "dark"
   };
 
@@ -710,26 +679,6 @@ class Component extends DCLogic {
       flaggedNoSel: st.flagged === false, flaggedNoOff: st.flagged !== false,
       setFlaggedYes: () => this.setState({ flagged: true }),
       setFlaggedNo: () => this.setState({ flagged: false }),
-
-      verifyItems: [
-        "A verification worksheet from the school, signed by you and required parent/contributors",
-        "An IRS tax return transcript, or a signed copy of the return, for each contributor",
-        "A non-filer statement from anyone who didn't file, sometimes with an IRS verification of non-filing letter",
-        "Photo ID and a statement of educational purpose, if identity is what's being verified",
-        "Proof of household size or benefits in some cases"
-      ].map((t, i) => ({
-        t, done: !!st.verifyDone[i], open: !st.verifyDone[i],
-        toggle: () => this.setState(s => ({ verifyDone: Object.assign({}, s.verifyDone, { [i]: !s.verifyDone[i] }) }))
-      })),
-
-      verifyActions: [
-        "Submit everything in one batch on the school portal, not by email",
-        "Call the financial aid office to verify they received it",
-        "Check back in two weeks if you haven't heard anything"
-      ].map((t, i) => ({
-        t, done: !!st.verifyDone["a" + i], open: !st.verifyDone["a" + i],
-        toggle: () => this.setState(s => ({ verifyDone: Object.assign({}, s.verifyDone, { ["a" + i]: !s.verifyDone["a" + i] }) }))
-      })),
 
       orderSteps: [
         { n:"1", t:"Gather your documents", s:"You'll need your FSA ID, SSN, and asset records — try to have it all in hand by September 15." },
