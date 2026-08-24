@@ -2,6 +2,7 @@
 <html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan your FAFSA — Level All</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -106,18 +107,18 @@ summary::-webkit-details-marker { display:none; }
 
     <sc-if value="{{ isHero }}" hint-placeholder-val="{{ true }}">
       <section style="padding:80px 0 40px; animation:fade .45s ease;">
-        <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ap-mint); margin-bottom:24px;">Free federal aid, actually claimed</div>
+        <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ap-mint); margin-bottom:24px;">Federal aid, actually claimed</div>
         <h1 style="margin:0; font-size:clamp(40px, 7vw, 68px); line-height:1.03; font-weight:700; letter-spacing:-0.025em; color:var(--ap-fg);">The form is free.<br>The <span style="color:#0083FF;">money</span> is real.<br>Let's go get it!</h1>
-        <p style="font-size:20px; line-height:1.5; max-width:30em; margin:28px 0 36px; color:var(--ap-muted);">Most people don't lose aid on the math. They lose it to the wrong parent's tax return, a missed state deadline, or a verification letter nobody explained. Level All FAFSA walks you through your situation, not a generic one.</p>
+        <p style="font-size:20px; line-height:1.5; max-width:30em; margin:28px 0 36px; color:var(--ap-muted);">You may be eligible for more federal aid than you think! Don't miss out because of a wrong answer, a missing form, or a missed deadline. Our Level All FAFSA tool walks you through exactly what <em>you</em> need to do to unlock that aid.</p>
         <button type="button" onClick="{{ goTriage }}" style="font-family:inherit; font-size:15px; font-weight:600; background:#0083FF; color:#FFFFFF; border:none; padding:14px 28px; border-radius:8px; cursor:pointer; transition:background .15s ease-out, transform .1s;" style-hover="background:#1A8FFF" style-active="background:#0072E0; transform:scale(0.98)">Build my plan →</button>
         <div style="display:flex; gap:14px; align-items:flex-start; max-width:34em; margin-top:28px; background:var(--ap-warn-bg); border-left:3px solid var(--ap-warn); border-radius:8px; padding:16px 18px;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ap-warn)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="M12 14v4M10 16h4"></path></svg>
           <div>
-            <div style="font-size:17px; font-weight:600;">The FAFSA opens October 1. Be ready!</div>
-            <div style="font-size:14px; color:var(--ap-muted); margin-top:4px;">Some aid is first-come, first-served. State grants, institutional grants, and work-study run out, and they're awarded in the order applications arrive. Two students with identical finances can get different amounts because one filed in October and one filed in March.</div>
+            <div style="font-size:17px; font-weight:600;">The FAFSA opens around October 1 each year. Be ready!</div>
+            <div style="font-size:14px; color:var(--ap-muted); margin-top:4px;">Some aid is first-come, first-served, which means it may be awarded in the order applications arrive. Two students with identical finances may get different results because one filed in October and the other filed in April.</div>
           </div>
         </div>
-        <p style="font-size:13px; color:var(--ap-subtle); margin:18px 0 0;">Takes about 3 minutes. Nothing is submitted or stored anywhere. You still file the real FAFSA free at studentaid.gov.</p>
+        <p style="font-size:13px; color:var(--ap-subtle); margin:18px 0 0;">This tool takes about 3 minutes, and no data is submitted or stored. You still file the real FAFSA at studentaid.gov.</p>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-top:56px;">
           <div style="background:linear-gradient(115deg, var(--ap-card) 0% 40%, #0083FF 190%); border:1px solid var(--ap-border); border-radius:16px; padding:20px 22px;">
@@ -125,12 +126,12 @@ summary::-webkit-details-marker { display:none; }
             <div style="font-size:13px; line-height:1.45; color:var(--ap-muted); margin-top:8px;">The FAFSA also unlocks direct aid from states, colleges, and private institutions. Even if you don't think you qualify for government aid, file it.</div>
           </div>
           <div style="background:linear-gradient(115deg, var(--ap-card) 0% 40%, var(--ap-warn) 190%); border:1px solid var(--ap-border); border-radius:16px; padding:20px 22px;">
-            <div style="font-size:40px; font-weight:700; letter-spacing:-0.03em; color:var(--ap-warn); font-size:30px; line-height:1.1;">Over $3 billion</div>
-            <div style="font-size:13px; line-height:1.45; color:var(--ap-muted); margin-top:8px;">in FAFSA money went unclaimed last year. That's real money students left behind.</div>
+            <div style="font-size:40px; font-weight:700; letter-spacing:-0.03em; color:var(--ap-warn); font-size:30px; line-height:1.1;">Over $3 billion went unclaimed</div>
+            <div style="font-size:13px; line-height:1.45; color:var(--ap-muted); margin-top:8px;">in FAFSA funding last year. That's real money students left behind.</div>
           </div>
           <div style="background:linear-gradient(115deg, var(--ap-card) 0% 40%, var(--ap-mint) 190%); border:1px solid var(--ap-border); border-radius:16px; padding:20px 22px;">
-            <div style="font-size:30px; line-height:1.1; font-weight:700; letter-spacing:-0.03em; color:var(--ap-mint);">Didn't file</div>
-            <div style="font-size:13px; line-height:1.45; color:var(--ap-muted); margin-top:8px;">is the number one reason holding people back from financial aid. Nearly 25% of adults said they struggled to complete the FAFSA. Level All FAFSA is built to get you the money you deserve. Hassle free.</div>
+            <div style="font-size:30px; line-height:1.1; font-weight:700; letter-spacing:-0.03em; color:var(--ap-mint);">&ldquo;Didn't file&rdquo;</div>
+            <div style="font-size:13px; line-height:1.45; color:var(--ap-muted); margin-top:8px;">is the #1 thing holding students back from financial aid. Nearly 25% of adults say they struggled with the form. Level All FAFSA was built to get you the money you deserve, hassle-free.</div>
           </div>
         </div>
       </section>
@@ -139,8 +140,8 @@ summary::-webkit-details-marker { display:none; }
     <sc-if value="{{ isTriage }}" hint-placeholder-val="{{ false }}">
       <section style="animation:fade .45s ease; padding-top:48px;">
         <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ap-mint); margin-bottom:12px;">Step one · Your situation</div>
-        <h2 style="margin:0; font-size:clamp(28px, 4.5vw, 40px); font-weight:700; letter-spacing:-0.02em;">Four questions decide everything.</h2>
-        <p style="font-size:17px; color:var(--ap-muted); margin:12px 0 0; max-width:34em;">Who counts as a "parent," which documents you need, and which deadlines bind you all flow from these. Answer honestly; there are no wrong lives here.</p>
+        <h2 style="margin:0; font-size:clamp(28px, 4.5vw, 40px); font-weight:700; letter-spacing:-0.02em;">Three questions decide everything.</h2>
+        <p style="font-size:17px; color:var(--ap-muted); margin:12px 0 0; max-width:34em;">Answer these big questions, and you'll know who counts as a contributor and which documents you'll need from whom to file. Answer honestly! There are no wrong answers.</p>
 
         <div style="margin:34px 0;">
           <div style="font-size:21px; font-weight:600; margin-bottom:4px;">First, are you a dependent? Answer these and we'll settle it.</div>
@@ -176,15 +177,15 @@ summary::-webkit-details-marker { display:none; }
           <sc-if value="{{ isDependent }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:16px; padding:18px 20px; border-radius:12px; background:var(--ap-card); border-left:4px solid var(--ap-warn);">
               <div style="font-family:'Geist Mono', ui-monospace, monospace; font-size:11px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--ap-warn); margin-bottom:6px;">Settled</div>
-              <p style="margin:0; font-size:16px;">You're a <strong style="color:var(--ap-warn);">dependent student</strong>. That means a parent is a "contributor" who needs their own account to sign. It's where families get stuck, so we've front-loaded it.</p>
+              <p style="margin:0; font-size:16px;">You're a <strong style="color:var(--ap-warn);">dependent student</strong>. That means one or more parents will be a "contributor" who needs their own account to sign. It's where families get stuck, so we've made it simple.</p>
             </div>
           </sc-if>
         </div>
 
         <sc-if value="{{ hasVerdict }}" hint-placeholder-val="{{ false }}">
           <div style="margin:34px 0;">
-            <div style="font-size:21px; font-weight:600; margin-bottom:4px;">Now, whose tax info does your form use?</div>
-            <div style="font-size:13.5px; color:var(--ap-subtle); margin-bottom:16px;">This follows straight from your status above. We'll resolve the exact people, no guessing.</div>
+            <div style="font-size:21px; font-weight:600; margin-bottom:4px;">Second, whose tax info does your form need?</div>
+            <div style="font-size:13.5px; color:var(--ap-subtle); margin-bottom:16px;">This follows straight from your status above. We'll determine the exact people, no guessing.</div>
 
             <sc-for list="{{ branchRows }}" as="brow" hint-placeholder-count="1">
               <div style="margin-top:20px;">
@@ -205,7 +206,7 @@ summary::-webkit-details-marker { display:none; }
 
             <sc-if value="{{ showFiling }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:28px;">
-                <div style="font-size:21px; font-weight:600; margin-bottom:4px;">Did each person file a U.S. tax return?</div>
+                <div style="font-size:21px; font-weight:600; margin-bottom:4px;">Third, did each person file a U.S. tax return?</div>
                 <div style="font-size:13.5px; color:var(--ap-subtle); margin-bottom:16px;">Filers use the automatic IRS transfer. Non-filers still consent, then confirm they didn't file. Everyone must consent either way.</div>
                 <div style="background:var(--ap-card); border:1px solid var(--ap-border); border-radius:16px; overflow:hidden;">
                   <sc-for list="{{ filingRows }}" as="frow" hint-placeholder-count="2">
@@ -277,7 +278,7 @@ summary::-webkit-details-marker { display:none; }
                 </div>
               </sc-for>
             </div>
-            <p style="font-size:13px; color:var(--ap-muted); margin:14px 0 0;">The tabs below follow that order: gather documents first, then walk the form, then handle what comes after.</p>
+            <p style="font-size:13px; color:var(--ap-muted); margin:14px 0 0;">The tabs below follow that order.</p>
           </div>
         </div>
 
@@ -298,13 +299,13 @@ summary::-webkit-details-marker { display:none; }
 
         <sc-if value="{{ tabDocs }}" hint-placeholder-val="{{ true }}">
           <div style="background:var(--ap-card); border:1px solid var(--ap-border); border-radius:16px; padding:22px 24px; animation:fade .3s ease;">
-            <h3 style="margin:0; font-size:20px; font-weight:600;">Complete the following by September 15</h3>
+            <h3 style="margin:0; font-size:20px; font-weight:600;">What you'll need to complete the FAFSA</h3>
             <div style="font-size:12px; color:var(--ap-mint); letter-spacing:0.04em; margin:6px 0 4px;">Based on who's on your form</div>
             <p style="font-size:13px; color:var(--ap-link); margin:6px 0 8px;">{{ docProgress }}</p>
             <sc-for list="{{ docGroups }}" as="grp" hint-placeholder-count="2">
             <div>
             <div style="font-size:12.5px; font-weight:600; color:var(--ap-link); letter-spacing:0.04em; text-transform:uppercase; margin:18px 0 2px;">{{ grp.label }}</div>
-            <div style="font-size:13px; color:var(--ap-muted); margin-bottom:2px;">{{ grp.note }}</div>
+            <div style="font-size:13px; color:var(--ap-muted); margin-bottom:2px;">{{ grp.noteLead }}<strong style="color:var(--ap-link); font-weight:600;">{{ grp.noteNames }}</strong>{{ grp.noteTail }}</div>
             <sc-for list="{{ grp.items }}" as="doc" hint-placeholder-count="4">
               <div onClick="{{ doc.toggle }}" style="display:flex; gap:13px; padding:12px 0; border-top:1px solid var(--ap-border); align-items:flex-start; cursor:pointer;">
                 <sc-if value="{{ doc.done }}" hint-placeholder-val="{{ false }}">
@@ -436,7 +437,7 @@ summary::-webkit-details-marker { display:none; }
             </div>
             <div style="display:flex; align-items:baseline; gap:16px; padding:14px 0; border-top:1px solid var(--ap-border);">
               <div style="font-weight:700; font-size:15px; color:var(--ap-link); min-width:104px;">Anytime</div>
-              <div style="font-size:14.5px;">Appeal if your situation changed<small style="display:block; color:var(--ap-muted); font-size:12.5px; margin-top:2px;">Lost a job, medical bills, a death in the family? Ask the aid office for a "professional judgment" review. Many people never ask, and it's real money.</small></div>
+              <div style="font-size:14.5px;">Appeal if your situation changes<small style="display:block; color:var(--ap-muted); font-size:12.5px; margin-top:2px;">Experienced a job or business loss, unexpected medical bills, or a death in the family? Ask the aid office for a "professional judgment" review. Many people never do, but aid offices are often willing to work with you.</small></div>
             </div>
           </div>
         </sc-if>
@@ -460,7 +461,7 @@ summary::-webkit-details-marker { display:none; }
 const SCREENER = [
   { id:"age", q:"Will you be 24 or older by Jan 1 of the school year?" },
   { id:"grad", q:"Are you working on a master's or doctorate?" },
-  { id:"married", q:"Are you married, or separated but not divorced?" },
+  { id:"married", q:"Are you married? If you're separated but not divorced, choose “No.”" },
   { id:"kids", q:"Do you have children or dependents you support more than half?" },
   { id:"military", q:"Are you a U.S. veteran, or currently on active duty (not training)?" },
   { id:"foster", q:"Since age 13, were you an orphan, in foster care, or a ward of the court?" },
@@ -543,8 +544,7 @@ class Component extends DCLogic {
 
     const yours = [
       { t:"Your FSA ID (account username + password)", s:"The form is yours; you own it and you submit it. Create the account at least 3 days early so the SSA can verify you." },
-      { t:"Your Social Security number", s:"Or your A-number if you're an eligible noncitizen." },
-      { t:"Your driver's license or state ID", s:"If you have one; not required." },
+      { t:"Your Social Security number (SSN)", s:"Or your A-number, if you're an eligible noncitizen." },
       { t:"Your consent to the IRS data transfer", s:"You approve a direct pull of your own tax data. Nobody types income figures anymore." },
       { t:"Your asset balances", s:"Savings, checking, and any investments in your name. Not your home or retirement accounts." },
       { t:"Your school list", s:"Every college you might attend. They only see that they're listed, not the order." }
@@ -555,6 +555,7 @@ class Component extends DCLogic {
     const groups = [{
       label: "Your information",
       note: "You fill out this part. It's your form and your signature.",
+      noteLead: "You fill out this part. It's your form and your signature.", noteNames: "", noteTail: "",
       items: yours
     }];
 
@@ -571,6 +572,7 @@ class Component extends DCLogic {
       groups.push({
         label: "Your contributors' information",
         note: "You invite " + names + " by email. Each logs in separately and fills their own page; you never see or enter their data.",
+        noteLead: "You invite ", noteNames: names, noteTail: " by email. Each logs in separately and fills their own page; you never see or enter their data.",
         items: theirs
       });
     }
@@ -591,14 +593,14 @@ class Component extends DCLogic {
     });
     steps.push(
       { n: contributor ? "03" : "02", when:"By Sept 15", h:"Gather your documents",
-        b:"The form itself can't be started before it opens, so late summer is prep: SSNs, asset balances, your school list, and records of untaxed income all sitting in one folder. The Documents tab is your checklist.", tip:"" },
+        b:"The form can't be started before it opens, so summer is prep time. Put your SSN, personal information, asset balances, high school equivalency records if you have them, your school list, and records of untaxed income in one folder. The Documents tab is your checklist.", tip:"" },
       { n: contributor ? "04" : "03", when:"Oct 1", h:"Start the form and answer the dependency questions",
-        b:"The form asks a short set of questions (age, marriage, military, dependents, foster care). Your honest answers set whether parent info is required. You don't decide it; the questions do.", tip:"" },
+        b:"The form asks a short set of questions (age, marital status, military, dependents, and foster care or homelessness history). These questions decide if you are independent or dependent. Answer honestly.", tip:"" },
       { n: contributor ? "05" : "04", when:"Oct 1", h:"Consent to the IRS data exchange",
-        b:"Instead of typing income, you'll approve a direct transfer from the IRS. " + (contributor ? "Every contributor must give consent separately." : "You give consent once.") + " No consent, no processing, so this is not optional.",
-        tip:"Even a $0 income or non-filer has to consent. Skipping it silently kills the application." },
+        b:"Instead of typing in income info, you'll approve a direct data transfer from the IRS. " + (contributor ? "Every contributor must give consent separately." : "You give consent once.") + " No consent, no FAFSA processing, so this is not optional.",
+        tip:"Even $0-income earners and non-filers have to consent. Skipping it silently kills the application." },
       { n: contributor ? "06" : "05", when:"Oct 1", h:"Report assets and list your schools",
-        b:"Add current balances (skip your home and retirement accounts). Then list every school you might attend; they only see that they're listed, not the order.",
+        b:"Add current balances (skip your home and retirement accounts). Then list every college or trade program you might attend; schools only see that they're listed, not the order.",
         tip:"List a school even if you're unsure. Adding later means it processes later, and some aid is first-come." },
       { n: contributor ? "07" : "06", when:"Oct 1", h:"Sign and submit",
         b:"You sign, and " + (contributor ? "each contributor signs their part" : "that's it") + ". Watch for the confirmation page and a confirmation email. If you don't get one, it didn't go through.",
@@ -648,6 +650,8 @@ class Component extends DCLogic {
     const docGroups = rawGroups.map((g, gi) => ({
       label: g.label,
       note: g.note,
+      noteLead: g.noteLead, noteNames: g.noteNames, noteTail: g.noteTail,
+      hasNames: !!g.noteNames,
       items: g.items.map((it, i) => {
         const key = gi + "-" + i;
         docTotal++;
@@ -708,7 +712,7 @@ class Component extends DCLogic {
       setFlaggedNo: () => this.setState({ flagged: false }),
 
       verifyItems: [
-        "A verification worksheet from the school, signed by you and any parent-contributor",
+        "A verification worksheet from the school, signed by you and required parent/contributors",
         "An IRS tax return transcript, or a signed copy of the return, for each contributor",
         "A non-filer statement from anyone who didn't file, sometimes with an IRS verification of non-filing letter",
         "Photo ID and a statement of educational purpose, if identity is what's being verified",
@@ -728,8 +732,8 @@ class Component extends DCLogic {
       })),
 
       orderSteps: [
-        { n:"1", t:"Gather your documents", s:"FSA IDs, SSN, and records — everything the form will ask for, in hand by September 15." },
-        { n:"2", t:"Walk through the form", s:"Accounts, dependency questions, IRS consent, assets and schools, then sign and submit." },
+        { n:"1", t:"Gather your documents", s:"You'll need your FSA ID, SSN, and asset records — try to have it all in hand by September 15." },
+        { n:"2", t:"Complete the form", s:"Fill out personal, demographic, and dependency questions, add information on assets, and consent to the IRS data pull. Then, sign and submit." },
         { n:"3", t:"Handle what comes after", s:"Review your summary, respond to verification, compare awards, and appeal if things change." }
       ],
 
@@ -738,7 +742,7 @@ class Component extends DCLogic {
       })),
       tabDocs: st.tab === 0, tabWalk: st.tab === 1, tabAfter: st.tab === 2,
       docGroups,
-      docProgress: doneCount + " of " + docTotal + " ready" + (doneCount === docTotal ? " · you're set to start" : ""),
+      docProgress: doneCount + " of " + docTotal + " ready" + (doneCount === docTotal ? " · You're set to start" : ""),
       walkSteps: this.walkSteps().map((s, i) => ({
         n: s.n, when: s.when, h: s.h, b: s.b, tip: s.tip, hasTip: !!s.tip, open: i === 0
       }))
