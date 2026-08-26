@@ -42,6 +42,23 @@
   .toggle.on .sw::after{left:18px}
   button.act{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px;font-size:13px;cursor:pointer;margin-top:8px}
   button.act:hover{border-color:var(--brand)}
+  .dl{margin-top:8px;font:11.5px/1.4 ui-monospace,Menlo,monospace;color:var(--brand);background:rgba(91,140,255,.08);border:1px solid rgba(91,140,255,.22);border-radius:8px;padding:7px 9px}
+  .addrow{display:flex;gap:6px;margin-top:7px}
+  .addrow select{flex:1;min-width:0}
+  .addrow .act{width:auto;padding:0 12px;white-space:nowrap;margin-top:0}
+  .att{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:5px;font-size:12px}
+  .att b{font-weight:650}
+  .att .x{cursor:pointer;color:var(--faint);padding:0 4px;font-size:14px}
+  .att .x:hover{color:var(--past)}
+  .att small{display:block;color:var(--muted);font-size:10.5px;margin-top:1px}
+  .conf{font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin-bottom:6px;border-left:2px solid}
+  .conf.bad{background:rgba(242,121,91,.10);border-color:var(--past);color:#ffc4b3}
+  .conf.warn{background:rgba(242,182,76,.09);border-color:var(--warn);color:#f7dfae}
+  .conf.info{background:rgba(91,140,255,.08);border-color:var(--brand);color:#c3d4ff}
+  .conf.ok{background:rgba(51,194,127,.08);border-color:var(--good);color:#a9e8c8}
+  .note{margin-top:5px;padding:6px 8px;background:rgba(242,182,76,.10);border-left:2px solid var(--warn);border-radius:6px;color:#f7dfae;font-size:11.5px;line-height:1.4}
+  .when{color:var(--brand);font-weight:600}
+  .pin{display:inline-block;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;padding:1px 5px;border-radius:4px;background:rgba(154,163,178,.14);color:var(--muted);margin-left:6px}
   .inspect{background:#0c0e12;border:1px solid var(--line);border-radius:9px;padding:11px;font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8d0dc;white-space:pre-wrap;word-break:break-word}
   .inspect .k{color:#7ca6ff}.inspect .v{color:#8fe3b0}.inspect .n{color:#f2b64c}
   /* main */
@@ -160,7 +177,32 @@
     </div>
 
     <div class="group">
-      <h3>4 · Follow-up answers <span class="pill">add / remove</span></h3>
+      <h3>4 · Application plan <span class="pill">moves the deadline</span></h3>
+      <div class="segrow" id="plan"></div>
+      <div class="dl" id="dlLbl"></div>
+    </div>
+
+    <div class="group">
+      <h3>5 · After high school</h3>
+      <div class="segrow" id="gap"></div>
+      <div class="segrow" id="gapmode" style="margin-top:6px"></div>
+    </div>
+
+    <div class="group">
+      <h3>6 · Testing plan <span class="pill">SAT / ACT</span></h3>
+      <div class="segrow" id="track"></div>
+      <div id="accom" style="margin-top:8px"></div>
+      <label class="f" style="margin-top:10px">Your sittings <span class="pill">each one builds a chain</span></label>
+      <div id="attempts"></div>
+      <div class="addrow">
+        <select id="atTest"></select>
+        <select id="atDate"></select>
+        <button class="act" id="atAdd">Add</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>7 · Follow-up answers <span class="pill">add / remove</span></h3>
       <div id="toggles"></div>
     </div>
 
@@ -191,9 +233,11 @@
     <div class="legend">
       The journey below is never stored — it's <b>recomputed</b> every time state changes.<br><br>
       <b>State</b> (left) → <b>Engine</b> (a pure function) → <b>Journey</b> (center).<br><br>
-      Change a goal, flip an answer, or advance a month and watch items appear/disappear here. No decision tree — just rules over data.
+      Change a goal, flip an answer, or advance a month and watch items appear/disappear here. No decision tree — just rules over data.<br><br>Tasks anchored to a <b>deadline</b> (application plan, a test sitting) re-time themselves. Tasks pinned to an <b>external</b> calendar — FAFSA, AP exams — never move.
     </div>
-    <h3>Engine log</h3>
+    <h3>Conflicts the engine can see</h3>
+    <div id="conflicts"></div>
+    <h3 style="margin-top:18px">Engine log</h3>
     <div id="loglist"></div>
   </aside>
 </div>
@@ -215,7 +259,7 @@ const DATA = JSON.parse(document.getElementById('DATA').textContent);
 const $ = s => document.querySelector(s);
 
 const PACE = {Focused:1, Standard:2, Relaxed:4}; // months of "active" horizon
-const GLABEL = g => g ? g.replace(/^0/,'') + ' grade' : 'Anytime';
+const GLABEL = g => !g ? 'Anytime' : (gradeRank(g)>=13 ? 'Gap year' : g.replace(/^0/,'') + ' grade');
 
 let state = {
   goal: DATA.meta.goals[0].name,
@@ -228,6 +272,14 @@ let state = {
   profile: { resumeReady:false },        // canonical spine; tools write here
   tools: {                               // each tool's own persistent state
     resume: { activities:[], honors:[], gpa:'', finalized:false }
+  },
+  // NEW: scheduling state -------------------------------------------
+  plan: 'RD',                            // application plan drives the deadline
+  gap:  { years:0, mode:'defer' },       // 'defer' | 'apply-during'
+  testing: {
+    track:'undecided',                   // undecided | SAT | ACT | both | none
+    accommodations:false,
+    attempts:[]                          // [{id, test:'SAT', iso:'2027-03-13'}]
   },
 };
 
@@ -271,14 +323,256 @@ function injectToolItems(){
   );
 }
 
+/* ============================================================
+   SCHEDULING LAYER
+   Two kinds of anchor:
+     • RELATIVE — grade + academic month. Where a task sits in a
+       student's progression. (This is how all 364 authored rows work.)
+     • ABSOLUTE — an offset from a NAMED DEADLINE that the outside
+       world owns (application due date, a test sitting you picked).
+   ED and gap years break the first. Test dates need the second.
+   ============================================================ */
+const WEEK = 7*864e5;
+const AY0  = 2026;                        // academic year the student is in NOW
+const fmt  = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const fmtS = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+const ayStart = (g,s) => AY0 + (g - gradeRank(s.grade));
+const amToCal = m => m<=6 ? m+6 : m-6;               // academic month 1=Jul -> calendar month
+function dateOf(g,m,s,day){                          // grade+month -> real date
+  return new Date(ayStart(g,s) + (m<=6?0:1), amToCal(m)-1, day||15);
+}
+function calDate(cm,cd,g,s){                         // calendar month/day inside grade g's year
+  return new Date(ayStart(g,s) + (cm>=7?0:1), cm-1, cd);
+}
+function placeDate(d,s){                             // real date -> {g, m}
+  const cm=d.getMonth()+1, cy=d.getFullYear();
+  return { g: gradeRank(s.grade) + ((cm>=7?cy:cy-1) - AY0), m: cm>=7 ? cm-6 : cm+6 };
+}
+const rankLabel = g => g>=13 ? '13th' : String(g).padStart(2,'0')+'th';
+
+/* ---- application plans: the deadline is state, not content ---- */
+const PLANS = {
+  ED:      {label:'Early Decision',    due:[11,1], release:[12,15], binding:true },
+  EA:      {label:'Early Action',      due:[11,1], release:[12,15], binding:false},
+  ED2:     {label:'Early Decision II', due:[1,1],  release:[2,15],  binding:true },
+  RD:      {label:'Regular Decision',  due:[1,5],  release:[3,25],  binding:false},
+  rolling: {label:'Rolling',           due:[9,1],  release:[10,15], binding:false},
+};
+// applying DURING a gap year pushes the whole chain a year past graduation
+const seniorGrade = s => 12 + ((s.gap.years && s.gap.mode==='apply-during') ? 1 : 0);
+function anchorDate(name,s){
+  const P=PLANS[s.plan], g=seniorGrade(s);
+  if(name==='appDeadline')     return calDate(P.due[0],P.due[1],g,s);
+  if(name==='decisionRelease') return calDate(P.release[0],P.release[1],g,s);
+  return null;
+}
+
+/* ---- which authored rows ride the deadline, and which never move ---- */
+const CHAIN = {
+  appDeadline: [
+    'Clarify your narrative','Finalize your decision plans',
+    'Meet with your counselor to align on your application strategy',
+    'Solidify your personal statement','Write strong supplemental essays',
+    'Manage recommendation letters, transcripts, and counselor forms',
+    'Address poor performance or extenuating circumstances',
+    'Tackle unusual essay supplements',
+    'Optimize your Activities List, Honors, and Additional Info sections',
+    'Send colleges your SAT/ACT test scores','Impress at your college interview',
+  ],
+  decisionRelease: [
+    'What to do if you got waitlisted or deferred','What to do if you got rejected',
+    'Accepted, deferred, waitlisted, or rejected: What to do next',
+    'Compare your admissions offers','Appeal your financial aid',
+    'Commit to your best-fit college','Help weigh admissions offers and commit',
+    'Help finalize college onboarding',
+  ],
+};
+const SUBMIT = {                                     // offset 0, gated on plan
+  'Submit Early Action and Early Decision applications':['ED','EA'],
+  'Submit Early Decision II applications':['ED2'],
+  'Submit Regular Decision applications':['RD'],
+  'Submit Rolling Admission applications':['rolling'],
+};
+// PINNED = owned by an external calendar. Choosing ED must NOT drag these.
+const PINNED = ['Submit financial aid forms','Apply for institutional and outside scholarships',
+  'Keep your schools updated with midyear reports and changes','Register for AP exams',
+  'Aim for 4s and 5s on your AP exams'];
+// binding ED removes the compare-offers step; replace it rather than silently dropping it
+const REPLACE = {
+  'Compare your admissions offers':
+    "You applied binding — there are no offers to compare. Confirm the aid package meets the number you modelled before you applied.",
+  'Help weigh admissions offers and commit':
+    "Binding decision: walk through the aid letter together and confirm it matches the net price calculator estimate.",
+};
+
+// Derive each chain item's offset from its AUTHORED position under Regular Decision,
+// so the RD view reproduces the spreadsheet exactly and every other plan is a shift.
+function tagAnchors(){
+  const base = {...state, plan:'RD', gap:{years:0,mode:'defer'}};
+  for(const it of DATA.items){
+    if(PINNED.includes(it.task)){ it.pinned = true; continue; }
+    if(SUBMIT[it.task]){ it.anchor='appDeadline'; it.offsetWeeks=0; it.planTag=SUBMIT[it.task]; continue; }
+    for(const a of ['appDeadline','decisionRelease']){
+      if(!CHAIN[a].includes(it.task)) continue;
+      if(it.timeIndex===9999 || it.gradeRank==null) break;
+      const authored = dateOf(it.gradeRank, it.month, base);
+      it.anchor = a;
+      it.offsetWeeks = Math.round((authored - anchorDate(a,base))/WEEK);
+      break;
+    }
+  }
+}
+
+/* ============================================================
+   TESTING: not a boolean, and not a filter.
+   A student picks SITTINGS off a real national calendar, and each
+   sitting instantiates the same authored chain at its own dates.
+   ============================================================ */
+const SAT_SLOTS=[[8,24],[10,1],[11,1],[12,1],[3,8],[5,1],[6,1]];
+const ACT_SLOTS=[[9,8],[10,20],[12,8],[2,8],[4,12],[6,8],[7,12]];
+function satNear(y,m,d){ const x=new Date(y,m-1,d); x.setDate(x.getDate()+((6-x.getDay()+7)%7)); return x; }
+function testDates(test, ayY){
+  return (test==='SAT'?SAT_SLOTS:ACT_SLOTS).map(([m,d])=>satNear(m>=7?ayY:ayY+1,m,d));
+}
+const BOARD = {SAT:'College Board', ACT:'ACT'};
+// ONE authored chain. Instantiated per attempt — add a sitting, get 7 dated tasks.
+const ATTEMPT_CHAIN = [
+  {key:'accom', wk:-14, need:s=>s.testing.accommodations,
+   task:a=>`Request ${BOARD[a.test]} accommodations for the ${fmtS(a.d)} ${a.test} — approval takes ~7 weeks`},
+  {key:'ramp',  wk:-8,  task:a=>`Start focused ${a.test} prep for the ${fmtS(a.d)} sitting`},
+  {key:'reg',   wk:-5,  task:a=>`Register for the ${fmtS(a.d)} ${a.test} — regular deadline`},
+  {key:'late',  wk:-3,  task:a=>`Late registration closes for the ${fmtS(a.d)} ${a.test} (extra fee)`},
+  {key:'final', wk:-1,  task:a=>`Take one last full-length practice ${a.test}`},
+  {key:'sit',   wk:0,   mile:true, task:a=>`Test day — ${a.test}, ${fmt(a.d)}`},
+  {key:'score', wk:2.5, task:a=>`${a.test} scores released — review your section breakdown`},
+  {key:'next',  wk:3.5, task:a=>`Decide: retake, or lock in this ${a.test} score`},
+];
+function expandAttempts(s){
+  const out=[];
+  if(s.testing.track==='none') return out;
+  for(const at of s.testing.attempts){
+    const d=new Date(at.iso+'T12:00:00'), ctx={test:at.test,d};
+    for(const st of ATTEMPT_CHAIN){
+      if(st.need && !st.need(s)) continue;
+      const when=new Date(d.getTime()+st.wk*WEEK), pos=placeDate(when,s);
+      out.push({
+        id:`att-${at.id}-${st.key}`, goal:s.goal, category:'Testing',
+        grade:rankLabel(pos.g), gradeRank:pos.g, month:pos.m, monthLbl:null,
+        theme:`${at.test} sitting · ${fmt(d)}`, themeTag:'testing', ce:null,
+        timeIndex:pos.g*12+pos.m, task:st.task(ctx), milestone:!!st.mile,
+        type:'attempt', attemptId:at.id, realDate:when,
+      });
+    }
+  }
+  return out;
+}
+/* The 25 authored testing rows stay as the NARRATIVE layer; track decides
+   which of them still make sense once the student has committed to a test. */
+function retitle(t,tr){
+  return t.replace(/SAT\s*\/\s*ACT|ACT\s*\/\s*SAT|SAT and ACT|ACT and SAT|SAT or ACT|ACT or SAT/g,tr);
+}
+function testingRule(it,s){
+  if(it.themeTag!=='testing' || it.type==='attempt') return {keep:true};
+  const T=s.testing, t=it.task;
+  if(T.track==='none') return {keep:false};
+  if(/decide which is for you/i.test(t)) return {keep:T.track==='undecided'};  // collapses the duplicate
+  if(T.track==='SAT'||T.track==='ACT'){
+    const other=T.track==='SAT'?'ACT':'SAT';
+    const generic=/SAT\s*\/\s*ACT|ACT\s*\/\s*SAT|SAT and ACT|ACT and SAT|SAT or ACT|ACT or SAT/.test(t);
+    if(!generic && new RegExp(`\\b${other}\\b`).test(t) && !new RegExp(`\\b${T.track}\\b`).test(t))
+      return {keep:false};
+    return {keep:true, retitle:retitle(t,T.track)};
+  }
+  return {keep:true};
+}
+
+/* ---- gap year: EXTENDS the calendar past graduation, doesn't shift it ---- */
+function injectGapItems(){
+  if(DATA.items.some(i=>i.type==='gap')) return;
+  const goal=DATA.meta.goals[0].name;
+  const mk=(id,g,m,task,mode,mile)=>({id,goal,category:'Gap year',grade:rankLabel(g),gradeRank:g,
+    month:m,monthLbl:null,theme:mode==='defer'?'Deferred enrollment':'Applying during the gap',
+    themeTag:null,ce:null,timeIndex:g*12+m,task,milestone:!!mile,type:'gap',gapMode:mode});
+  DATA.items.push(
+    mk('gap-d1',12,11,'Ask your college for its deferral policy and deadline in writing','defer',true),
+    mk('gap-d2',12,12,'Pay your enrollment deposit and submit the formal deferral request','defer'),
+    mk('gap-d3',13,1, 'Build a gap-year plan your college will actually approve','defer'),
+    mk('gap-d4',13,3, 'Lock in the work, service, or program that anchors the year','defer'),
+    mk('gap-d5',13,4, 'Re-file the FAFSA for the award year you will actually enroll in','defer',true),
+    mk('gap-d6',13,7, 'Check in with admissions to confirm your place is held','defer'),
+    mk('gap-d7',13,10,'Re-confirm your aid package before you enroll','defer'),
+    mk('gap-a1',12,11,'Ask your counselor to keep recommendation access after you graduate','apply-during'),
+    mk('gap-a2',12,12,'Request your final transcript for next year’s applications','apply-during'),
+    mk('gap-a3',13,1, 'Shape what you are doing this year into the application narrative','apply-during'),
+    mk('gap-a4',13,2, 'Confirm your test scores are still current, or plan a retake','apply-during'),
+    mk('gap-a5',13,5, 'Line up recommenders who know your gap-year work','apply-during',true),
+  );
+}
+
+/* ---- what the loop can see that a static timeline cannot ---- */
+function conflicts(s,j){
+  const out=[], T=s.testing, dl=anchorDate('appDeadline',s);
+  const now=dateOf(gradeRank(s.grade),s.month,s);
+  const atts=[...T.attempts].sort((a,b)=>new Date(a.iso)-new Date(b.iso));
+  for(const a of atts){
+    const sit=new Date(a.iso+'T12:00:00'), sc=new Date(sit.getTime()+2.5*WEEK);
+    if(sc>dl) out.push({level:'bad',msg:`${a.test} on ${fmt(sit)} returns scores around ${fmt(sc)} — after your ${PLANS[s.plan].label} deadline of ${fmt(dl)}. That sitting cannot count.`});
+  }
+  if(T.track!=='none' && !atts.length)
+    out.push({level:'warn',msg:'No sitting picked yet — registration, prep and score tasks stay out of the plan until you choose a date.'});
+  if(T.track!=='none' && atts.length && !atts.some(a=>new Date(new Date(a.iso+'T12:00:00').getTime()+2.5*WEEK)<=dl))
+    out.push({level:'bad',msg:`Not one scheduled sitting returns scores before ${fmt(dl)}.`});
+  if(T.accommodations && atts.length){
+    const wks=(new Date(atts[0].iso+'T12:00:00')-now)/WEEK;
+    if(wks<7) out.push({level:'bad',msg:`Accommodations take ~7 weeks to approve and your first sitting is ${Math.max(0,Math.round(wks))} weeks out. Request now or move the date.`});
+  }
+  for(let i=1;i<atts.length;i++){
+    const g=(new Date(atts[i].iso)-new Date(atts[i-1].iso))/WEEK;
+    if(g<4) out.push({level:'warn',msg:`${fmtS(new Date(atts[i-1].iso+'T12:00:00'))} and ${fmtS(new Date(atts[i].iso+'T12:00:00'))} are ${Math.round(g)} weeks apart — the first set of scores lands after the second test.`});
+  }
+  if(T.track==='both') out.push({level:'warn',msg:'Prepping both tests roughly doubles the prep load. Most students diagnose once and commit to one.'});
+  if(T.track==='undecided'&&atts.length) out.push({level:'warn',msg:'You have sittings booked but have not picked a test yet.'});
+  const pd=j.filter(x=>x.anchor&&x.status==='past').length;
+  if(pd) out.push({level:'warn',msg:`${pd} application tasks are already behind for a ${PLANS[s.plan].label} deadline of ${fmt(dl)}.`});
+  if(PLANS[s.plan].binding) out.push({level:'info',msg:`${PLANS[s.plan].label} is binding. You cannot compare aid offers — run each net price calculator before you apply.`});
+  if(s.gap.years&&s.gap.mode==='apply-during') out.push({level:'info',msg:`Applying during the gap year: the whole application chain moved to ${fmt(dl)}, a year past graduation.`});
+  if(s.gap.years&&s.gap.mode==='defer') out.push({level:'info',msg:'Deferring: senior year is unchanged. The gap-year block is appended after graduation.'});
+  return out;
+}
+
 /* ---------- THE ENGINE: pure projection over content given state ---------- */
 function computeJourney(items, s){
   const nowIndex = gradeRank(s.grade)*12 + s.month;
   const horizon = PACE[s.pace];
   const list = [];
-  for(const it of items){
+  for(const raw of items.concat(expandAttempts(s))){     // attempts expand from state
+    let it = raw;
     if(it.goal !== s.goal) continue;                      // rule: goal match
     if(it.themeTag && s.answers[it.themeTag] === false) continue; // rule: answer removed this theme
+
+    // rule: gap-year content appears only for the gap mode in play
+    if(it.type==='gap'){ if(!s.gap.years || it.gapMode!==s.gap.mode) continue; }
+    else if(it.gradeRank>=13 && !s.gap.years) continue;
+
+    // rule: a submission row belongs to its application plan
+    if(it.planTag && !it.planTag.includes(s.plan)) continue;
+
+    // rule: testing track decides which authored testing rows still apply
+    const tr = testingRule(it,s);
+    if(!tr.keep) continue;
+    if(tr.retitle && tr.retitle!==it.task) it = {...it, task:tr.retitle};
+
+    // RE-TIME: deadline-anchored rows recompute their date from the current plan
+    if(it.anchor){
+      const d   = new Date(anchorDate(it.anchor,s).getTime() + it.offsetWeeks*WEEK);
+      const pos = placeDate(d,s);
+      it = {...it, grade:rankLabel(pos.g), gradeRank:pos.g, month:pos.m,
+                   timeIndex:pos.g*12+pos.m, realDate:d};
+    }
+    // a binding plan REPLACES the compare-offers step instead of dropping it
+    if(PLANS[s.plan].binding && REPLACE[it.task]) it = {...it, note:REPLACE[it.task]};
+
     // baseline timeline status
     let status;
     if(it.timeIndex === 9999) status = 'active';
@@ -336,7 +630,7 @@ function render(reason){
 
   const gmeta = DATA.meta.goals.find(x=>x.name===state.goal);
   $('#goalTitle').textContent = state.goal;
-  $('#goalSub').textContent = `${gmeta.count} tasks authored · showing the ${state.pace.toLowerCase()} view from ${GLABEL(state.grade)}, ${MONTHS[state.month]||'—'}`;
+  $('#goalSub').textContent = `${gmeta.count} tasks authored · ${state.pace.toLowerCase()} view from ${GLABEL(state.grade)}, ${MONTHS[state.month]||'—'} · ${PLANS[state.plan].label} due ${fmt(anchorDate('appDeadline',state))}`;
 
   // group by grade -> month
   const byGrade = {};
@@ -356,6 +650,10 @@ function render(reason){
     }
   }
   $('#journey').innerHTML = html;
+  const cf = conflicts(state, j);
+  $('#conflicts').innerHTML = cf.length
+    ? cf.map(c=>`<div class="conf ${c.level}">${esc(c.msg)}</div>`).join('')
+    : `<div class="conf ok">No scheduling conflicts. Scores land before your deadline and nothing is past due.</div>`;
   document.querySelectorAll('.ck[data-id]').forEach(el=>el.onclick=()=>toggleDone(el.dataset.id));
   document.querySelectorAll('.openbtn').forEach(el=>el.onclick=()=>openTool(el.dataset.open, el.dataset.step));
   renderInspect();
@@ -396,11 +694,15 @@ function card(it){
   const tags = [];
   if(it.themeTag) tags.push(`<span class="tag">${it.themeTag}</span>`);
   if(it.ce) tags.push(`<span class="meta">step ${it.ce}</span>`);
+  const when = it.realDate ? `<span class="when">${fmt(it.realDate)}</span> · ` : '';
+  const pin  = it.pinned ? `<span class="pin">fixed date</span>` : '';
+  const note = it.note ? `<div class="note">${esc(it.note)}</div>` : '';
   return `<div class="card ${done?'done':''} ${it.milestone?'mile':''}" data-s="${it.status}">
     <div class="ck" data-id="${it.id}"></div>
     <div class="body">
-      <div class="t">${it.milestone?'<span class="mchip">Milestone</span> ':''}${esc(it.task)}</div>
-      <div class="meta">${it.theme?esc(it.theme):''} ${tags.join(' ')}</div>
+      <div class="t">${it.milestone?'<span class="mchip">Milestone</span> ':''}${esc(it.task)}${pin}</div>
+      <div class="meta">${when}${it.theme?esc(it.theme):''} ${tags.join(' ')}</div>
+      ${note}
     </div></div>`;
 }
 function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
@@ -419,7 +721,10 @@ ${ans}
   },
   <span class="k">completed</span>: <span class="n">${Object.keys(s.completed).length}</span> <span class="v">items</span>,
   <span class="k">profile</span>: { <span class="k">resumeReady</span>: <span class="n">${s.profile.resumeReady}</span> },
-  <span class="k">tools.resume</span>: { <span class="k">activities</span>:<span class="n">${s.tools.resume.activities.length}</span>, <span class="k">honors</span>:<span class="n">${s.tools.resume.honors.length}</span>, <span class="k">gpa</span>:<span class="v">"${s.tools.resume.gpa||''}"</span>, <span class="k">finalized</span>:<span class="n">${s.tools.resume.finalized}</span> }
+  <span class="k">tools.resume</span>: { <span class="k">activities</span>:<span class="n">${s.tools.resume.activities.length}</span>, <span class="k">honors</span>:<span class="n">${s.tools.resume.honors.length}</span>, <span class="k">gpa</span>:<span class="v">"${s.tools.resume.gpa||''}"</span>, <span class="k">finalized</span>:<span class="n">${s.tools.resume.finalized}</span> },
+  <span class="k">plan</span>: <span class="v">"${s.plan}"</span> <span class="v">(due ${fmt(anchorDate('appDeadline',s))})</span>,
+  <span class="k">gap</span>: { <span class="k">years</span>:<span class="n">${s.gap.years}</span>, <span class="k">mode</span>:<span class="v">"${s.gap.mode}"</span> },
+  <span class="k">testing</span>: { <span class="k">track</span>:<span class="v">"${s.testing.track}"</span>, <span class="k">accommodations</span>:<span class="n">${s.testing.accommodations}</span>, <span class="k">attempts</span>:<span class="n">${s.testing.attempts.length}</span> }
 }`;
 }
 
@@ -566,12 +871,14 @@ function downloadResume(){
 /* ---------- build controls ---------- */
 function boot(){
   injectToolItems();
+  injectGapItems();
+  tagAnchors();                      // derive chain offsets from the RD baseline
   // goal
   $('#goal').innerHTML = DATA.meta.goals.map(g=>`<option value="${esc(g.name)}">${esc(g.name)} (${g.count})</option>`).join('');
   $('#goal').value = state.goal;
   $('#goal').onchange=e=>{state.goal=e.target.value; autoGrade(); render('goal changed')};
   // grade / month
-  const grades=[...new Set(DATA.items.filter(i=>i.grade).map(i=>i.grade))].sort();
+  const grades=[...new Set(DATA.items.filter(i=>i.grade).map(i=>i.grade))].sort().filter(g=>gradeRank(g)<=12);
   $('#grade').innerHTML=grades.map(g=>`<option value="${g}">${GLABEL(g)}</option>`).join('');
   $('#grade').value=state.grade;
   $('#grade').onchange=e=>{state.grade=e.target.value;render('grade changed')};
@@ -587,7 +894,7 @@ function boot(){
   });
   // toggles
   const T=DATA.meta.themeTags;
-  $('#toggles').innerHTML=Object.entries(T).map(([k,desc])=>
+  $('#toggles').innerHTML=Object.entries(T).filter(([k])=>k!=='testing').map(([k,desc])=>
     `<div class="toggle on" data-k="${k}"><div><b>${label(k)}</b><small>${desc}</small></div><div class="sw"></div></div>`).join('');
   $('#toggles').querySelectorAll('.toggle').forEach(el=>el.onclick=()=>{
     const k=el.dataset.k; state.answers[k]=!state.answers[k];
@@ -601,8 +908,105 @@ function boot(){
     log('rc','progress + tool state reset');render('reset');
   };
   $('#ov').onclick=e=>{ if(e.target.id==='ov') closeTool(); };
+  bootSchedule();
   autoGrade();
   render('initial load');
+}
+
+/* ---------- controls for plan / gap / testing ---------- */
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let attemptSeq = 0;
+
+function seg(id, opts, get, set){
+  const el=$('#'+id);
+  const paint=()=>el.querySelectorAll('.seg').forEach(x=>x.classList.toggle('on',x.dataset.v===String(get())));
+  el.innerHTML=opts.map(o=>`<div class="seg" data-v="${o.v}" title="${o.t||''}">${o.l}</div>`).join('');
+  el.querySelectorAll('.seg').forEach(x=>x.onclick=()=>{ set(x.dataset.v); paint(); });
+  paint(); return paint;
+}
+
+function bootSchedule(){
+  // --- application plan: re-times the whole chain, and says what it cost ---
+  const paintPlan = seg('plan',
+    Object.entries(PLANS).map(([k,v])=>({v:k,l:k==='rolling'?'Roll':k,t:v.label})),
+    ()=>state.plan,
+    v=>{
+      const before=new Map(computeJourney(DATA.items,state).filter(x=>x.anchor).map(x=>[x.id,x.timeIndex]));
+      const wasPast=computeJourney(DATA.items,state).filter(x=>x.anchor&&x.status==='past').length;
+      state.plan=v;
+      const after=computeJourney(DATA.items,state).filter(x=>x.anchor);
+      const moved=after.filter(x=>before.has(x.id)&&before.get(x.id)!==x.timeIndex).length;
+      const nowPast=after.filter(x=>x.status==='past').length;
+      if(moved) log('add',`plan → ${PLANS[v].label}: ${moved} tasks re-timed`);
+      if(nowPast>wasPast) log('rm',`${nowPast-wasPast} tasks are now past due`);
+      refreshDates(); render('plan changed');
+    });
+
+  // --- gap year ---
+  seg('gap',[{v:'0',l:'Straight to college'},{v:'1',l:'Gap year'}],
+    ()=>state.gap.years,
+    v=>{ state.gap.years=+v; refreshDates(); render('gap changed'); paintGapMode(); });
+  const paintGapMode = seg('gapmode',
+    [{v:'defer',l:'Apply, then defer'},{v:'apply-during',l:'Apply during the gap'}],
+    ()=>state.gap.mode,
+    v=>{ state.gap.mode=v; refreshDates(); render('gap mode changed'); });
+
+  // --- testing track ---
+  seg('track',[{v:'undecided',l:'Undecided'},{v:'SAT',l:'SAT'},{v:'ACT',l:'ACT'},
+               {v:'both',l:'Both'},{v:'none',l:'Test-optional'}],
+    ()=>state.testing.track,
+    v=>{ state.testing.track=v;
+         if(v!=='undecided'&&v!=='both'&&v!=='none')
+           state.testing.attempts=state.testing.attempts.filter(a=>a.test===v);
+         renderAttempts(); refreshDates(); render('testing track → '+v); });
+
+  $('#accom').innerHTML=`<div class="toggle" id="accomT"><div><b>Testing accommodations</b><small>Adds a request task ~7 weeks before each sitting</small></div><div class="sw"></div></div>`;
+  const paintAccom=()=>$('#accomT').classList.toggle('on',state.testing.accommodations);
+  $('#accomT').onclick=()=>{ state.testing.accommodations=!state.testing.accommodations; paintAccom();
+    render('accommodations '+(state.testing.accommodations?'on':'off')); };
+  paintAccom();
+
+  $('#atTest').innerHTML=['SAT','ACT'].map(t=>`<option value="${t}">${t}</option>`).join('');
+  $('#atTest').onchange=refreshDates;
+  $('#atAdd').onclick=()=>{
+    const v=$('#atDate').value; if(!v) return;
+    if(state.testing.attempts.some(a=>a.iso===v && a.test===$('#atTest').value)) return;
+    state.testing.attempts.push({id:'t'+(++attemptSeq), test:$('#atTest').value, iso:v});
+    log('add',`sitting added — ${$('#atTest').value} ${fmt(new Date(v+'T12:00:00'))}`);
+    renderAttempts(); render('sitting added');
+  };
+  refreshDates(); renderAttempts();
+}
+
+// only real, future national test dates between now and the application deadline year
+function refreshDates(){
+  const test=$('#atTest').value||'SAT';
+  const g0=gradeRank(state.grade), gEnd=seniorGrade(state), now=dateOf(g0,state.month,state);
+  const out=[];
+  for(let g=g0; g<=gEnd; g++) for(const d of testDates(test, ayStart(g,state))) if(d>now) out.push(d);
+  out.sort((a,b)=>a-b);
+  const dl=anchorDate('appDeadline',state);
+  $('#atDate').innerHTML=out.map(d=>{
+    const late=new Date(d.getTime()+2.5*WEEK)>dl;
+    return `<option value="${iso(d)}">${fmt(d)}${late?' ⚠ too late':''}</option>`;
+  }).join('');
+  $('#dlLbl').innerHTML=`appDeadline → <b>${fmt(dl)}</b><br>decisionRelease → <b>${fmt(anchorDate('decisionRelease',state))}</b>`;
+}
+
+function renderAttempts(){
+  const A=[...state.testing.attempts].sort((a,b)=>new Date(a.iso)-new Date(b.iso));
+  const dl=anchorDate('appDeadline',state);
+  $('#attempts').innerHTML = A.length ? A.map(a=>{
+    const d=new Date(a.iso+'T12:00:00'), sc=new Date(d.getTime()+2.5*WEEK);
+    return `<div class="att"><div><b>${a.test} · ${fmt(d)}</b>
+      <small>register by ${fmtS(new Date(d.getTime()-5*WEEK))} · scores ~${fmtS(sc)}${sc>dl?' · after your deadline':''}</small></div>
+      <span class="x" data-rm="${a.id}">✕</span></div>`;
+  }).join('') : `<div class="meta" style="padding:3px 0">No sittings picked yet.</div>`;
+  $('#attempts').querySelectorAll('[data-rm]').forEach(el=>el.onclick=()=>{
+    state.testing.attempts=state.testing.attempts.filter(x=>x.id!==el.dataset.rm);
+    log('rm','sitting removed — its whole chain left the plan');
+    renderAttempts(); render('sitting removed');
+  });
 }
 function label(k){return {testing:'Standardized testing',parent:'Involve a parent',passion:'Passion project',summer:'Summer programs'}[k]||k}
 // if selected goal has no data for current grade, jump to its first grade
