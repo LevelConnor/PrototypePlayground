@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathway Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --ground:#EAEDE8; --surface:#FBFCFA; --surface-2:#F1F4EF; --surface-3:#E3E8E1;
+  --line:#D2D9D0; --line-strong:#B2BCB0;
+  --ink:#18211D; --ink-2:#4A554F; --ink-3:#6B7670;
+  --accent:#1D5B4B; --accent-ink:#123B30; --accent-soft:#D9E7E0; --accent-line:#A9C7BA;
+  --amber:#8F6410; --amber-soft:#F4E8CD; --amber-line:#DCC48A;
+  --rust:#8F3220; --rust-soft:#F2DDD7; --rust-line:#DCAF9F;
+  --done:#67766C; --done-soft:#E5EAE4;
+  --shadow: 0 1px 2px rgba(24,33,29,.06), 0 6px 18px -10px rgba(24,33,29,.18);
+  --shadow-lift: 0 2px 4px rgba(24,33,29,.08), 0 14px 32px -14px rgba(24,33,29,.28);
+  --f-ui:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:7px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1513; --surface:#171F1C; --surface-2:#1D2623; --surface-3:#26302C;
+    --line:#2A3430; --line-strong:#3D4A45;
+    --ink:#E3E9E4; --ink-2:#A2ADA6; --ink-3:#8A948C;
+    --accent:#5BB095; --accent-ink:#8ED2BB; --accent-soft:#1B322B; --accent-line:#2F5A4B;
+    --amber:#D8A653; --amber-soft:#302710; --amber-line:#5A4A20;
+    --rust:#DF8369; --rust-soft:#331D16; --rust-line:#5C3325;
+    --done:#6C7A71; --done-soft:#1D2522;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+    --shadow-lift: 0 2px 4px rgba(0,0,0,.45), 0 14px 32px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1513; --surface:#171F1C; --surface-2:#1D2623; --surface-3:#26302C;
+  --line:#2A3430; --line-strong:#3D4A45;
+  --ink:#E3E9E4; --ink-2:#A2ADA6; --ink-3:#8A948C;
+  --accent:#5BB095; --accent-ink:#8ED2BB; --accent-soft:#1B322B; --accent-line:#2F5A4B;
+  --amber:#D8A653; --amber-soft:#302710; --amber-line:#5A4A20;
+  --rust:#DF8369; --rust-soft:#331D16; --rust-line:#5C3325;
+  --done:#6C7A71; --done-soft:#1D2522;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+  --shadow-lift: 0 2px 4px rgba(0,0,0,.45), 0 14px 32px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--f-ui); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0; text-wrap:balance; font-weight:600; letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-columns:352px minmax(0,1fr); min-height:100vh}
+.console{
+  background:var(--surface); border-right:1px solid var(--line);
+  position:sticky; top:0; height:100vh; overflow-y:auto; overscroll-behavior:contain;
+}
+.stage{min-width:0; padding:0 0 96px}
+
+/* ---------- console ---------- */
+.brand{padding:22px 22px 18px; border-bottom:1px solid var(--line)}
+.brand-eyebrow{
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); display:flex; align-items:center; gap:7px;
+}
+.brand-eyebrow::after{content:""; flex:1; height:1px; background:var(--accent-line)}
+.brand h1{font-size:21px; margin-top:9px; letter-spacing:-.02em}
+.brand p{font-family:var(--f-body); font-size:13.5px; color:var(--ink-2); margin-top:6px; line-height:1.45}
+
+.knobs{padding:4px 0 28px}
+.kgroup{border-bottom:1px solid var(--line); padding:16px 22px 18px}
+.kgroup:last-child{border-bottom:0}
+.klegend{
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:13px; display:block;
+}
+.kfield{margin-bottom:15px}
+.kfield:last-child{margin-bottom:0}
+.klabel{display:block; font-size:12.5px; font-weight:500; color:var(--ink-2); margin-bottom:6px}
+.khint{font-family:var(--f-body); font-size:12px; color:var(--ink-3); margin-top:5px; line-height:1.4}
+
+select{
+  width:100%; appearance:none; background:var(--surface-2); border:1px solid var(--line-strong);
+  border-radius:var(--r); padding:8px 30px 8px 10px; font:inherit; font-size:13.5px; color:var(--ink);
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 16px) 52%, calc(100% - 11px) 52%;
+  background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+}
+select:disabled{opacity:.45; cursor:not-allowed}
+
+.radios{display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line-strong); border-radius:var(--r); overflow:hidden}
+.radio{display:flex; gap:9px; align-items:flex-start; background:var(--surface-2); padding:9px 11px; cursor:pointer; transition:background .12s}
+.radio:hover{background:var(--surface-3)}
+.radio input{margin:3px 0 0; accent-color:var(--accent); flex:none}
+.radio.on{background:var(--accent-soft)}
+.radio>span{display:block; min-width:0}
+.radio-t{display:block; font-size:13.5px; font-weight:500; line-height:1.3}
+.radio-d{display:block; font-family:var(--f-body); font-size:11.5px; color:var(--ink-3); line-height:1.35; margin-top:2px}
+
+.seg{display:flex; background:var(--surface-2); border:1px solid var(--line-strong); border-radius:var(--r); padding:2px; gap:2px}
+.seg button{
+  flex:1; border:0; background:transparent; border-radius:5px; padding:6px 4px;
+  font-size:12.5px; font-weight:500; color:var(--ink-2); transition:background .12s,color .12s;
+}
+.seg button:hover{background:var(--surface-3)}
+.seg button[aria-pressed="true"]{background:var(--accent); color:#fff; box-shadow:var(--shadow)}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#0F1513}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#0F1513}}
+
+.toggle{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 0; cursor:pointer}
+.toggle-t{font-size:13.5px; font-weight:500}
+.toggle-d{font-family:var(--f-body); font-size:11.5px; color:var(--ink-3); line-height:1.35}
+.switch{flex:none; width:36px; height:20px; border-radius:10px; background:var(--line-strong); border:0; padding:0; position:relative; transition:background .15s}
+.switch::after{content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--surface); transition:transform .15s}
+.switch[aria-pressed="true"]{background:var(--accent)}
+.switch[aria-pressed="true"]::after{transform:translateX(16px)}
+
+input[type=range]{width:100%; margin:4px 0 0; accent-color:var(--accent); background:transparent}
+.rangerow{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:2px}
+.rangeval{font-family:var(--f-mono); font-size:12.5px; font-weight:500; color:var(--accent)}
+.scrub{background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:var(--r); padding:11px 12px 9px}
+.scrub .klabel{color:var(--accent-ink); margin-bottom:3px}
+.scrub .rangeval{font-size:14px}
+
+.btn{
+  border:1px solid var(--line-strong); background:var(--surface-2); border-radius:var(--r);
+  padding:7px 12px; font-size:12.5px; font-weight:500; color:var(--ink-2); transition:background .12s,border-color .12s;
+}
+.btn:hover{background:var(--surface-3); border-color:var(--ink-3); color:var(--ink)}
+.btn-row{display:flex; gap:7px; flex-wrap:wrap}
+
+/* ---------- stage header ---------- */
+.verdict{
+  background:var(--surface); border-bottom:1px solid var(--line);
+  padding:24px 32px 0; position:sticky; top:0; z-index:20;
+}
+.vtop{display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap}
+.vmain{flex:1 1 340px; min-width:0}
+.vflag{
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:3px; margin-bottom:9px;
+}
+.vflag.ok{background:var(--accent-soft); color:var(--accent-ink); border:1px solid var(--accent-line)}
+.vflag.bad{background:var(--rust-soft); color:var(--rust); border:1px solid var(--rust-line)}
+.vmain h2{font-size:26px; letter-spacing:-.025em; line-height:1.15}
+.vmain h2 .dim{color:var(--ink-3); font-weight:500}
+.vsub{font-family:var(--f-body); font-size:14px; color:var(--ink-2); margin-top:7px; max-width:60ch; line-height:1.45}
+.vsub button{
+  border:0; background:none; padding:0; font-family:var(--f-ui); font-size:13px; font-weight:600;
+  color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1.5px;
+}
+.stats{display:flex; gap:0; flex:0 0 auto; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--surface-2)}
+.stat{padding:10px 16px; border-right:1px solid var(--line); min-width:92px}
+.stat:last-child{border-right:0}
+.stat-k{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.stat-v{font-family:var(--f-mono); font-size:19px; font-weight:500; letter-spacing:-.02em; margin-top:3px; font-variant-numeric:tabular-nums}
+.stat-v.warn{color:var(--amber)} .stat-v.bad{color:var(--rust)} .stat-v small{font-size:11px; font-weight:400; color:var(--ink-3); letter-spacing:0}
+
+.legend{display:flex; gap:18px; flex-wrap:wrap; padding:16px 0 14px; margin-top:16px; border-top:1px solid var(--line)}
+.lg{display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--ink-2)}
+.lg svg{flex:none; color:var(--ink-3)}
+.lg .sw{width:11px; height:11px; border-radius:2px; flex:none; border:1px solid}
+.sw.hard{background:var(--surface-3); border-color:var(--ink-3)}
+.sw.miss{background:var(--rust-soft); border-color:var(--rust-line)}
+.sw.crit{background:var(--accent); border-color:var(--accent)}
+
+/* ---------- diff toast ---------- */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(140%);
+  background:var(--ink); color:var(--ground); border-radius:8px; padding:11px 18px;
+  display:flex; align-items:center; gap:14px; z-index:60; box-shadow:var(--shadow-lift);
+  transition:transform .28s cubic-bezier(.2,.9,.3,1); max-width:min(92vw,620px);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast-k{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; opacity:.6; white-space:nowrap}
+.toast-b{font-size:13px; display:flex; gap:12px; flex-wrap:wrap}
+.toast-b b{font-family:var(--f-mono); font-weight:500}
+@media (prefers-reduced-motion:reduce){ .toast{transition:none} }
+
+/* ---------- behind band ---------- */
+.behind{margin:26px 32px 0; border:1px solid var(--rust-line); border-radius:9px; background:var(--rust-soft); overflow:hidden}
+.behind-h{display:flex; align-items:center; gap:10px; padding:13px 17px; border-bottom:1px solid var(--rust-line)}
+.behind-h svg{flex:none; color:var(--rust)}
+.behind-h h3{font-size:14.5px; color:var(--rust)}
+.behind-h .mono{margin-left:auto; font-size:11px; color:var(--rust); opacity:.8}
+.behind-l{list-style:none; margin:0; padding:0}
+.behind-l li{display:grid; grid-template-columns:76px 1fr; gap:14px; padding:12px 17px; border-bottom:1px solid rgba(143,50,32,.14)}
+.behind-l li:last-child{border-bottom:0}
+.bstate{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; padding-top:3px}
+.bstate.closed{color:var(--rust)} .bstate.recov{color:var(--amber)}
+.bttl{font-size:13.5px; font-weight:500; line-height:1.35}
+.bnote{font-family:var(--f-body); font-size:12.5px; color:var(--ink-2); margin-top:3px; line-height:1.45}
+.bnote .mono{font-size:11.5px; color:var(--ink)}
+
+/* ---------- decisions ---------- */
+.decisions{margin:26px 32px 0; display:flex; flex-direction:column; gap:12px}
+.dcard{border:1px solid var(--accent-line); background:var(--surface); border-radius:9px; padding:16px 18px; box-shadow:var(--shadow)}
+.dcard-k{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:7px}
+.dcard h3{font-size:16px; margin-top:8px}
+.dcard p{font-family:var(--f-body); font-size:13.5px; color:var(--ink-2); margin-top:5px; max-width:64ch; line-height:1.45}
+.dopts{display:flex; gap:9px; flex-wrap:wrap; margin-top:14px}
+.dopt{
+  border:1px solid var(--line-strong); background:var(--surface-2); border-radius:var(--r);
+  padding:9px 13px; text-align:left; transition:border-color .12s,background .12s,transform .12s;
+}
+.dopt:hover{border-color:var(--accent); background:var(--accent-soft); transform:translateY(-1px)}
+.dopt-t{font-size:13.5px; font-weight:600; display:block}
+.dopt-d{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); display:block; margin-top:2px}
+.dopt.warn{border-color:var(--amber-line); background:var(--amber-soft)}
+.dopt.warn .dopt-d{color:var(--amber)}
+.dnone{font-family:var(--f-body); font-size:13px; color:var(--rust); margin-top:12px; padding:10px 12px; background:var(--rust-soft); border-radius:var(--r); border:1px solid var(--rust-line)}
+
+/* ---------- timeline ---------- */
+.tl{margin:30px 32px 0; position:relative}
+.tl::before{content:""; position:absolute; left:83px; top:0; bottom:0; width:1px; background:var(--line); z-index:0}
+
+.band{display:grid; grid-template-columns:68px 32px minmax(0,1fr); position:relative; z-index:1}
+.band-g{padding:2px 0 22px; text-align:right}
+.mlab{display:flex; flex-direction:column; align-items:flex-end; line-height:1}
+.mlab .m{font-family:var(--f-ui); font-size:15px; font-weight:600; letter-spacing:-.01em}
+.mlab .y{font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); margin-top:3px}
+.load{display:flex; align-items:center; justify-content:flex-end; gap:5px; margin-top:9px}
+.load-bar{display:block; width:34px; height:4px; border-radius:2px; background:var(--surface-3); overflow:hidden}
+.load-bar i{display:block; height:100%; width:calc(var(--f) * 100%); background:var(--accent); border-radius:2px}
+.load-bar.over i{background:var(--amber)}
+.load .n{font-family:var(--f-mono); font-size:10px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+
+.band-n{position:relative}
+.band-n::before{
+  content:""; position:absolute; left:15px; top:6px; width:9px; height:9px; border-radius:50%;
+  background:var(--surface); border:1.5px solid var(--line-strong);
+}
+.band.has::before{content:""}
+.band.crit .band-n::before{background:var(--accent); border-color:var(--accent)}
+
+.band-c{padding:0 0 22px; min-width:0; display:flex; flex-direction:column; gap:8px}
+.band-t{font-family:var(--f-body); font-size:13px; font-style:italic; color:var(--ink-3); margin:1px 0 3px; line-height:1.4}
+
+.band.quiet{align-items:center}
+.band.quiet .band-g{padding-bottom:14px}
+.band.quiet .band-c{padding-bottom:14px}
+.band.quiet .mlab .m{font-size:12.5px; font-weight:400; color:var(--ink-3)}
+.band.quiet .quiet-l{font-family:var(--f-body); font-size:12.5px; color:var(--ink-3); font-style:italic}
+
+.nowline{display:grid; grid-template-columns:68px 32px minmax(0,1fr); align-items:center; margin:2px 0 20px; position:relative; z-index:2}
+.nowline .nl-lab{
+  text-align:right; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--rust);
+}
+.nowline .nl-bar{grid-column:2 / -1; height:0; border-top:1.5px dashed var(--rust); position:relative}
+.nowline.start .nl-lab,.nowline.start .nl-date{color:var(--accent)}
+.nowline.start .nl-bar{border-top:1.5px solid var(--accent-line)}
+.nowline .nl-date{
+  position:absolute; right:0; top:-9px; background:var(--ground); padding:0 0 0 10px;
+  font-family:var(--f-mono); font-size:10.5px; color:var(--rust);
+}
+
+/* ---------- task card ---------- */
+.task{
+  display:grid; grid-template-columns:3px minmax(0,1fr); background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+  box-shadow:var(--shadow); text-align:left; width:100%; padding:0;
+  transition:box-shadow .14s, transform .14s, border-color .14s;
+}
+.task:hover{box-shadow:var(--shadow-lift); transform:translateY(-1px); border-color:var(--line-strong)}
+.tstripe{background:var(--line-strong)}
+.task.h-immovable .tstripe{background:var(--ink)}
+.task.h-deadline .tstripe{background:var(--amber)}
+.task.h-preference .tstripe{background:var(--accent-line)}
+.task.s-due .tstripe{background:var(--amber)}
+.task.s-missed_recoverable .tstripe{background:var(--amber)}
+.task.s-missed_closed .tstripe{background:var(--rust)}
+.task.s-done .tstripe{background:var(--done)}
+
+.tbody{padding:11px 14px 12px; min-width:0}
+.trow1{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:5px}
+.tcat{
+  font-family:var(--f-mono); font-size:9.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3);
+}
+.tchip{
+  font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border-radius:3px; border:1px solid;
+}
+.tchip svg{flex:none}
+.tchip.fixed{background:var(--surface-3); border-color:var(--line-strong); color:var(--ink)}
+.tchip.by{background:var(--amber-soft); border-color:var(--amber-line); color:var(--amber)}
+.tchip.flex{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-ink)}
+.tchip.crit{background:transparent; border-color:var(--accent); color:var(--accent)}
+.tchip.moved{background:transparent; border-color:var(--line-strong); color:var(--ink-3)}
+.tchip.gone{background:var(--rust-soft); border-color:var(--rust-line); color:var(--rust)}
+
+.ttitle,.twhen,.twhy{display:block}
+.ttitle{ font-size:14.5px; font-weight:500; letter-spacing:-.008em; line-height:1.3}
+.task.s-done .ttitle{color:var(--ink-3); text-decoration:line-through; text-decoration-color:var(--line-strong)}
+.twhen{font-family:var(--f-mono); font-size:12px; margin-top:4px; font-variant-numeric:tabular-nums; color:var(--ink-2)}
+.task.h-immovable .twhen{color:var(--ink); font-weight:500}
+.twhy{font-family:var(--f-body); font-size:12.5px; color:var(--ink-2); margin-top:6px; line-height:1.45; max-width:62ch}
+.twhy em{color:var(--ink-2); font-style:normal; border-bottom:1px solid var(--line-strong)}
+
+.ribbon{margin-top:7px; display:flex; align-items:center; gap:9px}
+.rtrack{flex:0 0 96px; height:5px; border-radius:3px; background:var(--surface-3); position:relative; overflow:hidden}
+.rspan{position:absolute; top:0; bottom:0; left:0; background:var(--accent-line); border-radius:3px; width:calc(var(--w) * 100%)}
+.rlab{font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.rlab b{color:var(--ink-2); font-weight:500}
+
+.tdone{
+  flex:none; margin-left:auto; width:18px; height:18px; border-radius:50%; border:1.5px solid var(--line-strong);
+  background:var(--surface-2); display:grid; place-items:center; color:transparent; transition:all .12s;
+}
+.task:hover .tdone{border-color:var(--accent); color:var(--accent-line)}
+.task.s-done .tdone{background:var(--done); border-color:var(--done); color:var(--surface)}
+
+/* ---------- footer ---------- */
+.foot{margin:44px 32px 0; padding-top:18px; border-top:1px solid var(--line); display:flex; gap:26px; flex-wrap:wrap}
+.foot p{font-family:var(--f-body); font-size:12.5px; color:var(--ink-3); max-width:52ch; line-height:1.5}
+.foot h4{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1000px){
+  .shell{grid-template-columns:1fr}
+  .console{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line)}
+  .knobs{display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  .kgroup{border-right:1px solid var(--line)}
+  .verdict{position:static}
+}
+@media (max-width: 720px){
+  .verdict{padding:20px 18px 0}
+  .behind,.decisions,.tl,.foot{margin-left:18px; margin-right:18px}
+  .tl::before{left:55px}
+  .band,.nowline{grid-template-columns:44px 26px minmax(0,1fr)}
+  .band-n::before{left:11px}
+  .vmain h2{font-size:21px}
+  .stats{display:grid; grid-template-columns:1fr 1fr; flex:1 1 100%; width:100%}
+  .stat{min-width:0; border-right:1px solid var(--line)}
+  .stat:nth-child(even){border-right:0}
+  .stat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .knobs{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="console">
+    <div class="brand">
+      <div class="brand-eyebrow">Prototype</div>
+      <h1>Pathway Simulator</h1>
+      <p>One student, one plan. Turn a knob and the whole timeline recompiles &mdash; nothing is stored with a date on it.</p>
+    </div>
+    <div class="knobs" id="knobs"></div>
+  </aside>
+
+  <main class="stage">
+    <header class="verdict" id="verdict"></header>
+    <div id="behind"></div>
+    <div id="decisions"></div>
+    <section class="tl" id="timeline"></section>
+    <footer class="foot">
+      <div>
+        <h4>What this is</h4>
+        <p>A working model of the scheduling engine: a content catalog of task templates with <em>relative</em> or <em>fixed</em> timing rules, compiled against this student's facts and a calendar of real-world anchors. Click any task to mark it done.</p>
+      </div>
+      <div>
+        <h4>What this isn't</h4>
+        <p>Authoritative. Test dates, aid deadlines and application windows here are plausible stand-ins so the mechanics are visible. Production needs a sourced, re-verified calendar table.</p>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   1. DATES
+   ============================================================ */
+const DAY = 86400000;
+const U = (y,m,d) => new Date(Date.UTC(y, m-1, d, 12));
+const addDays = (dt,n) => new Date(dt.getTime() + n*DAY);
+function addMonths(dt,n){
+  const t = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth()+n, 1, 12));
+  const dim = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth()+1, 0, 12)).getUTCDate();
+  return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), Math.min(dt.getUTCDate(), dim), 12));
+}
+function off(dt,o){ let r=dt; if(!o) return r;
+  if(o.months) r=addMonths(r,o.months); if(o.weeks) r=addDays(r,o.weeks*7); if(o.days) r=addDays(r,o.days); return r; }
+const days = (a,b) => Math.round((b-a)/DAY);
+const dmin = (a,b) => a<b?a:b, dmax = (a,b) => a>b?a:b;
+const clampD = (v,lo,hi) => dmin(dmax(v,lo),hi);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt  = d => `${MON[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+const fmtS = d => `${MON[d.getUTCMonth()]} ${d.getUTCDate()}`;
+const mi   = d => d.getUTCFullYear()*12 + d.getUTCMonth();
+const miStart = i => new Date(Date.UTC(Math.floor(i/12), i%12, 1, 12));
+const miLab = i => ({ m: MON[i%12], y: Math.floor(i/12) });
+function nthDow(y,m,dow,n){
+  const first = U(y,m,1);
+  let d = 1 + ((dow - first.getUTCDay()) + 7) % 7 + (n-1)*7;
+  return U(y,m,d);
+}
+function lastDow(y,m,dow){
+  const last = new Date(Date.UTC(y, m, 0, 12));
+  return addDays(last, -(((last.getUTCDay() - dow) + 7) % 7));
+}
+
+/* ============================================================
+   2. EXTERNAL CALENDAR  (illustrative — production reads a
+      sourced table with verified_at / source_url per row)
+   ============================================================ */
+const SAT_RULE = [[3,2],[5,1],[6,1],[8,-1],[10,1],[11,1],[12,1]];
+const ACT_RULE = [[2,2],[4,2],[6,2],[7,2],[9,2],[10,-1],[12,2]];
+function buildDates(rule){
+  const out=[];
+  for(let y=2025;y<=2031;y++) rule.forEach(([m,n])=> out.push(n>0?nthDow(y,m,6,n):lastDow(y,m,6)));
+  return out.sort((a,b)=>a-b);
+}
+const TESTS = {
+  sat:{name:'SAT', regLead:28, scoreLag:13, all:buildDates(SAT_RULE)},
+  act:{name:'ACT', regLead:35, scoreLag:17, all:buildDates(ACT_RULE)}
+};
+
+const TERMS=[];
+for(let y=2026;y<=2030;y++){
+  TERMS.push({id:'sp'+y, label:'Spring '+y, start:U(y,1,12)});
+  TERMS.push({id:'su'+y, label:'Summer '+y, start:U(y,6,8)});
+  TERMS.push({id:'fa'+y, label:'Fall '+y,   start:U(y,8,24)});
+}
+TERMS.sort((a,b)=>a.start-b.start);
+const termById = id => TERMS.find(t=>t.id===id);
+
+function anchors(cfg){
+  const PS = termById(cfg.term).start;
+  const ay = PS.getUTCMonth() >= 6 ? PS.getUTCFullYear() : PS.getUTCFullYear()-1;
+  const A = {
+    program_start:  PS,
+    hs_graduation:  addDays(PS,-80),
+    fafsa_open:     U(ay-1,10,1),
+    fafsa_priority: U(ay,3,2),
+    fafsa_close:    U(ay+1,6,30),
+    app_open:       U(ay-1,8,1),
+    ea_deadline:    U(ay-1,11,1),
+    rd_deadline:    U(ay,1,5),
+    decision_day:   U(ay,5,1),
+    cc_priority:    addMonths(PS,-3),
+    trade_app:      addDays(PS,-45),
+    appr_open:      U(ay,1,2),
+    appr_close:     U(ay,2,28),
+    appr_next:      U(ay+1,2,28)
+  };
+  if(cfg.testDate){
+    const spec = TESTS[cfg.testPlan];
+    A.my_test_date = new Date(cfg.testDate);
+    A.test_reg     = addDays(A.my_test_date, -spec.regLead);
+    A.test_scores  = addDays(A.my_test_date, spec.scoreLag);
+  }
+  return A;
+}
+
+/* ============================================================
+   3. PATHWAYS + CONTENT CATALOG
+   ============================================================ */
+const PATHWAYS = {
+  uni4:   {label:'Four-year university', note:'Bachelor’s degree, direct from high school or after a gap',
+           modules:['core','hs','ged','testing','optional','finaid','apps_uni','support']},
+  cc:     {label:'Community college, then transfer', note:'Two years local, then a four-year',
+           modules:['core','hs','ged','finaid','apps_cc','support']},
+  trade:  {label:'Trade school / certificate', modules:['core','hs','ged','finaid','apps_trade','licensure','support'],
+           note:'Welding, HVAC, medical assisting, CDL'},
+  appr:   {label:'Registered apprenticeship', modules:['core','hs','ged','apps_appr','licensure','support'],
+           note:'Earn while you learn — electrical, plumbing, pipefitting'},
+  mil:    {label:'Military enlistment', modules:['core','hs','ged','apps_mil','support'],
+           note:'Any branch, active or reserve'}
+};
+
+/* timing kinds:  fix = immovable at anchor · fixOff = immovable at anchor+offset
+                  rel = target at anchor+offset, movable inside window        */
+const T = [
+/* ---- core (every pathway) ---- */
+{id:'explore',  module:'core', cat:'Explore', dur:14, title:'Map your interests to real jobs',
+ why:'Everything downstream depends on this one choice, and right now it is the cheapest thing in the plan to change.',
+ timing:{k:'rel',a:'program_start',o:{months:-18},w:[{months:-30},{months:-12}]}},
+{id:'advisor',  module:'core', cat:'Support', dur:2, title:'Meet with a counselor or advisor',
+ why:'Someone who has watched a hundred of these plans will catch what you cannot.',
+ timing:{k:'rel',a:'program_start',o:{months:-16},w:[{months:-26},{months:-9}]}},
+{id:'shadow',   module:'core', cat:'Explore', dur:3, title:'Shadow or interview someone doing the work',
+ why:'One day on site tells you more than a year of reading about it.',
+ timing:{k:'rel',a:'program_start',o:{months:-14},w:[{months:-22},{months:-7}]}},
+{id:'resume',   module:'core', cat:'Records', dur:5, title:'Write your first résumé',
+ why:'Scholarships, apprenticeships and jobs all want one. Write it once, reuse it everywhere.',
+ timing:{k:'rel',a:'program_start',o:{months:-12},w:[{months:-20},{months:-5}]}},
+{id:'budget',   module:'core', cat:'Financial aid', dur:5, title:'Build a real cost-of-attendance budget',
+ why:'Tuition is rarely the biggest number. Housing, transport and tools usually are.',
+ timing:{k:'rel',a:'program_start',o:{months:-10},w:[{months:-16},{months:-4}]}},
+{id:'immun',    module:'core', cat:'Records', dur:3, hard:'deadline', title:'Gather immunization records',
+ why:'Nearly every program freezes your enrollment until these land.',
+ timing:{k:'rel',a:'program_start',o:{months:-2},w:[{months:-5},{weeks:-3}]}},
+{id:'transport',module:'core', cat:'Enrollment', dur:4, title:'Sort out how you get there every day',
+ why:'The most common reason people drop out in the first term is the commute, not the coursework.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-7},w:[{months:-4},{weeks:-2}]}},
+{id:'orient',   module:'core', cat:'Enrollment', dur:1, blocking:true, title:'Attend orientation',
+ why:'Missing it normally costs you class-registration priority.', source:'Date set by the program',
+ timing:{k:'fixOff',a:'program_start',o:{days:-21},hard:'immovable'},
+ missedNote:'Orientation has already run for this intake. Ask the registrar about a make-up session.'},
+
+/* ---- still in high school ---- */
+{id:'gpa',      module:'hs', cat:'Records', dur:2, gate:{is:'inHS'}, title:'Pull your transcript and check your GPA',
+ why:'You cannot plan around a number you have not looked at.',
+ timing:{k:'rel',a:'hs_graduation',o:{months:-14},w:[{months:-22},{months:-8}]}},
+{id:'courses',  module:'hs', cat:'Records', dur:3, gate:{is:'inHS'}, hard:'deadline', title:'Lock in next year’s courses',
+ why:'Course selection closes in spring and reopening it is a favour, not a right.',
+ timing:{k:'rel',a:'hs_graduation',o:{months:-11},w:[{months:-16},{months:-8}]}},
+{id:'gradreq',  module:'hs', cat:'Records', dur:2, gate:{is:'inHS'}, hard:'deadline', blocking:true,
+ title:'Confirm you will actually meet graduation requirements',
+ why:'Credit shortfalls found in April are a crisis. Found in October they are a scheduling change.',
+ timing:{k:'rel',a:'hs_graduation',o:{months:-8},w:[{months:-14},{months:-4}]}},
+{id:'transcript',module:'hs',cat:'Records', dur:3, gate:{is:'inHS'}, hard:'deadline', title:'Request official transcripts',
+ why:'Programs will not act on an unofficial copy.',
+ timing:{k:'rel',a:'program_start',o:{months:-4},w:[{months:-7},{weeks:-4}]}},
+
+/* ---- no diploma yet ---- */
+{id:'ged-reg',  module:'ged', cat:'HS completion', dur:2, gate:{is:'noDiploma'}, hard:'deadline',
+ title:'Register with your state’s high-school equivalency program',
+ why:'Rules, test names and fees are all set at the state level — start there, not with a prep book.',
+ timing:{k:'rel',a:'program_start',o:{months:-13},w:[{months:-20},{months:-9}]}},
+{id:'ged-prep', module:'ged', cat:'HS completion', dur:90, gate:{is:'noDiploma'}, requires:['ged-reg'],
+ title:'Work through prep for all four subject tests',
+ why:'Most people need two to four months, and math is almost always the long pole.',
+ timing:{k:'rel',a:'program_start',o:{months:-10},w:[{months:-16},{months:-6}]}},
+{id:'ged-exam', module:'ged', cat:'HS completion', dur:14, gate:{is:'noDiploma'}, requires:['ged-prep'],
+ hard:'deadline', blocking:true, title:'Pass all four subject tests',
+ why:'Your credential has to exist before any program can admit you.',
+ timing:{k:'rel',a:'program_start',o:{months:-5},w:[{months:-9},{months:-3}]},
+ missedNote:'Without the credential, enrollment cannot proceed. Retakes are usually available within weeks — but the target term has to move.'},
+
+/* ---- standardized testing ---- */
+{id:'test-pick', module:'testing', cat:'Testing', dur:3, gate:{eq:['testPlan','undecided']}, hard:'deadline',
+ title:'Decide between the SAT and the ACT',
+ why:'They reward different things. Pick one and commit — splitting prep across both is the classic mistake.',
+ timing:{k:'rel',a:'rd_deadline',o:{months:-14},w:[{months:-20},{months:-9}]}},
+{id:'test-diag', module:'testing', cat:'Testing', dur:2, gate:{is:'hasTestDate'},
+ title:'Sit one full-length practice test, timed',
+ why:'A baseline score is what makes the rest of the prep plan honest.',
+ timing:{k:'rel',a:'my_test_date',o:{months:-3},w:[{months:-5},{weeks:-9}]}},
+{id:'test-prep', module:'testing', cat:'Testing', dur:56, gate:{is:'hasTestDate'}, requires:['test-diag'],
+ title:'Work a six-to-eight week prep plan',
+ why:'Score gains come from consistent short sessions, not from a heroic final fortnight.',
+ timing:{k:'rel',a:'my_test_date',o:{months:-2},w:[{months:-4},{weeks:-1}]}},
+{id:'test-waive',module:'testing', cat:'Financial aid', dur:2, gate:{all:[{is:'hasTestDate'},{is:'needsAid'}]},
+ hard:'deadline', title:'Claim a test fee waiver',
+ why:'A waiver also covers score reports and some application fees later. It has to be in hand before you register.',
+ timing:{k:'rel',a:'test_reg',o:{weeks:-3},w:[{weeks:-8},{days:-3}]}},
+{id:'test-reg',  module:'testing', cat:'Testing', dur:1, gate:{is:'hasTestDate'}, blocking:false,
+ title:'Register for your test date', source:'Registration deadline set by the testing agency',
+ why:'This is the deadline people actually miss — not the test, the registration four weeks before it.',
+ timing:{k:'fix',a:'test_reg',hard:'immovable'},
+ missedNote:'Standby or late registration sometimes exists, at a premium. Otherwise the next administration is the move.'},
+{id:'test-sit',  module:'testing', cat:'Testing', dur:1, gate:{is:'hasTestDate'}, requires:['test-reg'],
+ title:'Sit the test', source:'National test date',
+ why:'Fixed nationally. Everything in prep is scheduled backwards from here.',
+ timing:{k:'fix',a:'my_test_date',hard:'immovable'},
+ missedNote:'This administration has passed. Pick a later date — but check it still clears your application deadlines.'},
+{id:'test-send', module:'testing', cat:'Testing', dur:2, gate:{is:'hasTestDate'}, requires:['test-sit'], hard:'deadline',
+ title:'Send scores to every school on your list',
+ why:'Scores sitting in your account are invisible to admissions.',
+ timing:{k:'rel',a:'test_scores',o:{days:4},w:[{days:0},{days:40}]}},
+{id:'test-retake',module:'testing',cat:'Testing', dur:2, gate:{is:'hasTestDate'}, requires:['test-sit'],
+ title:'Decide whether a retake is worth it',
+ why:'Most people gain on a second sitting. The question is whether the next date still clears your deadlines.',
+ timing:{k:'rel',a:'test_scores',o:{days:7},w:[{days:0},{days:35}]}},
+{id:'opt-verify',module:'optional', cat:'Testing', dur:3, gate:{eq:['testPlan','optional']}, hard:'deadline',
+ title:'Verify each school is genuinely test-optional for your term',
+ why:'Policies change year to year, and “test-optional” sometimes still means “test-required for merit aid”.',
+ timing:{k:'rel',a:'rd_deadline',o:{months:-5},w:[{months:-10},{months:-2}]}},
+
+/* ---- financial aid ---- */
+{id:'fsa-id',   module:'finaid', cat:'Financial aid', dur:2, gate:{is:'needsAid'}, hard:'deadline',
+ title:'Create your FSA ID — and a parent’s, if you are a dependent',
+ why:'The account takes days to verify against Social Security records. Doing it the night before the form is due does not work.',
+ timing:{k:'rel',a:'fafsa_open',o:{weeks:-3},w:[{months:-3},{days:-2}]}},
+{id:'tax-docs', module:'finaid', cat:'Financial aid', dur:5, gate:{is:'needsAid'},
+ title:'Gather tax returns and income records',
+ why:'The form asks about a tax year that has already closed, so nothing here can change — only be found.',
+ timing:{k:'rel',a:'fafsa_open',o:{weeks:-2},w:[{months:-3},{weeks:2}]}},
+{id:'fafsa',    module:'finaid', cat:'Financial aid', dur:3, gate:{is:'needsAid'}, requires:['fsa-id','tax-docs'],
+ hard:'deadline', title:'Submit the FAFSA',
+ why:'State and institutional money is first-come. The federal form stays open far longer than the money does.',
+ source:'State priority deadline',
+ timing:{k:'fix',a:'fafsa_priority',hard:'deadline'},
+ missedNote:'Priority aid for this year is gone, but the federal form is still open — file it anyway.'},
+{id:'fafsa-late',module:'finaid',cat:'Financial aid', dur:3, gate:{is:'missed.fafsa'}, blocking:true,
+ title:'File the FAFSA now — late, but not too late',
+ why:'You have lost the priority pool. Pell and loans are still on the table until the federal deadline.',
+ source:'Federal deadline — final',
+ timing:{k:'fix',a:'fafsa_close',hard:'immovable'},
+ missedNote:'The federal form for this award year has closed. Aid has to start with next year’s form.'},
+{id:'css',      module:'finaid', cat:'Financial aid', dur:4, gate:{all:[{is:'needsAid'},{eq:['pathway','uni4']}]},
+ hard:'deadline', title:'Complete the CSS Profile for private colleges',
+ why:'A separate form from the FAFSA, with its own deadline, for institutional money the FAFSA never touches.',
+ timing:{k:'rel',a:'ea_deadline',o:{days:-14},w:[{months:-3},{days:14}]}},
+{id:'scholar',  module:'finaid', cat:'Financial aid', dur:45, gate:{is:'needsAid'},
+ title:'Apply to five local scholarships',
+ why:'Local awards have tiny applicant pools. Per hour spent they beat the national ones badly.',
+ timing:{k:'rel',a:'fafsa_priority',o:{months:-2},w:[{months:-6},{weeks:-1}]}},
+{id:'verify',   module:'finaid', cat:'Financial aid', dur:7, gate:{is:'needsAid'}, requires:['fafsa'], hard:'deadline',
+ title:'Answer any verification requests',
+ why:'Roughly one in four forms gets selected. Ignoring the letter freezes the whole award.',
+ timing:{k:'rel',a:'fafsa_priority',o:{days:45},w:[{days:14},{days:100}]}},
+{id:'compare',  module:'finaid', cat:'Financial aid', dur:6, gate:{is:'needsAid'}, requires:['fafsa'], hard:'deadline',
+ title:'Compare aid offers side by side',
+ why:'Sticker prices are not comparable. Net cost after grants — not loans — is the only number that is.',
+ timing:{k:'rel',a:'decision_day',o:{days:-25},w:[{days:-70},{days:-7}]}},
+
+/* ---- four-year applications ---- */
+{id:'list',     module:'apps_uni', cat:'Applications', dur:14, title:'Build a list of six to ten schools',
+ why:'Two reaches, four in range, two you would be happy to attend and can certainly afford.',
+ timing:{k:'rel',a:'app_open',o:{months:-3},w:[{months:-9},{months:-1}]}},
+{id:'visits',   module:'apps_uni', cat:'Explore', dur:10, title:'Visit or tour three campuses',
+ why:'Fit is the thing you cannot read off a website, and it drives whether you finish.',
+ timing:{k:'rel',a:'app_open',o:{months:-2},w:[{months:-7},{days:30}]}},
+{id:'essay',    module:'apps_uni', cat:'Applications', dur:30, title:'Draft and revise your personal statement',
+ why:'Three real drafts with a week between them beats one long night, every time.',
+ timing:{k:'rel',a:'app_open',o:{days:14},w:[{months:-2},{days:70}]}},
+{id:'recs',     module:'apps_uni', cat:'Applications', dur:7, requires:['list'], hard:'deadline',
+ title:'Ask two teachers for recommendations',
+ why:'Ask six weeks out. Teachers write dozens of these and the good slots go early.',
+ timing:{k:'rel',a:'ea_deadline',o:{weeks:-7},w:[{months:-4},{weeks:-3}]}},
+{id:'app-ea',   module:'apps_uni', cat:'Applications', dur:5, requires:['essay','recs'], hard:'deadline',
+ title:'Submit early-action applications', source:'Common early-action date',
+ why:'Early action is non-binding and usually improves your odds. Skipping it costs you nothing but options.',
+ timing:{k:'fix',a:'ea_deadline',hard:'deadline'},
+ missedNote:'Early action has closed for this cycle. Regular decision is still open — the essay work carries straight over.'},
+{id:'app-rd',   module:'apps_uni', cat:'Applications', dur:6, requires:['essay'], blocking:true,
+ title:'Submit regular-decision applications', source:'Institutional deadline — fixed',
+ why:'The immovable one. Everything else in this pathway is scheduled backwards from this date.',
+ timing:{k:'fix',a:'rd_deadline',hard:'immovable'},
+ missedNote:'The application cycle for this term has closed. The next entry point is the following term.'},
+{id:'portals',  module:'apps_uni', cat:'Applications', dur:3, requires:['app-rd'], hard:'deadline',
+ title:'Check every portal for missing items',
+ why:'Applications are held for one missing document more often than they are rejected on merit.',
+ timing:{k:'rel',a:'rd_deadline',o:{days:16},w:[{days:5},{days:45}]}},
+{id:'commit',   module:'apps_uni', cat:'Enrollment', dur:2, blocking:true,
+ title:'Commit to a school and pay the deposit', source:'National decision day',
+ why:'Miss it and your seat goes to someone on the waitlist.',
+ timing:{k:'fix',a:'decision_day',hard:'immovable'},
+ missedNote:'Your seat has been released. Late-admission and waitlist routes exist but the term is at risk.'},
+{id:'housing',  module:'apps_uni', cat:'Enrollment', dur:3, gate:{is:'needsHousing'}, requires:['commit'], hard:'deadline',
+ title:'Submit the housing application',
+ why:'Housing is assigned by application date, not by need. A week late is a worse room for a year.',
+ timing:{k:'rel',a:'decision_day',o:{days:10},w:[{days:1},{days:40}]}},
+{id:'final-tx', module:'apps_uni', cat:'Records', dur:3, hard:'deadline', title:'Send your final transcript',
+ why:'Admission is conditional until this arrives. Every year people lose a seat over it.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-6},w:[{months:-3},{weeks:-2}]}},
+{id:'register', module:'apps_uni', cat:'Enrollment', dur:2, hard:'deadline', title:'Register for first-term classes',
+ why:'Required courses fill first. Registering late is how a four-year degree becomes a five-year degree.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-8},w:[{weeks:-13},{weeks:-3}]}},
+
+/* ---- community college ---- */
+{id:'cc-artic',  module:'apps_cc', cat:'Explore', dur:6, title:'Pull the articulation agreement for your target university',
+ why:'It lists exactly which courses transfer. Taking a class that does not is the single most expensive mistake here.',
+ timing:{k:'rel',a:'program_start',o:{months:-4},w:[{months:-10},{months:-1}]}},
+{id:'cc-apply',  module:'apps_cc', cat:'Applications', dur:3, hard:'deadline', blocking:true,
+ title:'Submit the community college application', source:'Priority application deadline',
+ why:'Open admission, so this is about getting a registration slot rather than getting in.',
+ timing:{k:'fix',a:'cc_priority',hard:'deadline'},
+ missedNote:'Past priority, but open-admission colleges usually still accept applications. Expect a worse class schedule.'},
+{id:'cc-place',  module:'apps_cc', cat:'Enrollment', dur:4, requires:['cc-apply'], hard:'deadline',
+ title:'Take placement tests, or submit proof of exemption',
+ why:'Placement decides whether you start in credit-bearing courses or pay for remedial ones that do not count.',
+ timing:{k:'rel',a:'program_start',o:{months:-2},w:[{months:-4},{weeks:-3}]}},
+{id:'cc-advise', module:'apps_cc', cat:'Support', dur:2, requires:['cc-place'], hard:'deadline',
+ title:'Build a transfer plan with an advisor',
+ why:'Go in with the articulation agreement printed. Leave with a two-year course map.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-6},w:[{months:-3},{weeks:-2}]}},
+{id:'cc-reg',    module:'apps_cc', cat:'Enrollment', dur:2, requires:['cc-advise'], hard:'deadline',
+ title:'Register for classes',
+ why:'Community college sections fill fast and the good times go first.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-5},w:[{weeks:-9},{weeks:-2}]}},
+
+/* ---- trade / certificate ---- */
+{id:'tr-compare', module:'apps_trade', cat:'Explore', dur:10,
+ title:'Compare three programs on cost, completion rate and job placement',
+ why:'Placement rate is the number that matters and the one hardest to find. Ask for it in writing.',
+ timing:{k:'rel',a:'program_start',o:{months:-6},w:[{months:-12},{months:-3}]}},
+{id:'tr-accred',  module:'apps_trade', cat:'Applications', dur:4, hard:'deadline',
+ title:'Verify accreditation and licensure eligibility',
+ why:'An unaccredited program can leave you ineligible for the licence the job actually requires.',
+ timing:{k:'rel',a:'program_start',o:{months:-5},w:[{months:-10},{months:-2}]}},
+{id:'tr-tour',    module:'apps_trade', cat:'Explore', dur:3,
+ title:'Tour the shop and talk to current students',
+ why:'Look at the equipment. If it is older than the equipment employers use, that is your answer.',
+ timing:{k:'rel',a:'program_start',o:{months:-4},w:[{months:-8},{months:-2}]}},
+{id:'tr-apply',   module:'apps_trade', cat:'Applications', dur:4, hard:'deadline', blocking:true,
+ title:'Submit your application and seat deposit', source:'Cohort application cutoff',
+ why:'Cohorts are capped by the number of bays in the shop. When it fills, it fills.',
+ timing:{k:'fix',a:'trade_app',hard:'deadline'},
+ missedNote:'This cohort may be full. Ask to be waitlisted and about the next start date.'},
+{id:'tr-phys',    module:'apps_trade', cat:'Records', dur:5, hard:'deadline',
+ title:'Complete the physical and drug screen',
+ why:'Required before you touch equipment. Book it early — clinics run a two-week backlog.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-4},w:[{weeks:-10},{weeks:-1}]}},
+{id:'tr-tools',   module:'apps_trade', cat:'Enrollment', dur:5, hard:'deadline',
+ title:'Buy the required tool kit and safety gear',
+ why:'Often a four-figure cost nobody mentions until week one. Budget for it now.',
+ timing:{k:'rel',a:'program_start',o:{weeks:-3},w:[{weeks:-8},{days:-3}]}},
+
+/* ---- registered apprenticeship ---- */
+{id:'ap-prereq', module:'apps_appr', cat:'Applications', dur:4, hard:'deadline',
+ title:'Confirm the prerequisites: age, diploma, one year of algebra',
+ why:'These are hard gates written into the agreement. No committee can waive them for you.',
+ timing:{k:'rel',a:'appr_open',o:{months:-3},w:[{months:-9},{weeks:-2}]}},
+{id:'ap-dl',     module:'apps_appr', cat:'Records', dur:20, hard:'deadline',
+ title:'Get a valid driver’s licence',
+ why:'You travel to job sites from day one. Almost every programme requires it.',
+ timing:{k:'rel',a:'appr_open',o:{months:-4},w:[{months:-12},{weeks:-2}]}},
+{id:'ap-math',   module:'apps_appr', cat:'Applications', dur:45,
+ title:'Brush up on algebra for the aptitude test',
+ why:'The test is mostly algebra and reading. It is very beatable with a few weeks of practice.',
+ timing:{k:'rel',a:'appr_open',o:{months:-2},w:[{months:-5},{days:-5}]}},
+{id:'ap-apply',  module:'apps_appr', cat:'Applications', dur:5, requires:['ap-prereq'], blocking:true,
+ title:'Apply during the annual application window', source:'Window opens once a year',
+ why:'The whole pathway hinges on a few weeks. There is no rolling admission and no exceptions.',
+ timing:{k:'fix',a:'appr_close',hard:'immovable'},
+ missedNote:'This window has closed. The next one closes {appr_next} — a full year of waiting, so use it: finish the algebra prep, get the licence, and bank trade-adjacent work hours.'},
+{id:'ap-apt',    module:'apps_appr', cat:'Applications', dur:2, requires:['ap-apply','ap-math'], hard:'deadline',
+ title:'Sit the aptitude test',
+ why:'Scored and ranked. Your rank determines whether you get an interview at all.',
+ timing:{k:'rel',a:'appr_close',o:{days:30},w:[{days:10},{days:70}]}},
+{id:'ap-intv',   module:'apps_appr', cat:'Applications', dur:2, requires:['ap-apt'], hard:'deadline',
+ title:'Interview with the joint apprenticeship committee',
+ why:'They are hiring for reliability more than knowledge. Show up early and in work clothes.',
+ timing:{k:'rel',a:'appr_close',o:{days:75},w:[{days:45},{days:130}]}},
+
+/* ---- military ---- */
+{id:'mil-rec',   module:'apps_mil', cat:'Military', dur:7,
+ title:'Meet recruiters from at least two branches',
+ why:'Branches differ enormously in job mix and duty stations. One conversation is not a comparison.',
+ timing:{k:'rel',a:'program_start',o:{months:-9},w:[{months:-15},{months:-5}]}},
+{id:'mil-fit',   module:'apps_mil', cat:'Military', dur:120,
+ title:'Train to the entry fitness standard',
+ why:'The only item here with a physiological floor on how fast it can be done.',
+ timing:{k:'rel',a:'program_start',o:{months:-6},w:[{months:-13},{weeks:-3}]}},
+{id:'mil-asvab', module:'apps_mil', cat:'Military', dur:3, hard:'deadline',
+ title:'Take the ASVAB',
+ why:'Your score decides which jobs you are even allowed to ask for. Prepare for it like an exam.',
+ timing:{k:'rel',a:'program_start',o:{months:-7},w:[{months:-11},{months:-4}]}},
+{id:'mil-meps',  module:'apps_mil', cat:'Military', dur:3, requires:['mil-asvab'], hard:'deadline',
+ title:'Complete the MEPS medical screening',
+ why:'Bring every medical record you have. Undisclosed history found later voids the contract.',
+ timing:{k:'rel',a:'program_start',o:{months:-5},w:[{months:-8},{months:-3}]}},
+{id:'mil-mos',   module:'apps_mil', cat:'Military', dur:5, requires:['mil-meps'], hard:'deadline',
+ title:'Choose your job and sign the contract',
+ why:'This is the negotiation. Nothing you were promised counts unless it is written into the contract.',
+ timing:{k:'rel',a:'program_start',o:{months:-4},w:[{months:-6},{months:-2}]}},
+{id:'mil-ship',  module:'apps_mil', cat:'Military', dur:1, requires:['mil-mos'], blocking:true,
+ title:'Ship to basic training', source:'Ship date — fixed by contract',
+ why:'Set the moment you sign. Everything above is scheduled backwards from it.',
+ timing:{k:'fix',a:'program_start',hard:'immovable'},
+ missedNote:'A missed ship date is a contract problem. Contact your recruiter immediately.'},
+
+/* ---- licensure (trade + apprenticeship) ---- */
+{id:'lic-res',  module:'licensure', cat:'Licensure', dur:4, hard:'deadline',
+ title:'Find out exactly what licence your state requires',
+ why:'Training and licensing are separate systems. Finishing the programme does not make you licensed.',
+ timing:{k:'rel',a:'program_start',o:{months:-4},w:[{months:-10},{months:-1}]}},
+{id:'lic-hours',module:'licensure', cat:'Licensure', dur:30,
+ title:'Start logging supervised hours from day one',
+ why:'Hours only count if they are documented as they happen. Nobody can reconstruct them later.',
+ timing:{k:'rel',a:'program_start',o:{days:14},w:[{days:0},{days:75}]}},
+
+/* ---- first-generation support ---- */
+{id:'fg-mentor', module:'support', cat:'Support', dur:14, gate:{is:'firstGen'},
+ title:'Find one person who has already done this',
+ why:'The single strongest predictor of finishing, for a first-generation student, is having someone to ask.',
+ timing:{k:'rel',a:'program_start',o:{months:-13},w:[{months:-22},{months:-4}]}},
+{id:'fg-vocab',  module:'support', cat:'Support', dur:5, gate:{is:'firstGen'},
+ title:'Learn the vocabulary: FAFSA, SAI, COA, articulation',
+ why:'Every form assumes you already know these words. An hour here saves a dozen confusing phone calls.',
+ timing:{k:'rel',a:'program_start',o:{months:-12},w:[{months:-20},{months:-4}]}},
+{id:'fg-family', module:'support', cat:'Support', dur:3, gate:{all:[{is:'firstGen'},{is:'needsAid'}]}, hard:'deadline',
+ title:'Have the money conversation with your family',
+ why:'The aid form needs their tax data and their signature. Ambush them in October and it will not go well.',
+ timing:{k:'rel',a:'fafsa_open',o:{days:-20},w:[{months:-3},{days:10}]}}
+];
+const byId = {}; T.forEach(t => byId[t.id] = t);
+
+/* ============================================================
+   4. THE ENGINE   plan = f(facts, catalog, calendar, today)
+   ============================================================ */
+function ev(p,f){
+  if(!p) return true;
+  if(p.all) return p.all.every(x=>ev(x,f));
+  if(p.any) return p.any.some(x=>ev(x,f));
+  if(p.not) return !ev(p.not,f);
+  if(p.eq)  return f[p.eq[0]] === p.eq[1];
+  if(p.in)  return p.in[1].includes(f[p.in[0]]);
+  if(p.is)  return !!f[p.is];
+  return true;
+}
+function baseFacts(c){
+  return {
+    pathway:c.pathway, status:c.status, testPlan:c.testPlan,
+    inHS: c.status==='hs11'||c.status==='hs12',
+    noDiploma: c.status==='no_diploma',
+    needsAid:!!c.needsAid, firstGen:!!c.firstGen, needsHousing:!!c.needsHousing,
+    hasTestDate:!!c.testDate
+  };
+}
+function resolveTiming(t,A){
+  const g=t.timing, a=A[g.a];
+  if(!a) return null;
+  const dur=t.dur||3;
+  if(g.k==='fix'||g.k==='fixOff'){
+    const d = g.k==='fixOff' ? off(a,g.o) : a;
+    return {e0:addDays(d,-dur), t0:d, l0:d, hardness:g.hard||'deadline', fixed:true};
+  }
+  const t0 = off(a,g.o);
+  let e0 = g.w ? off(a,g.w[0]) : addDays(t0,-21);
+  let l0 = g.w ? off(a,g.w[1]) : addDays(t0,21);
+  if(e0>t0) e0=t0;
+  if(l0<t0) l0=t0;
+  return {e0,t0,l0, hardness: t.hard||'preference', fixed:false};
+}
+
+function onePass(c, f, A){
+  const mods = PATHWAYS[c.pathway].modules;
+  const nodes = new Map();
+  for(const t of T){
+    if(!mods.includes(t.module) || !ev(t.gate,f)) continue;
+    const w = resolveTiming(t,A);
+    if(w) nodes.set(t.id, Object.assign({t, dur:t.dur||3}, w));
+  }
+  const preds=new Map(), succs=new Map();
+  for(const id of nodes.keys()){ preds.set(id,(byId[id].requires||[]).filter(r=>nodes.has(r))); succs.set(id,[]); }
+  for(const [id,ps] of preds) for(const p of ps) succs.get(p).push(id);
+
+  const indeg=new Map(); for(const [id,ps] of preds) indeg.set(id, ps.length);
+  const q=[...indeg].filter(e=>e[1]===0).map(e=>e[0]);
+  const order=[];
+  while(q.length){ const id=q.shift(); order.push(id);
+    for(const s of succs.get(id)){ indeg.set(s,indeg.get(s)-1); if(indeg.get(s)===0) q.push(s); } }
+  for(const id of nodes.keys()) if(order.indexOf(id)<0) order.push(id);
+
+  const done=c.done, LF={}, LS={}, ES={}, EF={};
+  for(let i=order.length-1;i>=0;i--){ const id=order[i], b=nodes.get(id);
+    let cap=b.l0;
+    for(const s of succs.get(id)) if(!done.has(s)) cap=dmin(cap, LS[s]);
+    LF[id]=cap; LS[id]=addDays(cap,-b.dur);
+  }
+  for(const id of order){ const b=nodes.get(id);
+    let s = done.has(id) ? b.e0 : dmax(b.e0, c.today);
+    for(const p of preds.get(id)) if(!done.has(p)) s=dmax(s, EF[p]);
+    ES[id]=s; EF[id]=addDays(s,b.dur);
+  }
+
+  const tasks = order.map(id=>{
+    const b=nodes.get(id), lf=LF[id], es=ES[id], ef=EF[id];
+    const slack = days(ef,lf);
+    const isDone = done.has(id);
+    let status, target, overdue=0;
+    if(isDone){ status='done'; target=dmax(b.t0,c.today); }
+    else if(b.hardness==='immovable' && b.t0 < c.today){ status='missed_closed'; target=b.t0; overdue=days(b.t0,c.today); }
+    else if(lf < c.today){
+      status = b.hardness==='immovable' ? 'missed_closed' : 'missed_recoverable';
+      overdue = days(lf,c.today); target = status==='missed_recoverable' ? c.today : lf;
+    }
+    else if(ef > lf){ status='infeasible'; target=lf; overdue=days(lf,ef); }
+    else if(b.fixed){ target=b.t0; status = days(c.today,lf)<=21 ? 'due':'upcoming'; }
+    else { target = clampD(b.t0, dmax(es,c.today), lf); status = days(c.today,lf)<=21 ? 'due':'upcoming'; }
+    return {
+      id, t:b.t, cat:b.t.cat, title:b.t.title, why:b.t.why, source:b.t.source,
+      hardness:b.hardness, fixed:b.fixed, dur:b.dur,
+      es, ef, lf, e0:b.e0, l0:b.l0, t0:b.t0,
+      slack, target, status, overdue,
+      windowLo: dmax(b.e0, c.today), windowHi: lf,
+      crit: slack<=7 && !isDone && !b.fixed
+    };
+  });
+  return {tasks};
+}
+
+function levelLoad(tasks, cap){
+  const active = tasks.filter(t=>t.status==='upcoming'||t.status==='due');
+  for(let pass=0; pass<8; pass++){
+    const byM=new Map();
+    for(const t of active){ const m=mi(t.target); (byM.get(m)||byM.set(m,[]).get(m)).push(t); }
+    let moved=false;
+    for(const m of [...byM.keys()].sort((a,b)=>a-b)){
+      const arr=byM.get(m);
+      if(arr.length<=cap) continue;
+      let need=arr.length-cap;
+      const cands=arr.filter(t=>t.hardness==='preference' && mi(t.lf)>m).sort((a,b)=>b.slack-a.slack);
+      for(const t of cands){
+        if(need<=0) break;
+        const nt = dmin(dmax(miStart(m+1), addDays(t.target,1)), t.lf);
+        if(mi(nt)>m){ t.target=nt; t.deferred=true; moved=true; need--; }
+      }
+    }
+    if(!moved) break;
+  }
+}
+
+function compile(c){
+  const A = anchors(c);
+  let f = baseFacts(c), out=null;
+  for(let pass=0; pass<3; pass++){
+    out = onePass(c,f,A);
+    let changed=false; const add={};
+    for(const t of out.tasks){
+      if(t.status==='missed_closed'||t.status==='missed_recoverable'){
+        const k='missed.'+t.id;
+        if(!f[k]){ add[k]=true; changed=true; }
+      }
+    }
+    if(!changed) break;
+    f = Object.assign({}, f, add);
+  }
+  levelLoad(out.tasks, c.cap);
+  out.A=A; out.facts=f; out.cfg=c;
+  out.feasible = !out.tasks.some(t=> t.t.blocking && (t.status==='infeasible' || t.status==='missed_closed'));
+  out.tightest = Math.min.apply(null, out.tasks
+    .filter(t=>(t.status==='upcoming'||t.status==='due') && !t.fixed)
+    .map(t=>t.slack).concat([9999]));
+  return out;
+}
+
+function testOptions(c){
+  if(c.testPlan!=='sat' && c.testPlan!=='act') return [];
+  const spec=TESTS[c.testPlan], A=anchors(c);
+  const bind = c.pathway==='uni4' ? A.rd_deadline : A.program_start;
+  return spec.all.filter(d =>
+      d >= addDays(c.today, 70) &&
+      addDays(d,-spec.regLead) > addDays(c.today,3) &&
+      addDays(d, spec.scoreLag) <= bind
+    ).slice(0,5).map(d=>({date:d, reg:addDays(d,-spec.regLead), weeks:Math.round(days(c.today,d)/7)}));
+}
+function nearestFeasibleTerm(c){
+  for(const term of TERMS){
+    if(term.start <= addDays(c.today,45)) continue;
+    const alt = Object.assign({}, c, {term:term.id, testDate:null});
+    if(compile(alt).feasible) return term;
+  }
+  return null;
+}
+
+/* ============================================================
+   5. STATE
+   ============================================================ */
+const WEEK0=U(2025,9,1), WMAX=226;
+const toW   = d => Math.max(0, Math.min(WMAX, Math.round(days(WEEK0,d)/7)));
+const fromW = w => addDays(WEEK0, w*7);
+
+const STATUS_OPTS=[
+  ['hs11','In 11th grade'],['hs12','In 12th grade'],
+  ['grad','Graduated — taking time off'],['no_diploma','No diploma or equivalency yet']
+];
+const DEFAULTS={pathway:'uni4',term:'fa2028',status:'hs11',testPlan:'undecided',testDate:null,
+  needsAid:true,firstGen:true,needsHousing:true,cap:3,tw:toW(U(2026,8,26))};
+const PRESETS=[
+  ['On track','Eleventh grader, two years of runway',{}],
+  ['Starting late','A gap year, one cycle left, no test yet',
+    {pathway:'uni4',term:'fa2027',status:'grad',testPlan:'sat',testDate:null,tw:toW(U(2026,11,10)),needsHousing:true}],
+  ['Missed the window','Apprenticeship applications closed in February',
+    {pathway:'appr',term:'fa2027',status:'grad',testPlan:'optional',needsAid:false,needsHousing:false,tw:toW(U(2027,4,6))}],
+  ['Adult returner','No diploma yet, aiming at a welding certificate',
+    {pathway:'trade',term:'sp2028',status:'no_diploma',testPlan:'optional',needsAid:true,needsHousing:false,cap:3,tw:toW(U(2026,10,5))}]
+];
+let cfg = Object.assign({}, DEFAULTS, {done:new Set()});
+const snap = () => Object.assign({}, cfg, {today: fromW(cfg.tw)});
+
+const ICO={
+ lock:'<svg width="9" height="9" viewBox="0 0 12 12"><rect x="2.4" y="5.4" width="7.2" height="5.4" rx="1.1" fill="currentColor"/><path d="M4.3 5.4V4.1a1.7 1.7 0 0 1 3.4 0v1.3" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
+ flag:'<svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M3 11V1.6M3 2.2h6.2L7.6 4.9l1.6 2.7H3"/></svg>',
+ flex:'<svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.2 6h9.6M3.6 3.6 1.2 6l2.4 2.4M8.4 3.6 10.8 6l-2.4 2.4"/></svg>',
+ dot:'<svg width="8" height="8" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.4" fill="currentColor"/></svg>',
+ warn:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2.4 15.1 14H.9L8 2.4Z"/><path d="M8 6.6v3.1M8 11.9h.01"/></svg>',
+ check:'<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6.4 4.7 9.2 10 3.3"/></svg>',
+ fork:'<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 10V6.2a2 2 0 0 1 2-2h6"/><path d="M8 2.2l2 2-2 2"/></svg>'
+};
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const tok = (s,A) => String(s).replace(/\{(\w+)\}/g,(m,k)=> A[k]?fmt(A[k]):m);
+
+/* ============================================================
+   6. CONSOLE
+   ============================================================ */
+function buildConsole(){
+  const path = Object.entries(PATHWAYS).map(([k,v])=>
+    `<label class="radio" data-k="pathway" data-v="${k}"><input type="radio" name="pw" value="${k}">
+      <span><span class="radio-t">${esc(v.label)}</span><span class="radio-d">${esc(v.note)}</span></span></label>`).join('');
+  const pres = PRESETS.map((p,i)=>`<button class="btn" data-preset="${i}" title="${esc(p[1])}">${esc(p[0])}</button>`).join('');
+  document.getElementById('knobs').innerHTML = `
+  <div class="kgroup"><span class="klegend">Scenarios</span><div class="btn-row">${pres}</div></div>
+  <div class="kgroup"><span class="klegend">The student</span>
+    <div class="kfield"><span class="klabel">Pathway</span><div class="radios">${path}</div></div>
+    <div class="kfield"><label class="klabel" for="k-status">Where they are right now</label>
+      <select id="k-status">${STATUS_OPTS.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select></div>
+    <div class="kfield"><label class="klabel" for="k-term">Target start</label>
+      <select id="k-term">${TERMS.map(t=>`<option value="${t.id}">${t.label}</option>`).join('')}</select>
+      <div class="khint" id="h-term"></div></div>
+  </div>
+  <div class="kgroup"><span class="klegend">Standardized testing</span>
+    <div class="kfield"><span class="klabel">Test plan</span>
+      <div class="seg" id="k-plan">
+        <button data-plan="undecided">Undecided</button><button data-plan="sat">SAT</button>
+        <button data-plan="act">ACT</button><button data-plan="optional">Skip</button></div>
+      <div class="khint" id="h-plan"></div></div>
+    <div class="kfield"><label class="klabel" for="k-date">Test date</label>
+      <select id="k-date"></select><div class="khint" id="h-date"></div></div>
+  </div>
+  <div class="kgroup"><span class="klegend">Circumstances</span>
+    ${[['needsAid','Applying for financial aid','Adds the aid module and its fixed deadlines'],
+       ['firstGen','First in the family to go','Adds orientation-to-the-system support tasks'],
+       ['needsHousing','Needs housing','Adds the housing application chain']]
+      .map(t=>`<label class="toggle" data-k="${t[0]}"><span><span class="toggle-t">${t[1]}</span><br>
+        <span class="toggle-d">${t[2]}</span></span>
+        <button class="switch" type="button" role="switch" aria-label="${t[1]}"></button></label>`).join('')}
+  </div>
+  <div class="kgroup"><span class="klegend">Simulation</span>
+    <div class="kfield scrub">
+      <label class="klabel" for="k-today">Student opens the app on</label>
+      <div class="rangerow"><span class="rangeval" id="v-today"></span><span class="khint" id="h-today"></span></div>
+      <input type="range" id="k-today" min="0" max="${WMAX}" step="1">
+    </div>
+    <div class="kfield">
+      <div class="rangerow"><span class="klabel" style="margin:0">Most tasks in one month</span><span class="rangeval" id="v-cap"></span></div>
+      <input type="range" id="k-cap" min="2" max="8" step="1">
+      <div class="khint">Overflow slides forward into whatever slack the task has.</div>
+    </div>
+    <div class="kfield btn-row"><button class="btn" id="b-clear">Clear completed</button><button class="btn" id="b-reset">Reset all</button></div>
+  </div>`;
+
+  const K=document.getElementById('knobs');
+  K.addEventListener('click', e=>{
+    const pr=e.target.closest('[data-preset]');
+    if(pr){ const p=PRESETS[+pr.dataset.preset];
+      cfg=Object.assign({}, DEFAULTS, p[2], {done:new Set()}); return render(p[0]); }
+    const rad=e.target.closest('[data-k="pathway"]');
+    if(rad){ cfg.pathway=rad.dataset.v; return render('Pathway'); }
+    const pl=e.target.closest('[data-plan]');
+    if(pl){ cfg.testPlan=pl.dataset.plan; if(cfg.testPlan!=='sat'&&cfg.testPlan!=='act') cfg.testDate=null; return render('Test plan'); }
+    const sw=e.target.closest('.toggle');
+    if(sw){ e.preventDefault(); const k=sw.dataset.k; cfg[k]=!cfg[k]; return render(sw.querySelector('.toggle-t').textContent); }
+    if(e.target.id==='b-clear'){ cfg.done=new Set(); return render('Completed cleared'); }
+    if(e.target.id==='b-reset'){ cfg=Object.assign({}, DEFAULTS, {done:new Set()}); return render('Reset'); }
+  });
+  K.addEventListener('change', e=>{
+    if(e.target.id==='k-status'){ cfg.status=e.target.value; render('Current status'); }
+    if(e.target.id==='k-term'){ cfg.term=e.target.value; render('Target start'); }
+    if(e.target.id==='k-date'){ cfg.testDate=e.target.value?+e.target.value:null; render('Test date'); }
+  });
+  K.addEventListener('input', e=>{
+    if(e.target.id==='k-today'){ cfg.tw=+e.target.value; render('Today'); }
+    if(e.target.id==='k-cap'){ cfg.cap=+e.target.value; render('Monthly cap'); }
+  });
+}
+
+function syncConsole(c, plan){
+  document.querySelectorAll('[data-k="pathway"]').forEach(el=>{
+    const on = el.dataset.v===c.pathway;
+    el.classList.toggle('on', on); el.querySelector('input').checked=on;
+  });
+  document.getElementById('k-status').value=c.status;
+  document.getElementById('k-term').value=c.term;
+  const PS=termById(c.term).start, run=days(c.today,PS);
+  document.getElementById('h-term').textContent =
+    run<0 ? `${fmt(PS)} — already past` : `${fmt(PS)} · ${Math.round(run/30.44)} months of runway`;
+
+  const uni = c.pathway==='uni4';
+  document.querySelectorAll('#k-plan button').forEach(b=>{
+    b.setAttribute('aria-pressed', String(b.dataset.plan===c.testPlan)); b.disabled=!uni;
+  });
+  document.getElementById('h-plan').textContent = uni
+    ? (c.testPlan==='undecided' ? 'Undecided, so the timeline is holding a decision open.'
+      : c.testPlan==='optional' ? 'No test. The timeline drops eight tasks and adds a policy check.'
+      : `${TESTS[c.testPlan].name} · registration closes ${TESTS[c.testPlan].regLead} days before each sitting.`)
+    : 'Not required on this pathway.';
+
+  const sel=document.getElementById('k-date'), opts=testOptions(c);
+  const cur=c.testDate?String(+new Date(c.testDate)):'';
+  sel.disabled = !uni || !(c.testPlan==='sat'||c.testPlan==='act') || opts.length===0;
+  sel.innerHTML = opts.length
+    ? `<option value="">Not chosen yet</option>` + opts.map(o=>
+        `<option value="${+o.date}">${fmt(o.date)} — register by ${fmtS(o.reg)}</option>`).join('')
+    : `<option value="">${sel.disabled&&uni&&(c.testPlan==='sat'||c.testPlan==='act')?'No sitting clears your deadlines':'—'}</option>`;
+  sel.value = opts.some(o=>String(+o.date)===cur) ? cur : '';
+  document.getElementById('h-date').textContent = !uni ? '' : opts.length
+    ? `${opts.length} sitting${opts.length>1?'s':''} leave enough prep time and still return scores before applications close.`
+    : (c.testPlan==='sat'||c.testPlan==='act')
+      ? 'Every remaining sitting either lands too soon to prepare for or too late to count.' : '';
+
+  document.querySelectorAll('.toggle').forEach(t=>
+    t.querySelector('.switch').setAttribute('aria-pressed', String(!!c[t.dataset.k])));
+  const tr=document.getElementById('k-today'); if(document.activeElement!==tr) tr.value=c.tw;
+  document.getElementById('v-today').textContent=fmt(c.today);
+  document.getElementById('h-today').textContent = run<0 ? 'after the start date' : `${Math.round(run/7)} weeks out`;
+  const cr=document.getElementById('k-cap'); if(document.activeElement!==cr) cr.value=c.cap;
+  document.getElementById('v-cap').textContent=c.cap;
+}
+
+/* ============================================================
+   7. RENDER
+   ============================================================ */
+const HORD={immovable:0,deadline:1,preference:2};
+function rankT(t){
+  if(t.status==='missed_recoverable') return 0;
+  if(t.status==='infeasible') return 1;
+  if(t.status==='done') return 9;
+  return 2+HORD[t.hardness];
+}
+const sortT=(a,b)=> rankT(a)-rankT(b) || a.target-b.target || (a.title<b.title?-1:1);
+
+function bandNote(arr){
+  if(arr.length<2) return '';
+  const fx=arr.filter(t=>t.hardness==='immovable'&&t.status!=='done').length;
+  if(fx) return fx===1?'One date this month cannot move.':`${fx} dates this month cannot move.`;
+  const cats={}; arr.forEach(t=>cats[t.cat]=(cats[t.cat]||0)+1);
+  const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  return top[1]>=2 ? `Mostly ${top[0].toLowerCase()} this month.` : '';
+}
+
+function taskCard(t,maxSlack){
+  const chips=[];
+  if(t.status==='missed_recoverable') chips.push(`<span class="tchip gone">catching up</span>`);
+  if(t.status==='infeasible') chips.push(`<span class="tchip gone">no time left</span>`);
+  if(t.hardness==='immovable') chips.push(`<span class="tchip fixed">${ICO.lock} fixed date</span>`);
+  else if(t.hardness==='deadline') chips.push(`<span class="tchip by">${ICO.flag} deadline</span>`);
+  else chips.push(`<span class="tchip flex">${ICO.flex} flexible</span>`);
+  if(t.crit && t.status!=='done') chips.push(`<span class="tchip crit">${ICO.dot} critical path</span>`);
+  if(t.deferred) chips.push(`<span class="tchip moved">moved to level the month</span>`);
+
+  let when, ribbon='';
+  const src = t.source ? ` <span style="color:var(--ink-3)">· ${esc(t.source)}</span>` : '';
+  if(t.hardness==='immovable') when = fmt(t.t0)+src;
+  else if(t.hardness==='deadline') when = 'By '+fmt(t.lf)+src;
+  else {
+    when = 'Aim for '+fmt(t.target);
+    const w=Math.max(.08, Math.min(1, t.slack/maxSlack)), wk=Math.max(0,Math.round(t.slack/7));
+    ribbon=`<span class="ribbon"><span class="rtrack"><i class="rspan" style="--w:${w.toFixed(2)}"></i></span>`+
+      `<span class="rlab">Anywhere <b>${fmtS(t.windowLo)} – ${fmtS(t.windowHi)}</b> · ${wk} wk${wk===1?'':'s'} slack</span></span>`;
+  }
+  return `<button type="button" class="task h-${t.hardness} s-${t.status}" data-done="${t.id}" aria-pressed="${t.status==='done'}">
+    <span class="tstripe"></span><span class="tbody">
+      <span class="trow1"><span class="tcat">${esc(t.cat)}</span>${chips.join('')}<span class="tdone">${ICO.check}</span></span>
+      <span class="ttitle">${esc(t.title)}</span><span class="twhen mono">${when}</span>${ribbon}
+      <span class="twhy">${esc(t.why)}</span></span></button>`;
+}
+
+function renderVerdict(c,plan){
+  const term=termById(c.term), PS=term.start;
+  const act=plan.tasks.filter(t=>['upcoming','due','missed_recoverable'].indexOf(t.status)>=0);
+  const missed=plan.tasks.filter(t=>t.status.indexOf('missed')===0||t.status==='infeasible');
+  const fixedAhead=plan.tasks.filter(t=>t.hardness==='immovable'&&(t.status==='upcoming'||t.status==='due')).sort((a,b)=>a.target-b.target);
+  const runway=Math.round(days(c.today,PS)/30.44);
+  let flag,h2,sub;
+  if(!plan.feasible){
+    const near=nearestFeasibleTerm(c);
+    const b=plan.tasks.filter(t=>t.status==='infeasible'||(t.status==='missed_closed'&&t.t.blocking))
+      .sort((x,y)=>x.t0-y.t0)[0];
+    flag=`<span class="vflag bad">${ICO.warn} not reachable</span>`;
+    h2=`<h2>${esc(term.label)} <span class="dim">is out of reach</span></h2>`;
+    sub=`<p class="vsub"><b>${esc(b.title)}</b> — ${b.status==='missed_closed'
+        ? `that date passed on ${fmt(b.t0)}`
+        : `there is no longer enough time before ${fmt(b.lf)}`}, and nothing downstream can proceed without it. `+
+      (near?`The earliest term this student can still make is <b>${near.label}</b>. <button data-move="${near.id}">Move the target and recompile</button>`
+           :`No term in the next four years works with these settings.`)+`</p>`;
+  } else {
+    const tight=plan.tightest<14 && plan.tightest<9999;
+    flag=`<span class="vflag ok">${ICO.dot} ${tight?'reachable, tight':'on track'}</span>`;
+    h2=`<h2><span class="dim">Heading for</span> ${esc(term.label)}</h2>`;
+    const bits=[`${act.length} things left to do`];
+    if(fixedAhead[0]) bits.push(`next date that cannot move is <b>${esc(fixedAhead[0].title.toLowerCase())}</b> on ${fmt(fixedAhead[0].target)}`);
+    if(missed.length) bits.push(`${missed.length} already behind`);
+    if(plan.tightest<9999) bits.push(tight?`the tightest link has only <b>${plan.tightest} days</b> of slack`
+                   :`the tightest link still has ${plan.tightest} days of slack`);
+    sub=`<p class="vsub">${bits.join(' · ')}.</p>`;
+  }
+  const st=[['steps left',act.length,''],
+            ['behind',missed.length,missed.length?'bad':''],
+            ['fixed dates ahead',fixedAhead.length,''],
+            ['runway',runway<0?'—':runway+'<small> mo</small>',runway>=0&&runway<6?'warn':'']];
+  document.getElementById('verdict').innerHTML=`
+    <div class="vtop"><div class="vmain">${flag}${h2}${sub}</div>
+      <div class="stats">${st.map(s=>
+        `<div class="stat"><div class="stat-k">${s[0]}</div><div class="stat-v ${s[2]}">${s[1]}</div></div>`).join('')}</div></div>
+    <div class="legend">
+      <span class="lg"><span class="sw hard"></span>Fixed &mdash; set by someone else, cannot move</span>
+      <span class="lg">${ICO.flag}&nbsp;Deadline &mdash; a real cost to missing it</span>
+      <span class="lg">${ICO.flex}&nbsp;Flexible &mdash; bar shows how much slack is left</span>
+      <span class="lg"><span class="sw crit"></span>On the critical path</span>
+      <span class="lg"><span class="sw miss"></span>Already behind</span>
+      <span class="lg" style="color:var(--ink-3)">Click any task to mark it done</span>
+    </div>`;
+}
+
+function renderBehind(c,plan){
+  const el=document.getElementById('behind');
+  const ord={missed_closed:0, infeasible:1, missed_recoverable:2};
+  const m=plan.tasks.filter(t=>t.status.indexOf('missed')===0||t.status==='infeasible')
+    .sort((a,b)=>ord[a.status]-ord[b.status]||a.t0-b.t0);
+  if(!m.length){ el.innerHTML=''; return; }
+  const nClosed=m.filter(t=>t.status!=='missed_recoverable').length;
+  el.innerHTML=`<div class="behind">
+    <div class="behind-h">${ICO.warn}<h3>${m.length} thing${m.length>1?'s':''} ${m.length>1?'are':'is'} already behind this student</h3>
+      <span class="mono">${nClosed} closed &middot; ${m.length-nClosed} recoverable</span></div>
+    <ul class="behind-l">${m.slice(0,8).map(t=>{
+      const closed=t.status==='missed_closed', inf=t.status==='infeasible';
+      const label=closed?'closed':inf?'no time':'catch up';
+      const note=inf
+        ? `Needs ${t.dur} days of work and only ${Math.max(0,days(c.today,t.lf))} remain.`+
+          (t.t.blocking?' Nothing downstream can proceed without it.':' Drop it and route around it.')
+        : (t.t.missedNote?tok(t.t.missedNote,plan.A)
+          :'Still doable, and nothing downstream is blocked yet — pull it into this month.');
+      const stamp=closed?fmt(t.t0):inf?'due '+fmtS(t.lf):'was due '+fmtS(t.lf);
+      const wk=Math.round(t.overdue/7);
+      const age = t.overdue<7 ? '' : ' · '+wk+' wk '+(closed?'ago':inf?'short':'overdue');
+      return `<li><span class="bstate ${closed?'closed':inf?'closed':'recov'}">${label}</span>
+        <span><span class="bttl">${esc(t.title)}</span>
+        <span class="bnote"><span class="mono">${stamp}${age}</span> &mdash; ${esc(note)}</span></span></li>`;
+    }).join('')}${m.length>8?`<li><span class="bstate recov">+${m.length-8}</span>
+      <span><span class="bnote" style="margin:0">more whose windows have already passed. The ones that
+      block nothing downstream sort to the bottom.</span></span></li>`:''}</ul></div>`;
+}
+
+function renderDecisions(c,plan){
+  const el=document.getElementById('decisions'); const cards=[];
+  if(c.pathway==='uni4' && c.testPlan==='undecided'){
+    cards.push(`<div class="dcard"><div class="dcard-k">${ICO.fork} decision · blocks 8 tasks</div>
+      <h3>SAT or ACT?</h3>
+      <p>The timeline is holding a gap here. Nothing about test prep can be scheduled until this is answered, because every prep task is positioned backwards from a test date.</p>
+      <div class="dopts">
+        <button class="dopt" data-opt="plan:sat"><span class="dopt-t">Take the SAT</span><span class="dopt-d">7 sittings a year · register 28 days ahead</span></button>
+        <button class="dopt" data-opt="plan:act"><span class="dopt-t">Take the ACT</span><span class="dopt-d">7 sittings a year · register 35 days ahead</span></button>
+        <button class="dopt" data-opt="plan:optional"><span class="dopt-t">Apply test-optional</span><span class="dopt-d">drops 8 tasks · adds a policy check</span></button>
+      </div></div>`);
+  }
+  if(c.pathway==='uni4' && (c.testPlan==='sat'||c.testPlan==='act') && !c.testDate){
+    const spec=TESTS[c.testPlan], opts=testOptions(c), A=plan.A;
+    cards.push(`<div class="dcard"><div class="dcard-k">${ICO.fork} decision · sets 6 dates</div>
+      <h3>Which ${spec.name} sitting?</h3>
+      <p>Only sittings that leave ten weeks to prepare <em>and</em> return scores before ${fmt(A.rd_deadline)} are offered. Picking one pins a registration deadline ${spec.regLead} days earlier and schedules prep backwards from it.</p>
+      ${opts.length?`<div class="dopts">${opts.map(o=>
+        `<button class="dopt${o.weeks<12?' warn':''}" data-opt="date:${+o.date}">
+          <span class="dopt-t">${fmt(o.date)}</span>
+          <span class="dopt-d">${o.weeks} wks out · register by ${fmtS(o.reg)}${o.weeks<12?' · tight':''}</span></button>`).join('')}</div>`
+        :`<div class="dnone">No remaining ${spec.name} sitting both leaves time to prepare and returns scores before applications close.
+           <button class="dopt" data-opt="plan:optional" style="margin-top:9px">
+           <span class="dopt-t">Go test-optional instead</span><span class="dopt-d">the realistic move from here</span></button></div>`}
+      </div>`);
+  }
+  el.innerHTML=cards.join('');
+}
+
+function renderTimeline(c,plan){
+  const PS=termById(c.term).start, psM=mi(PS);
+  const vis=plan.tasks.filter(t=>['upcoming','due','done'].indexOf(t.status)>=0);
+  const from=mi(c.today);
+  let to=Math.max(psM+1, from+1);
+  vis.forEach(t=>{ const m=mi(t.target); if(m>to) to=m; });
+  to=Math.min(to, from+72);
+  const byM=new Map();
+  vis.forEach(t=>{ const m=Math.max(from,Math.min(to,mi(t.target))); (byM.get(m)||byM.set(m,[]).get(m)).push(t); });
+  const slacks=vis.filter(t=>t.hardness==='preference').map(t=>t.slack);
+  const maxSlack=Math.max.apply(null,[45].concat(slacks));
+
+  let html=`<div class="nowline"><div class="nl-lab">today</div><div class="nl-bar"><span class="nl-date">${fmt(c.today)}</span></div></div>`;
+  let quiet=[], startDone=false;
+  const flushQuiet=()=>{
+    if(!quiet.length) return;
+    const a=miLab(quiet[0]), b=miLab(quiet[quiet.length-1]);
+    const lab = quiet.length===1
+      ? 'Nothing scheduled'
+      : `${quiet.length} quiet months &mdash; ${a.m} ${a.y===b.y?'':a.y+' '}to ${b.m} ${b.y}`;
+    html+=`<div class="band quiet"><div class="band-g"><div class="mlab"><span class="m">${a.m}</span>`+
+      `<span class="y">${a.y}</span></div></div>`+
+      `<div class="band-n"></div><div class="band-c"><span class="quiet-l">${lab}</span></div></div>`;
+    quiet=[];
+  };
+  const startMark=()=>{ if(startDone) return; startDone=true;
+    html+=`<div class="nowline start"><div class="nl-lab">starts</div><div class="nl-bar"><span class="nl-date">${fmt(PS)}</span></div></div>`; };
+
+  for(let m=from;m<=to;m++){
+    if(m>psM){ flushQuiet(); startMark(); }
+    const arr=(byM.get(m)||[]).sort(sortT);
+    if(!arr.length){ quiet.push(m); continue; }
+    flushQuiet();
+    const L=miLab(m), crit=arr.some(t=>t.crit&&t.status!=='done');
+    html+=`<div class="band${crit?' crit':''}">
+      <div class="band-g"><div class="mlab"><span class="m">${L.m}</span><span class="y">${L.y}</span></div>
+        <div class="load"><span class="n">${arr.length}</span>
+          <span class="load-bar${arr.length>c.cap?' over':''}" style="--f:${Math.min(1,arr.length/c.cap).toFixed(2)}"><i></i></span></div></div>
+      <div class="band-n"></div>
+      <div class="band-c">${bandNote(arr)?`<div class="band-t">${bandNote(arr)}</div>`:''}${arr.map(t=>taskCard(t,maxSlack)).join('')}</div></div>`;
+  }
+  flushQuiet(); startMark();
+  document.getElementById('timeline').innerHTML=html;
+}
+
+/* ---------- diff ---------- */
+let prev=null, toastT=null;
+function showDiff(plan,changed){
+  const cur=new Map(plan.tasks.filter(t=>t.status!=='done').map(t=>[t.id,mi(t.target)]));
+  const nMissed=plan.tasks.filter(t=>t.status.indexOf('missed')===0||t.status==='infeasible').length;
+  if(prev && changed){
+    let added=0,removed=0,moved=0;
+    cur.forEach((m,id)=>{ if(!prev.map.has(id)) added++; else if(prev.map.get(id)!==m) moved++; });
+    prev.map.forEach((m,id)=>{ if(!cur.has(id)) removed++; });
+    const dm=nMissed-prev.missed;
+    const parts=[];
+    if(added) parts.push(`<b>+${added}</b> new`);
+    if(removed) parts.push(`<b>&minus;${removed}</b> dropped`);
+    if(moved) parts.push(`<b>${moved}</b> changed month`);
+    if(dm>0) parts.push(`<b>${dm}</b> now behind`);
+    if(dm<0) parts.push(`<b>${-dm}</b> back in reach`);
+    const el=document.getElementById('toast');
+    if(parts.length){
+      el.innerHTML=`<span class="toast-k">${esc(changed)} &rarr; recompiled</span><span class="toast-b">${parts.map(x=>'<span>'+x+'</span>').join('')}</span>`;
+      el.classList.add('show'); clearTimeout(toastT);
+      toastT=setTimeout(()=>el.classList.remove('show'),3600);
+    }
+  }
+  prev={map:cur, missed:nMissed};
+}
+
+/* ---------- main ---------- */
+function render(changed){
+  let c=snap();
+  if(c.testDate && !testOptions(c).some(o=>+o.date===+new Date(c.testDate))){ cfg.testDate=null; c=snap(); }
+  const plan=compile(c);
+  syncConsole(c,plan);
+  renderVerdict(c,plan);
+  renderBehind(c,plan);
+  renderDecisions(c,plan);
+  renderTimeline(c,plan);
+  showDiff(plan,changed);
+}
+document.addEventListener('click',e=>{
+  const mv=e.target.closest('[data-move]');
+  if(mv){ cfg.term=mv.dataset.move; cfg.testDate=null; return render('Target start'); }
+  const op=e.target.closest('[data-opt]');
+  if(op){ const [k,v]=op.dataset.opt.split(':');
+    if(k==='plan'){ cfg.testPlan=v; if(v!=='sat'&&v!=='act') cfg.testDate=null; return render('Test plan'); }
+    if(k==='date'){ cfg.testDate=+v; return render('Test date'); } }
+  const td=e.target.closest('[data-done]');
+  if(td){ const id=td.dataset.done;
+    if(cfg.done.has(id)) cfg.done.delete(id); else cfg.done.add(id);
+    return render(cfg.done.has(id)?'Marked done':'Reopened'); }
+});
+buildConsole();
+render(null);
+</script>
+</body>
+</html>
