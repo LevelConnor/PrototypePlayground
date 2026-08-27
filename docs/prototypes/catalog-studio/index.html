@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalog Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+:root{
+  --ground:#E9EBEF; --surface:#FBFCFD; --surface-2:#F1F3F7; --surface-3:#E2E6EC;
+  --line:#D4D9E1; --line-2:#B3BCC8;
+  --ink:#15181F; --ink-2:#474E5C; --ink-3:#666D7C;
+  --accent:#1D4E63; --accent-2:#14384A; --accent-soft:#DCE8ED; --accent-line:#9DC0CD;
+  --draft:#7E5A0E; --draft-soft:#F6ECD3; --draft-line:#DCC287;
+  --err:#9A322A; --err-soft:#F5DFDB; --err-line:#DCA79F;
+  --ok:#3A6544; --ok-soft:#DFEBE1; --ok-line:#A3C3AA;
+  --sh:0 1px 2px rgba(21,24,31,.05), 0 8px 20px -12px rgba(21,24,31,.20);
+  --sh-2:0 2px 5px rgba(21,24,31,.07), 0 18px 40px -18px rgba(21,24,31,.30);
+  --f-ui:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-copy:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F1218; --surface:#161A22; --surface-2:#1C212B; --surface-3:#252B37;
+  --line:#282F3B; --line-2:#3B4453;
+  --ink:#E4E8EE; --ink-2:#A2AAB8; --ink-3:#7E8695;
+  --accent:#6DB0C9; --accent-2:#9BCEE1; --accent-soft:#152B36; --accent-line:#2C4E5E;
+  --draft:#D5A445; --draft-soft:#2E2410; --draft-line:#54431B;
+  --err:#DD8578; --err-soft:#331B18; --err-line:#5B302A;
+  --ok:#7EB48D; --ok-soft:#17281B; --ok-line:#2F4A36;
+  --sh:0 1px 2px rgba(0,0,0,.45), 0 8px 20px -12px rgba(0,0,0,.65);
+  --sh-2:0 2px 5px rgba(0,0,0,.5), 0 18px 40px -18px rgba(0,0,0,.75);
+}}
+:root[data-theme="dark"]{
+  --ground:#0F1218; --surface:#161A22; --surface-2:#1C212B; --surface-3:#252B37;
+  --line:#282F3B; --line-2:#3B4453;
+  --ink:#E4E8EE; --ink-2:#A2AAB8; --ink-3:#7E8695;
+  --accent:#6DB0C9; --accent-2:#9BCEE1; --accent-soft:#152B36; --accent-line:#2C4E5E;
+  --draft:#D5A445; --draft-soft:#2E2410; --draft-line:#54431B;
+  --err:#DD8578; --err-soft:#331B18; --err-line:#5B302A;
+  --ok:#7EB48D; --ok-soft:#17281B; --ok-line:#2F4A36;
+  --sh:0 1px 2px rgba(0,0,0,.45), 0 8px 20px -12px rgba(0,0,0,.65);
+  --sh-2:0 2px 5px rgba(0,0,0,.5), 0 18px 40px -18px rgba(0,0,0,.75);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--f-ui);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0; font-weight:600; letter-spacing:-.012em; text-wrap:balance}
+p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3)}
+
+/* ---------- top bar ---------- */
+.top{position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:18px;
+  padding:0 20px; height:54px; background:var(--surface); border-bottom:1px solid var(--line)}
+.mark{display:flex; align-items:baseline; gap:8px; flex:none}
+.mark b{font-size:15px; font-weight:600; letter-spacing:-.02em}
+.mark span{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.tabs{display:flex; gap:2px; background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r); padding:2px}
+.tabs button{border:0; background:transparent; border-radius:4px; padding:5px 12px; font-size:12.5px; font-weight:500; color:var(--ink-2)}
+.tabs button:hover{background:var(--surface-3); color:var(--ink)}
+.tabs button[aria-selected="true"]{background:var(--accent); color:var(--surface); box-shadow:var(--sh)}
+.top-r{margin-left:auto; display:flex; align-items:center; gap:12px}
+.dirty{display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--draft);
+  background:var(--draft-soft); border:1px solid var(--draft-line); border-radius:20px; padding:4px 11px}
+.dirty i{width:6px; height:6px; border-radius:50%; background:var(--draft); flex:none}
+.dirty.clean{color:var(--ink-3); background:var(--surface-2); border-color:var(--line)}
+.dirty.clean i{background:var(--ok)}
+.pub{border:1px solid var(--accent); background:var(--accent); color:var(--surface);
+  border-radius:var(--r); padding:7px 15px; font-size:13px; font-weight:600; box-shadow:var(--sh)}
+.pub:hover{background:var(--accent-2); border-color:var(--accent-2)}
+.pub:disabled{opacity:.45; cursor:not-allowed; box-shadow:none}
+.pub.blocked{background:var(--err); border-color:var(--err)}
+
+/* ---------- shell ---------- */
+.wrap{display:grid; grid-template-columns:272px minmax(0,1fr) 348px; min-height:calc(100vh - 54px); align-items:start}
+.nav{background:var(--surface); border-right:1px solid var(--line); position:sticky; top:54px;
+  height:calc(100vh - 54px); overflow-y:auto; overscroll-behavior:contain}
+.main{min-width:0; padding:0 0 80px}
+.rail{background:var(--surface); border-left:1px solid var(--line); position:sticky; top:54px;
+  height:calc(100vh - 54px); overflow-y:auto; overscroll-behavior:contain}
+.view{display:none} .view.on{display:block}
+
+/* ---------- navigator ---------- */
+.nav-h{padding:14px 16px 12px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:8px}
+.nav-h .lbl{flex:1}
+.icon-btn{border:1px solid var(--line-2); background:var(--surface-2); border-radius:5px; width:24px; height:24px;
+  display:grid; place-items:center; color:var(--ink-2); padding:0; flex:none}
+.icon-btn:hover{background:var(--surface-3); color:var(--ink); border-color:var(--ink-3)}
+.mod{border-bottom:1px solid var(--line)}
+.mod-h{display:flex; align-items:center; gap:8px; padding:9px 16px; background:var(--surface-2)}
+.mod-h .n{font-size:12px; font-weight:600; letter-spacing:-.005em; flex:1}
+.mod-h .c{font-family:var(--f-mono); font-size:10px; color:var(--ink-3)}
+.tlist{list-style:none; margin:0; padding:0}
+.titem{display:grid; grid-template-columns:14px minmax(0,1fr); gap:8px; align-items:start;
+  padding:8px 16px 8px 14px; border:0; background:transparent; width:100%; text-align:left; border-left:2px solid transparent}
+.titem:hover{background:var(--surface-2)}
+.titem[aria-current="true"]{background:var(--accent-soft); border-left-color:var(--accent)}
+.dot{width:7px; height:7px; border-radius:50%; margin-top:5px; background:var(--line-2); flex:none; justify-self:center}
+.dot.draft{background:var(--draft)} .dot.err{background:var(--err)} .dot.warn{background:var(--draft); opacity:.55}
+.titem .t{font-size:12.5px; line-height:1.35; color:var(--ink)}
+.titem .m{font-family:var(--f-mono); font-size:9.5px; color:var(--ink-3); margin-top:2px; display:block}
+.titem[aria-current="true"] .t{font-weight:500}
+
+/* ---------- editor ---------- */
+.ed{padding:22px 28px 0; max-width:860px}
+.ed-h{display:flex; align-items:flex-start; gap:14px; margin-bottom:4px}
+.ed-h .lbl{margin-bottom:6px; display:block}
+.chip{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 7px; border-radius:3px; border:1px solid; display:inline-flex; align-items:center; gap:5px}
+.chip.draft{color:var(--draft); background:var(--draft-soft); border-color:var(--draft-line)}
+.chip.pubd{color:var(--accent); background:var(--accent-soft); border-color:var(--accent-line)}
+.chip.err{color:var(--err); background:var(--err-soft); border-color:var(--err-line)}
+.chip.new{color:var(--ok); background:var(--ok-soft); border-color:var(--ok-line)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; box-shadow:var(--sh)}
+.card-h{display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line)}
+.card-h .lbl{flex:1}
+.card-b{padding:16px}
+
+/* the authored copy reads as copy */
+.f-title{width:100%; font-family:var(--f-copy); font-size:23px; font-weight:500; letter-spacing:-.015em;
+  line-height:1.25; color:var(--ink); background:transparent; border:0; border-bottom:1px dashed var(--line-2);
+  padding:2px 0 7px; resize:none; overflow:hidden}
+.f-title:focus{outline:0; border-bottom-color:var(--accent)}
+.f-why{width:100%; font-family:var(--f-copy); font-size:15.5px; line-height:1.55; color:var(--ink-2);
+  background:transparent; border:0; border-bottom:1px dashed var(--line-2); padding:6px 0 8px; resize:none; overflow:hidden}
+.f-why:focus{outline:0; border-bottom-color:var(--accent)}
+.hint{font-size:11.5px; color:var(--ink-3); margin-top:7px}
+.hint.warn{color:var(--draft)}
+
+.row{display:flex; gap:14px; flex-wrap:wrap}
+.fld{flex:1 1 180px; min-width:0}
+.fld>.lbl{display:block; margin-bottom:5px}
+select.in,input.in{width:100%; font:inherit; font-size:13px; color:var(--ink); background:var(--surface-2);
+  border:1px solid var(--line-2); border-radius:5px; padding:6px 9px}
+select.in{appearance:none; padding-right:26px;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 14px) 53%, calc(100% - 9px) 53%; background-size:5px 5px,5px 5px; background-repeat:no-repeat}
+
+/* ---------- the rule sentence (hero) ---------- */
+.rule{font-family:var(--f-copy); font-size:18px; line-height:2.05; color:var(--ink); letter-spacing:-.005em}
+.rule .w{white-space:nowrap}
+.tk{font-family:var(--f-ui); font-size:13px; font-weight:500; color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); border-radius:5px; padding:3px 7px; appearance:none; cursor:pointer;
+  vertical-align:2px; margin:0 1px}
+.tk:hover{background:var(--surface-3)}
+select.tk{padding-right:22px;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 12px) 55%, calc(100% - 8px) 55%; background-size:4px 4px,4px 4px; background-repeat:no-repeat}
+input.tk{width:52px; text-align:center; font-family:var(--f-mono); cursor:text}
+.tk.k{color:var(--draft); background:var(--draft-soft); border-color:var(--draft-line)}
+details.compiled{margin-top:14px; border-top:1px solid var(--line); padding-top:12px}
+details.compiled summary{font-family:var(--f-mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink-3); cursor:pointer; list-style:none}
+details.compiled summary::-webkit-details-marker{display:none}
+details.compiled summary::before{content:"▸ "; color:var(--ink-3)}
+details.compiled[open] summary::before{content:"▾ "}
+pre.json{font-family:var(--f-mono); font-size:11.5px; line-height:1.6; color:var(--ink-2); background:var(--surface-2);
+  border:1px solid var(--line); border-radius:5px; padding:11px 13px; margin:10px 0 0; overflow-x:auto}
+
+/* ---------- condition / dependency chips ---------- */
+.conds{display:flex; flex-direction:column; gap:9px}
+.cond{display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:6px; padding:8px 10px}
+.cond .join{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); flex:none}
+.cond .txt{font-family:var(--f-copy); font-size:15px; color:var(--ink); flex:1 1 auto}
+.cond .txt b{font-weight:500}
+.vchips{display:inline-flex; gap:5px; flex-wrap:wrap; vertical-align:middle}
+.vchip{font-family:var(--f-ui); font-size:11.5px; color:var(--accent); background:var(--accent-soft);
+  border:1px solid var(--accent-line); border-radius:12px; padding:2px 8px; display:inline-flex; align-items:center; gap:5px}
+.vchip button{border:0; background:none; padding:0; color:var(--accent); opacity:.6; display:grid; place-items:center}
+.vchip button:hover{opacity:1}
+.x{border:1px solid var(--line-2); background:var(--surface); border-radius:4px; width:22px; height:22px;
+  display:grid; place-items:center; color:var(--ink-3); padding:0; flex:none}
+.x:hover{color:var(--err); border-color:var(--err-line); background:var(--err-soft)}
+.add{border:1px dashed var(--line-2); background:transparent; border-radius:6px; padding:7px 11px;
+  font-size:12.5px; color:var(--ink-2); width:100%; text-align:left}
+.add:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.picker{position:relative}
+.menu{position:absolute; z-index:30; top:calc(100% + 5px); left:0; min-width:230px; background:var(--surface);
+  border:1px solid var(--line-2); border-radius:7px; box-shadow:var(--sh-2); padding:5px; display:none}
+.menu.on{display:block}
+.menu button{display:block; width:100%; text-align:left; border:0; background:transparent; border-radius:4px;
+  padding:6px 9px; font-size:12.5px; color:var(--ink)}
+.menu button:hover{background:var(--accent-soft); color:var(--accent)}
+.menu .lbl{padding:6px 9px 3px; display:block}
+.empty{font-family:var(--f-copy); font-size:14px; font-style:italic; color:var(--ink-3)}
+
+/* ---------- impact rail ---------- */
+.rail-s{border-bottom:1px solid var(--line); padding:14px 16px}
+.rail-s>.lbl{display:block; margin-bottom:11px}
+.stu{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 10px; align-items:baseline;
+  padding:9px 0; border-bottom:1px dotted var(--line)}
+.stu:last-child{border-bottom:0}
+.stu .n{font-size:12.5px; font-weight:500}
+.stu .d{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); grid-column:1; margin-top:-3px}
+.stu .v{font-family:var(--f-mono); font-size:11.5px; text-align:right; white-space:nowrap}
+.stu .v.hit{color:var(--accent)} .stu .v.out{color:var(--ink-3)} .stu .v.bad{color:var(--err)}
+.stu .was{font-family:var(--f-mono); font-size:10px; color:var(--draft); text-align:right; grid-column:2; text-decoration:none}
+.checks{display:flex; flex-direction:column; gap:8px}
+.chk{display:grid; grid-template-columns:14px minmax(0,1fr); gap:9px; align-items:start}
+.chk svg{margin-top:2px; flex:none}
+.chk.e{color:var(--err)} .chk.w{color:var(--draft)} .chk.o{color:var(--ok)}
+.chk .h{font-size:12.5px; font-weight:500; line-height:1.35; color:var(--ink)}
+.chk.e .h{color:var(--err)} .chk.w .h{color:var(--draft)}
+.chk .b{font-family:var(--f-copy); font-size:13px; line-height:1.5; color:var(--ink-2); margin-top:2px}
+.reach{display:flex; align-items:baseline; gap:8px; margin-bottom:9px}
+.reach b{font-family:var(--f-mono); font-size:24px; font-weight:500; letter-spacing:-.02em; color:var(--accent)}
+.reach span{font-size:12px; color:var(--ink-3)}
+.bar{height:6px; border-radius:3px; background:var(--surface-3); overflow:hidden; display:flex}
+.bar i{display:block; height:100%; background:var(--accent)}
+.bar i.o{background:var(--line-2)}
+
+/* ---------- calendar view ---------- */
+.pg{padding:24px 28px 80px; max-width:1080px}
+.pg-h{margin-bottom:20px}
+.pg-h h2{font-size:22px; letter-spacing:-.02em}
+.pg-h p{font-family:var(--f-copy); font-size:15px; color:var(--ink-2); margin-top:6px; max-width:66ch; line-height:1.55}
+.tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface); box-shadow:var(--sh)}
+table{border-collapse:collapse; width:100%; min-width:760px}
+th{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3);
+  text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--surface-2); white-space:nowrap}
+td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top; font-size:13px}
+tr:last-child td{border-bottom:0}
+td .k{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); display:block; margin-top:2px}
+td .nm{font-weight:500}
+.age{font-family:var(--f-mono); font-size:11.5px; white-space:nowrap}
+.age.ok{color:var(--ok)} .age.due{color:var(--draft)} .age.late{color:var(--err)}
+.src{font-family:var(--f-mono); font-size:11px; color:var(--accent); word-break:break-all}
+.src.none{color:var(--err)}
+.mini{border:1px solid var(--line-2); background:var(--surface-2); border-radius:5px; padding:4px 9px;
+  font-size:11.5px; font-weight:500; color:var(--ink-2); white-space:nowrap}
+.mini:hover{background:var(--accent-soft); color:var(--accent); border-color:var(--accent-line)}
+.usedby{font-family:var(--f-mono); font-size:11px; color:var(--ink-3)}
+
+/* ---------- publish view ---------- */
+.gate{border:1px solid var(--line); border-radius:8px; background:var(--surface); box-shadow:var(--sh); overflow:hidden; margin-bottom:18px}
+.gate.stop{border-color:var(--err-line)}
+.gate-h{padding:15px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--line)}
+.gate.stop .gate-h{background:var(--err-soft); border-bottom-color:var(--err-line)}
+.gate-h h3{font-size:15px; flex:1}
+.gate.stop .gate-h h3{color:var(--err)}
+.gate-b{padding:16px 18px}
+.diffs{list-style:none; margin:0; padding:0}
+.diffs>li{padding:13px 0; border-bottom:1px solid var(--line)}
+.diffs>li:last-child{border-bottom:0}
+.dh{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+.dh .nm{font-family:var(--f-copy); font-size:16px; font-weight:500}
+.dl{display:grid; grid-template-columns:88px minmax(0,1fr); gap:4px 12px; margin-top:8px; font-size:12.5px}
+.dl .f{font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding-top:3px}
+.was{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3); text-decoration:line-through; text-decoration-color:var(--err-line)}
+.dl .stk .was,.dl .stk .now{display:block; margin-bottom:4px; line-height:1.6}
+.dl .stk .was::before{content:"was "; text-decoration:none; color:var(--ink-3); font-style:italic}
+.dl .stk .now::before{content:"now "; color:var(--ink-3); font-style:italic}
+.now{font-family:var(--f-mono); font-size:11.5px; color:var(--accent)}
+.arrow{color:var(--ink-3); margin:0 6px}
+.log{list-style:none; margin:0; padding:0}
+.log li{display:grid; grid-template-columns:96px minmax(0,1fr); gap:12px; padding:8px 0; border-bottom:1px dotted var(--line); font-size:12.5px}
+.log li:last-child{border-bottom:0}
+.log .when{font-family:var(--f-mono); font-size:11px; color:var(--ink-3)}
+
+/* ---------- toast ---------- */
+.toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(150%);
+  background:var(--ink); color:var(--ground); border-radius:7px; padding:10px 17px; z-index:70;
+  box-shadow:var(--sh-2); display:flex; align-items:center; gap:13px; transition:transform .26s cubic-bezier(.2,.9,.3,1)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast .lbl{color:inherit; opacity:.6}
+.toast b{font-family:var(--f-mono); font-weight:500}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+@media (max-width:1180px){
+  .wrap{grid-template-columns:240px minmax(0,1fr)}
+  .rail{grid-column:1 / -1; position:static; height:auto; border-left:0; border-top:1px solid var(--line);
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .rail-s{border-right:1px solid var(--line)}
+}
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr}
+  .nav{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line); max-height:280px}
+  .ed,.pg{padding-left:18px; padding-right:18px}
+  /* the header becomes two rows rather than overflowing the page sideways */
+  .top{height:auto; flex-wrap:wrap; padding:8px 12px; gap:8px}
+  .mark{flex:1 1 auto; min-width:0}
+  .mark span{display:none}
+  .top-r{margin-left:0; flex:none}
+  .tabs{order:3; flex:1 0 100%}
+  .tabs button{flex:1; text-align:center; padding:6px 4px; font-size:12px}
+  .dirty{display:none}
+  .rule{font-size:16.5px; line-height:2.1}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="mark"><b>Catalog Studio</b><span>Level All</span></div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-view="catalog" aria-selected="true">Catalog</button>
+    <button role="tab" data-view="calendar" aria-selected="false">Key dates</button>
+    <button role="tab" data-view="publish" aria-selected="false">Review &amp; publish</button>
+  </div>
+  <div class="top-r">
+    <div class="dirty" id="dirty"></div>
+    <button class="pub" id="pubBtn">Publish</button>
+  </div>
+</div>
+
+<div class="view on" id="v-catalog">
+  <div class="wrap">
+    <aside class="nav">
+      <div class="nav-h"><span class="lbl">Task catalog</span>
+        <button class="icon-btn" id="newTask" title="New task" aria-label="New task">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 2v8M2 6h8"/></svg>
+        </button>
+      </div>
+      <div id="navList"></div>
+    </aside>
+    <main class="main"><div id="editor"></div></main>
+    <aside class="rail" id="rail"></aside>
+  </div>
+</div>
+
+<div class="view" id="v-calendar"><div class="pg" id="calPage"></div></div>
+<div class="view" id="v-publish"><div class="pg" id="pubPage"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============ dates ============ */
+const DAY=864e5;
+const U=(y,m,d)=>new Date(Date.UTC(y,m-1,d,12));
+const addD=(d,n)=>new Date(d.getTime()+n*DAY);
+function addM(d,n){const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+n,1,12));
+  const dim=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0,12)).getUTCDate();
+  return new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),Math.min(d.getUTCDate(),dim),12));}
+const shift=(d,n,u)=> u==='months'?addM(d,n) : u==='weeks'?addD(d,n*7) : addD(d,n);
+const dys=(a,b)=>Math.round((b-a)/DAY);
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt=d=>`${MON[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+const fmtM=d=>`${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+const TODAY=U(2026,8,27);
+const monthsSince=iso=>{const [y,m,d]=iso.split('-').map(Number);
+  return Math.round(dys(U(y,m,d),TODAY)/30.44);};
+const listify=a=> a.length<2?a.join('') : a.length===2?a.join(' and ') : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ============ key dates (the external calendar, now authored) ============ */
+let ANCHORS=[
+ {key:'program_start', label:'the program start date', kind:'derived',
+  desc:'Comes from whichever term the student is targeting.'},
+ {key:'hs_graduation', label:'high-school graduation', kind:'derived',
+  desc:'Derived from the target term. Only meaningful for students still in school.'},
+ {key:'my_test_date', label:'the test date the student picked', kind:'derived', needs:'testing',
+  desc:'Exists only once a student has chosen an SAT or ACT sitting.'},
+ {key:'test_reg', label:'the test registration deadline', kind:'derived', needs:'testing',
+  desc:'Four weeks before the chosen SAT sitting, five before the ACT.'},
+ {key:'fafsa_open', label:'the day the FAFSA opens', kind:'fixed', rule:'October 1',
+  src:'studentaid.gov/apply-for-aid/fafsa', by:'Dana R.', on:'2026-07-14', cadence:12},
+ {key:'fafsa_priority', label:'the state aid priority deadline', kind:'fixed', rule:'March 2',
+  src:'', by:'Marcus O.', on:'2025-06-02', cadence:12},
+ {key:'fafsa_close', label:'the federal FAFSA deadline', kind:'fixed', rule:'June 30 after the award year',
+  src:'studentaid.gov/apply-for-aid/fafsa/deadlines', by:'Dana R.', on:'2026-07-14', cadence:12},
+ {key:'app_open', label:'the day applications open', kind:'fixed', rule:'August 1',
+  src:'commonapp.org/apply/first-time-students', by:'Priya N.', on:'2026-06-20', cadence:12},
+ {key:'ea_deadline', label:'the early-action deadline', kind:'fixed', rule:'November 1',
+  src:'commonapp.org/apply/deadlines', by:'Priya N.', on:'2026-06-20', cadence:12},
+ {key:'rd_deadline', label:'the regular-decision deadline', kind:'fixed', rule:'January 5',
+  src:'commonapp.org/apply/deadlines', by:'Priya N.', on:'2026-06-20', cadence:12},
+ {key:'decision_day', label:'national decision day', kind:'fixed', rule:'May 1',
+  src:'nacacnet.org', by:'Dana R.', on:'2026-05-30', cadence:12},
+ {key:'appr_close', label:'the apprenticeship window closing', kind:'fixed', rule:'February 28',
+  src:'', by:'—', on:'2025-02-10', cadence:12}
+];
+const anchor=k=>ANCHORS.find(a=>a.key===k);
+const staleness=a=>{ if(a.kind!=='fixed') return null;
+  const m=monthsSince(a.on); return {m, late:m>a.cadence, due:m>a.cadence-3 && m<=a.cadence}; };
+const anchorBad=k=>{const a=anchor(k); if(!a||a.kind!=='fixed') return null;
+  const s=staleness(a); if(!a.src) return 'nosource'; if(s.late) return 'stale'; return null;};
+
+const TERMS={fa2027:U(2027,8,24),sp2028:U(2028,1,12),fa2028:U(2028,8,24),sp2027:U(2027,1,12)};
+function anchorsFor(stu){
+  const PS=TERMS[stu.term];
+  const ay=PS.getUTCMonth()>=6?PS.getUTCFullYear():PS.getUTCFullYear()-1;
+  const A={program_start:PS, hs_graduation:addD(PS,-80),
+    fafsa_open:U(ay-1,10,1), fafsa_priority:U(ay,3,2), fafsa_close:U(ay+1,6,30),
+    app_open:U(ay-1,8,1), ea_deadline:U(ay-1,11,1), rd_deadline:U(ay,1,5),
+    decision_day:U(ay,5,1), appr_close:U(ay,2,28)};
+  if(stu.f.testing){ A.my_test_date=U(ay-1,10,2); A.test_reg=addD(A.my_test_date,-28); }
+  return A;
+}
+
+/* ============ who we are authoring for ============ */
+const STUDENTS=[
+ {id:'maya', name:'Maya', line:'11th grade · four-year · needs aid', cohort:1240, term:'fa2028',
+  f:{pathway:'uni4', inHS:true, needsAid:true, firstGen:true, testing:true}},
+ {id:'rae', name:'Rae', line:'11th grade · four-year · test-optional', cohort:410, term:'fa2028',
+  f:{pathway:'uni4', inHS:true, needsAid:false, firstGen:false, testing:false}},
+ {id:'devon', name:'Devon', line:'Gap year · community college', cohort:880, term:'sp2028',
+  f:{pathway:'cc', inHS:false, needsAid:true, firstGen:true, testing:false}},
+ {id:'ari', name:'Ari', line:'12th grade · trade certificate', cohort:520, term:'fa2027',
+  f:{pathway:'trade', inHS:true, needsAid:true, firstGen:false, testing:false}},
+ {id:'sam', name:'Sam', line:'No diploma yet · apprenticeship', cohort:190, term:'fa2028',
+  f:{pathway:'appr', inHS:false, noDiploma:true, needsAid:false, testing:false}},
+ {id:'jo', name:'Jo', line:'Graduated · enlistment', cohort:260, term:'sp2027',
+  f:{pathway:'mil', inHS:false, needsAid:false, firstGen:false, testing:false}}
+];
+const TOTAL=STUDENTS.reduce((a,s)=>a+s.cohort,0);
+
+const MODULES=[['core','Everyone'],['hs','Still in high school'],['ged','No diploma yet'],
+  ['testing','Standardized testing'],['finaid','Financial aid'],['apps','Applications'],['enroll','Enrolling']];
+const FIELDS=[
+ {k:'pathway', label:'pathway', type:'enum', opts:[['uni4','four-year university'],['cc','community college'],
+   ['trade','trade school'],['appr','apprenticeship'],['mil','enlistment']]},
+ {k:'inHS', label:'still in high school', type:'bool'},
+ {k:'noDiploma', label:'has no diploma yet', type:'bool'},
+ {k:'needsAid', label:'applying for financial aid', type:'bool'},
+ {k:'firstGen', label:'first in the family to go', type:'bool'},
+ {k:'testing', label:'taking the SAT or ACT', type:'bool'}
+];
+const field=k=>FIELDS.find(f=>f.k===k);
+const CATS=['Explore','Testing','Financial aid','Applications','Records','Enrolling','Support'];
+
+/* ============ the catalog ============ */
+const R=(kind,anchor,dir,n,unit,fromN,fromUnit,toN,toUnit)=>
+  ({kind, anchor, dir, n, unit, win:{fromN,fromUnit,toN,toUnit}});
+const RF=(anchor)=>({kind:'fixed', anchor, dir:'before', n:0, unit:'days', win:{fromN:0,fromUnit:'days',toN:0,toUnit:'days'}});
+
+let TASKS=[
+{id:'explore', module:'core', cat:'Explore', dur:14, title:'Map your interests to real jobs',
+ why:'Everything downstream depends on this one choice, and right now it is the cheapest thing in the plan to change.',
+ rule:R('flexible','program_start','before',18,'months',30,'months',12,'months'), gate:[], requires:[]},
+{id:'advisor', module:'core', cat:'Support', dur:2, title:'Meet with a counselor or advisor',
+ why:'Someone who has watched a hundred of these plans will catch what you cannot.',
+ rule:R('flexible','program_start','before',16,'months',26,'months',9,'months'), gate:[], requires:[]},
+{id:'budget', module:'core', cat:'Financial aid', dur:5, title:'Build a real cost-of-attendance budget',
+ why:'Tuition is rarely the biggest number. Housing, transport and tools usually are.',
+ rule:R('flexible','program_start','before',10,'months',16,'months',4,'months'), gate:[], requires:[]},
+{id:'immun', module:'enroll', cat:'Records', dur:3, title:'Gather immunization records',
+ why:'Nearly every programme freezes your enrollment until these land.',
+ rule:R('deadline','program_start','before',2,'months',5,'months',3,'weeks'), gate:[], requires:[]},
+{id:'orient', module:'enroll', cat:'Enrolling', dur:1, title:'Attend orientation',
+ why:'Missing it normally costs you class-registration priority.',
+ rule:R('deadline','program_start','before',3,'weeks',6,'weeks',3,'weeks'), gate:[], requires:[]},
+{id:'gpa', module:'hs', cat:'Records', dur:2, title:'Pull your transcript and check your GPA',
+ why:'You cannot plan around a number you have not looked at.',
+ rule:R('flexible','hs_graduation','before',14,'months',22,'months',8,'months'),
+ gate:[{field:'inHS', op:'is', values:[true]}], requires:[]},
+{id:'gradreq', module:'hs', cat:'Records', dur:2, title:'Confirm you will meet graduation requirements',
+ why:'A credit shortfall found in April is a crisis. Found in October it is a scheduling change.',
+ rule:R('deadline','hs_graduation','before',8,'months',14,'months',4,'months'),
+ gate:[{field:'inHS', op:'is', values:[true]}], requires:['gpa']},
+{id:'ged-reg', module:'ged', cat:'Records', dur:2, title:'Register with your state equivalency programme',
+ why:'Rules, test names and fees are all set at state level. Start there, not with a prep book.',
+ rule:R('deadline','program_start','before',13,'months',20,'months',9,'months'),
+ gate:[{field:'noDiploma', op:'is', values:[true]}], requires:[]},
+{id:'ged-exam', module:'ged', cat:'Records', dur:14, title:'Pass all four subject tests',
+ why:'Your credential has to exist before any programme can admit you.',
+ rule:R('deadline','program_start','before',5,'months',9,'months',3,'months'),
+ gate:[{field:'noDiploma', op:'is', values:[true]}], requires:['ged-reg']},
+{id:'test-diag', module:'testing', cat:'Testing', dur:2, title:'Sit one full-length practice test, timed',
+ why:'A baseline score is what makes the rest of the prep plan honest.',
+ rule:R('flexible','my_test_date','before',3,'months',5,'months',9,'weeks'),
+ gate:[{field:'testing', op:'is', values:[true]}], requires:[]},
+{id:'test-prep', module:'testing', cat:'Testing', dur:56, title:'Work a six-to-eight week prep plan',
+ why:'Score gains come from consistent short sessions, not a heroic final fortnight.',
+ rule:R('flexible','my_test_date','before',2,'months',4,'months',1,'weeks'),
+ gate:[{field:'testing', op:'is', values:[true]}], requires:['test-diag']},
+{id:'test-reg', module:'testing', cat:'Testing', dur:1, title:'Register for your test date',
+ why:'This is the deadline people actually miss. Not the test, the registration four weeks before it.',
+ source:'Registration deadline set by the testing agency',
+ rule:RF('test_reg'), gate:[{field:'testing', op:'is', values:[true]}], requires:[]},
+{id:'test-sit', module:'testing', cat:'Testing', dur:1, title:'Sit the test',
+ why:'Fixed nationally. Everything in prep is scheduled backwards from here.',
+ source:'National test date',
+ rule:RF('my_test_date'), gate:[{field:'testing', op:'is', values:[true]}], requires:['test-reg']},
+{id:'fsa-id', module:'finaid', cat:'Financial aid', dur:2, title:'Create your FSA ID, and a parent’s',
+ why:'The account takes days to verify against Social Security records. Doing it the night before does not work.',
+ rule:R('deadline','fafsa_open','before',3,'weeks',3,'months',2,'days'),
+ gate:[{field:'needsAid', op:'is', values:[true]}], requires:[]},
+{id:'tax-docs', module:'finaid', cat:'Financial aid', dur:5, title:'Gather tax returns and income records',
+ why:'The form asks about a tax year that has already closed, so nothing here can change. Only be found.',
+ rule:R('flexible','fafsa_open','before',2,'weeks',3,'months',0,'days'),
+ gate:[{field:'needsAid', op:'is', values:[true]}], requires:[]},
+{id:'fafsa', module:'finaid', cat:'Financial aid', dur:3, title:'Submit the FAFSA',
+ why:'State and institutional money is first-come. The federal form stays open far longer than the money does.',
+ source:'State priority deadline',
+ rule:RF('fafsa_priority'), gate:[{field:'needsAid', op:'is', values:[true]}], requires:['fsa-id','tax-docs']},
+{id:'scholar', module:'finaid', cat:'Financial aid', dur:45, title:'Apply to five local scholarships',
+ why:'Local awards have tiny applicant pools. Per hour spent they beat the national ones badly.',
+ rule:R('flexible','fafsa_priority','before',2,'months',6,'months',1,'weeks'),
+ gate:[{field:'needsAid', op:'is', values:[true]}], requires:[]},
+{id:'list', module:'apps', cat:'Applications', dur:14, title:'Build a list of six to ten schools',
+ why:'Two reaches, four in range, two you would be happy to attend and can certainly afford.',
+ rule:R('flexible','app_open','before',3,'months',9,'months',1,'months'),
+ gate:[{field:'pathway', op:'in', values:['uni4']}], requires:[]},
+{id:'essay', module:'apps', cat:'Applications', dur:30, title:'Draft and revise your personal statement',
+ why:'Three real drafts with a week between them beats one long night, every time.',
+ rule:R('flexible','app_open','after',14,'days',0,'days',70,'days'),
+ gate:[{field:'pathway', op:'in', values:['uni4']}], requires:[]},
+{id:'recs', module:'apps', cat:'Applications', dur:7, title:'Ask two teachers for recommendations',
+ why:'Ask six weeks out. Teachers write dozens of these and the good slots go early.',
+ rule:R('deadline','ea_deadline','before',7,'weeks',4,'months',3,'weeks'),
+ gate:[{field:'pathway', op:'in', values:['uni4']}], requires:['list']},
+{id:'app-rd', module:'apps', cat:'Applications', dur:6, title:'Submit regular-decision applications',
+ why:'The immovable one. Everything else in this pathway is scheduled backwards from this date.',
+ source:'Institutional deadline',
+ rule:RF('rd_deadline'), gate:[{field:'pathway', op:'in', values:['uni4']}], requires:['essay','recs']},
+{id:'commit', module:'enroll', cat:'Enrolling', dur:2, title:'Commit to a school and pay the deposit',
+ why:'Miss it and your seat goes to someone on the waitlist.', source:'National decision day',
+ rule:RF('decision_day'), gate:[{field:'pathway', op:'in', values:['uni4','cc']}], requires:[]},
+{id:'ap-apply', module:'apps', cat:'Applications', dur:5, title:'Apply during the annual application window',
+ why:'The whole pathway hinges on a few weeks. There is no rolling admission and no exceptions.',
+ source:'Window opens once a year',
+ rule:RF('appr_close'), gate:[{field:'pathway', op:'in', values:['appr']}], requires:[]},
+{id:'lic-res', module:'enroll', cat:'Licensure', dur:4, title:'Find out what licence your state requires',
+ why:'Training and licensing are separate systems. Finishing the programme does not make you licensed.',
+ rule:R('deadline','program_start','before',4,'months',10,'months',1,'months'),
+ gate:[{field:'pathway', op:'in', values:['trade','appr']}], requires:[]}
+];
+
+/* every task starts out published; snapshot is what students see today */
+const clone=o=>JSON.parse(JSON.stringify(o));
+TASKS.forEach(t=>{ t.state='published';
+  t.pub={title:t.title, why:t.why, rule:clone(t.rule), gate:clone(t.gate), requires:clone(t.requires), dur:t.dur}; });
+
+/* ---- seed three unpublished edits so the review gate has something in it ---- */
+(function seed(){
+  const f=TASKS.find(t=>t.id==='fafsa');
+  f.why='State and institutional money is first-come, and it runs out well before the federal form closes. Filing in the first fortnight is worth more than filing perfectly.';
+  f.state='draft';
+  const e=TASKS.find(t=>t.id==='essay');
+  e.rule.win={fromN:10,fromUnit:'days',toN:100,toUnit:'days'};
+  e.state='draft';
+  TASKS.push({id:'aid-appeal', module:'finaid', cat:'Financial aid', dur:10,
+    title:'Appeal your aid offer if the numbers do not work',
+    why:'Almost nobody asks, and a written appeal with a changed circumstance succeeds more often than families expect.',
+    rule:R('deadline','decision_day','before',3,'weeks',8,'weeks',1,'weeks'),
+    gate:[{field:'needsAid', op:'is', values:[true]}], requires:['fafsa'], state:'new', pub:null});
+})();
+const HISTORY=[
+ ['3 days ago','Priya N.','Published 4 changes — application deadlines re-verified for the 2027 cycle'],
+ ['2 weeks ago','Dana R.','Published 1 change — rewrote the FSA ID rationale'],
+ ['3 weeks ago','Marcus O.','Published 7 changes — added the apprenticeship module'],
+ ['6 weeks ago','Dana R.','Published 2 changes — widened the campus-visit window']
+];
+
+/* ============ engine ============ */
+const task=id=>TASKS.find(t=>t.id===id);
+function passes(t,stu){ return t.gate.every(c=>
+  c.op==='in' ? c.values.indexOf(stu.f[c.field])>=0 : !!stu.f[c.field]===!!c.values[0]); }
+
+function landsFor(t,stu,rule){
+  const r=rule||t.rule, A=anchorsFor(stu);
+  if(!(r.anchor in A)) return {missing:r.anchor};
+  const base=A[r.anchor];
+  if(r.kind==='fixed') return {date:base, lo:base, hi:base, fixed:true};
+  const sg=r.dir==='before'?-1:1;
+  const p1=shift(base,sg*r.win.fromN,r.win.fromUnit), p2=shift(base,sg*r.win.toN,r.win.toUnit);
+  return {date:shift(base,sg*r.n,r.unit), lo:p1<p2?p1:p2, hi:p1<p2?p2:p1};
+}
+function ruleText(r){
+  const a=anchor(r.anchor), al=a?a.label:r.anchor;
+  if(r.kind==='fixed') return 'fixed on '+al;
+  const head=r.kind==='deadline'?'due':'aim for';
+  return `${head} ${r.n} ${r.unit} ${r.dir} ${al} · window ${r.win.fromN} ${r.win.fromUnit}–${r.win.toN} ${r.win.toUnit} ${r.dir}`;
+}
+function gateText(g){
+  if(!g.length) return 'everyone';
+  return g.map(c=>{const f=field(c.field);
+    return c.op==='in'
+      ? f.label+' is '+c.values.map(v=>(f.opts.find(o=>o[0]===v)||[,v])[1]).join(' or ')
+      : (c.values[0]?f.label:'not '+f.label);}).join(' and ');
+}
+function hasCycle(start){
+  let bad=false;
+  (function walk(id,path){ if(bad) return; const t=task(id); if(!t) return;
+    for(const r of t.requires){ if(path.indexOf(r)>=0){bad=true;return;} walk(r,path.concat(r)); }})(start,[start]);
+  return bad;
+}
+function validate(t){
+  const out=[], aud=STUDENTS.filter(s=>passes(t,s)), A=anchor(t.rule.anchor);
+  const al=A?A.label:t.rule.anchor;
+  if(!aud.length) out.push({lv:'w', h:'No review profile sees this task',
+    b:'The conditions below exclude all six profiles. Either the audience is narrower than you meant, or a profile is missing that represents it.'});
+  const miss=aud.filter(s=>landsFor(t,s).missing);
+  if(miss.length) out.push({lv:'e', h:`${listify(miss.map(s=>s.name))} never get${miss.length===1?'s':''} ${al}`,
+    b:'This task is timed from a date those students do not have, so it cannot be placed on their timeline at all. Narrow the conditions, or time it from something everyone in the audience has.'});
+  if(t.rule.kind==='fixed'){
+    const bad=anchorBad(t.rule.anchor);
+    if(bad==='nosource') out.push({lv:'e', h:'This fixed date has no source on record',
+      b:'A date a student cannot afford to miss needs a link to whoever actually sets it.', fix:t.rule.anchor});
+    else if(bad==='stale') out.push({lv:'e', h:'This fixed date is overdue for re-checking',
+      b:`${al[0].toUpperCase()+al.slice(1)} was last confirmed ${monthsSince(A.on)} months ago by ${A.by}.`, fix:t.rule.anchor});
+  } else if(A && A.kind==='fixed'){
+    const s=staleness(A);
+    if(s.late) out.push({lv:'w', h:'Timed from a date that needs re-checking',
+      b:`${al[0].toUpperCase()+al.slice(1)} was last confirmed ${s.m} months ago.`, fix:A.key});
+  }
+  if(t.rule.kind!=='fixed'){
+    const s0=aud[0]||STUDENTS[0], L=landsFor(t,s0);
+    if(!L.missing){
+      if(L.date<L.lo || L.date>L.hi) out.push({lv:'e', h:'The target sits outside its own window',
+        b:'The date you are aiming for is not inside the range you allowed. Widen the window or move the target into it.'});
+      const w=dys(L.lo,L.hi);
+      if(t.dur>w) out.push({lv:'w', h:'The window is shorter than the work',
+        b:`This takes roughly ${t.dur} days and the window is ${w}. It will read as urgent from the moment it appears.`});
+    }
+  }
+  if(hasCycle(t.id)) out.push({lv:'e', h:'This creates a circular prerequisite',
+    b:'Two tasks cannot each be waiting for the other. Nothing in the chain could ever start.'});
+  t.requires.forEach(rid=>{ const p=task(rid); if(!p) return;
+    const orph=aud.filter(s=>!passes(p,s));
+    if(orph.length) out.push({lv:'w', h:`${listify(orph.map(s=>s.name))}${orph.length===1?' sees':' see'} this but not “${p.title}”`,
+      b:'The prerequisite is filtered out for them, so it will not hold this task back the way you intended. Usually the two audiences should match.'});
+  });
+  if(!t.why || t.why.trim().length<25) out.push({lv:'w', h:'No rationale written',
+    b:'Students are being told what to do without being told why it matters.'});
+  if(!out.some(x=>x.lv==='e'||x.lv==='w')) out.push({lv:'o', h:'All checks pass',
+    b:'Valid for all six review profiles.'});
+  return out;
+}
+const dirtyTasks=()=>TASKS.filter(t=>t.state!=='published');
+const blockers=()=>dirtyTasks().flatMap(t=>validate(t).filter(c=>c.lv==='e').map(c=>({t,c})));
+function changedFor(t){ /* which profiles move if this is published */
+  if(!t.pub) return STUDENTS.filter(s=>passes(t,s));
+  return STUDENTS.filter(s=>{
+    const now=passes(t,s), was=t.pub.gate.every(c=>c.op==='in'?c.values.indexOf(s.f[c.field])>=0:!!s.f[c.field]===!!c.values[0]);
+    if(now!==was) return true;
+    if(!now) return false;
+    const a=landsFor(t,s), b=landsFor(t,s,t.pub.rule);
+    if(a.missing||b.missing) return !!a.missing!==!!b.missing;
+    return +a.date!==+b.date;
+  });
+}
+
+/* ============ state ============ */
+let sel='fafsa', view='catalog', hlAnchor=null, menuOpen=null;
+const ICO={
+ e:'<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="5.6"/><path d="M7 4.3v3.4M7 9.6h.01"/></svg>',
+ w:'<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1.8 13.2 12.4H.8L7 1.8Z"/><path d="M7 5.6v2.9M7 10.4h.01"/></svg>',
+ o:'<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2.3 7.3 5.5 10.4 11.7 3.9"/></svg>',
+ x:'<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg>'
+};
+const UNITS=[['days','days'],['weeks','weeks'],['months','months']];
+const KINDS=[['fixed','fixed date'],['deadline','hard deadline'],['flexible','flexible task']];
+
+/* ============ navigator ============ */
+function renderNav(){
+  const out=MODULES.map(([mk,mlabel])=>{
+    const list=TASKS.filter(t=>t.module===mk);
+    if(!list.length) return '';
+    return `<div class="mod"><div class="mod-h"><span class="n">${esc(mlabel)}</span><span class="c">${list.length}</span></div>
+      <ul class="tlist">${list.map(t=>{
+        const v=validate(t), err=v.some(c=>c.lv==='e'), warn=v.some(c=>c.lv==='w');
+        const dot = err?'err' : t.state!=='published'?'draft' : warn?'warn':'';
+        const st = t.state==='new'?'new' : t.state==='draft'?'edited':'';
+        return `<li><button class="titem" data-sel="${t.id}" aria-current="${t.id===sel}">
+          <span class="dot ${dot}"></span>
+          <span><span class="t">${esc(t.title)}</span>
+          <span class="m">${esc(t.cat.toLowerCase())}${st?' · '+st:''}</span></span></button></li>`;
+      }).join('')}</ul></div>`;
+  }).join('');
+  document.getElementById('navList').innerHTML=out;
+}
+
+/* ============ the rule sentence ============ */
+function numTk(v,key){return `<input class="tk" type="number" min="0" max="60" value="${v}" data-r="${key}" aria-label="${key}">`;}
+function selTk(v,key,opts,cls){return `<select class="tk ${cls||''}" data-r="${key}" aria-label="${key}">`+
+  opts.map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${esc(o[1])}</option>`).join('')+`</select>`;}
+function anchorOpts(){ return ANCHORS.map(a=>[a.key,a.label]); }
+function ruleSentence(t){
+  const r=t.rule;
+  const kind=selTk(r.kind,'kind',KINDS,'k');
+  const anc=selTk(r.anchor,'anchor',anchorOpts());
+  if(r.kind==='fixed')
+    return `<p class="rule">This is a ${kind}, pinned to ${anc}. <span class="w">Nobody can move it</span> &mdash;
+      not the student, not us.</p>`;
+  const n=numTk(r.n,'n'), u=selTk(r.unit,'unit',UNITS), d=selTk(r.dir,'dir',[['before','before'],['after','after']]);
+  const f=numTk(r.win.fromN,'fromN'), fu=selTk(r.win.fromUnit,'fromUnit',UNITS);
+  const tn=numTk(r.win.toN,'toN'), tu=selTk(r.win.toUnit,'toUnit',UNITS);
+  const lead = r.kind==='deadline'
+    ? `This is a ${kind}, due <span class="w">${n} ${u}</span> ${d} ${anc}.`
+    : `This is a ${kind}. Aim for <span class="w">${n} ${u}</span> ${d} ${anc}.`;
+  return `<p class="rule">${lead} It can happen anywhere between
+    <span class="w">${f} ${fu}</span> and <span class="w">${tn} ${tu}</span> ${r.dir} that date.</p>`;
+}
+
+/* ============ editor ============ */
+function renderEditor(){
+  const t=task(sel);
+  if(!t){ document.getElementById('editor').innerHTML='<div class="ed"><p class="empty">Pick a task on the left.</p></div>'; return; }
+  const stChip = t.state==='new' ? '<span class="chip new">new</span>'
+    : t.state==='draft' ? '<span class="chip draft">unpublished edit</span>'
+    : '<span class="chip pubd">live</span>';
+  const cats=CATS.indexOf(t.cat)<0?CATS.concat([t.cat]):CATS;
+
+  const conds = t.gate.length ? t.gate.map((c,i)=>{
+    const f=field(c.field);
+    const body = c.op==='in'
+      ? `<b>${esc(f.label)}</b> is one of <span class="vchips">${c.values.map(v=>
+          `<span class="vchip">${esc((f.opts.find(o=>o[0]===v)||[,v])[1])}<button data-rmval="${i}:${v}" aria-label="Remove">${ICO.x}</button></span>`).join('')}</span>`
+      : `<b>${esc(f.label)}</b> is ${selTk(String(!!c.values[0]),'cond'+i,[['true','true'],['false','false']])}`;
+    return `<div class="cond"><span class="join">${i?'and':'when'}</span><span class="txt">${body}</span>
+      ${c.op==='in'?`<div class="picker"><button class="x" data-menu="val${i}" aria-label="Add value">+</button>
+        <div class="menu" id="m-val${i}">${f.opts.filter(o=>c.values.indexOf(o[0])<0).map(o=>
+        `<button data-addval="${i}:${o[0]}">${esc(o[1])}</button>`).join('')||'<span class="lbl">nothing left to add</span>'}</div></div>`:''}
+      <button class="x" data-rmcond="${i}" aria-label="Remove condition">${ICO.x}</button></div>`;
+  }).join('') : '<p class="empty">No conditions &mdash; every student sees this.</p>';
+
+  const used=t.gate.map(c=>c.field);
+  const reqs = t.requires.length ? t.requires.map((rid,i)=>{
+    const p=task(rid);
+    return `<div class="cond"><span class="join">first</span>
+      <span class="txt">${p?esc(p.title):'<em>missing task '+esc(rid)+'</em>'}</span>
+      <button class="x" data-rmreq="${i}" aria-label="Remove prerequisite">${ICO.x}</button></div>`;
+  }).join('') : '<p class="empty">Nothing has to happen first.</p>';
+
+  document.getElementById('editor').innerHTML=`<div class="ed">
+    <div class="ed-h"><div style="flex:1;min-width:0">
+      <span class="lbl">${esc((MODULES.find(m=>m[0]===t.module)||[,t.module])[1])} · ${esc(t.id)}</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${stChip}
+      ${t.state==='draft'?'<button class="mini" id="revert">Revert to live version</button>':''}</div>
+    </div></div>
+
+    <div class="card"><div class="card-h"><span class="lbl">What the student reads</span></div>
+      <div class="card-b">
+        <textarea class="f-title" rows="1" data-f="title" aria-label="Task title">${esc(t.title)}</textarea>
+        <textarea class="f-why" rows="2" data-f="why" aria-label="Why this matters">${esc(t.why)}</textarea>
+        <p class="hint">The second line is the <em>why</em>. It is the only part students actually remember.</p>
+      </div></div>
+
+    <div class="card"><div class="card-h"><span class="lbl">When it happens</span></div>
+      <div class="card-b">
+        ${ruleSentence(t)}
+        <div class="row" style="margin-top:16px">
+          <div class="fld"><span class="lbl">Roughly how long it takes (days)</span>
+            <input class="in" type="number" min="1" max="180" value="${t.dur}" data-f="dur"></div>
+          <div class="fld"><span class="lbl">Category shown to students</span>
+            <select class="in" data-f="cat">${cats.map(c=>`<option${c===t.cat?' selected':''}>${esc(c)}</option>`).join('')}</select></div>
+          <div class="fld"><span class="lbl">Module</span>
+            <select class="in" data-f="module">${MODULES.map(m=>`<option value="${m[0]}"${m[0]===t.module?' selected':''}>${esc(m[1])}</option>`).join('')}</select></div>
+        </div>
+        <details class="compiled"><summary>What this compiles to</summary>
+          <pre class="json">${esc(JSON.stringify({timing:t.rule, duration_days:t.dur},null,2))}</pre></details>
+      </div></div>
+
+    <div class="card"><div class="card-h"><span class="lbl">Who sees it</span></div>
+      <div class="card-b"><div class="conds">${conds}</div>
+        <div class="picker" style="margin-top:10px">
+          <button class="add" data-menu="cond">+ Add a condition</button>
+          <div class="menu" id="m-cond">${FIELDS.filter(f=>used.indexOf(f.k)<0).map(f=>
+            `<button data-addcond="${f.k}">${esc(f.label)}</button>`).join('')||'<span class="lbl">every attribute is already used</span>'}</div>
+        </div>
+      </div></div>
+
+    <div class="card"><div class="card-h"><span class="lbl">What has to happen first</span></div>
+      <div class="card-b"><div class="conds">${reqs}</div>
+        <div class="picker" style="margin-top:10px">
+          <button class="add" data-menu="req">+ Add a prerequisite</button>
+          <div class="menu" id="m-req" style="max-height:280px;overflow-y:auto">${
+            TASKS.filter(x=>x.id!==t.id && t.requires.indexOf(x.id)<0).map(x=>
+            `<button data-addreq="${x.id}">${esc(x.title)}</button>`).join('')}</div>
+        </div>
+      </div></div>
+  </div>`;
+  document.querySelectorAll('.f-title,.f-why').forEach(autosize);
+}
+function autosize(el){
+  if(!el) return;
+  /* measuring before layout settles (or in a 0-width pane) wraps the text to one
+     character per line and bakes in a wildly wrong height — wait for real width */
+  if(el.clientWidth<40){ requestAnimationFrame(()=>autosize(el)); return; }
+  el.style.height='auto';
+  el.style.height=Math.max(el.scrollHeight,26)+'px';
+}
+function autosizeAll(){ document.querySelectorAll('.f-title,.f-why').forEach(autosize); }
+window.addEventListener('resize', autosizeAll);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(autosizeAll);
+
+/* ============ impact rail ============ */
+function renderRail(){
+  const t=task(sel);
+  if(!t){ document.getElementById('rail').innerHTML=''; return; }
+  const aud=STUDENTS.filter(s=>passes(t,s));
+  const reach=aud.reduce((a,s)=>a+s.cohort,0);
+  const pct=Math.round(reach/TOTAL*100);
+  const rows=STUDENTS.map(s=>{
+    const inAud=passes(t,s);
+    let v,cls,was='';
+    if(!inAud){ v='not shown'; cls='out'; }
+    else { const L=landsFor(t,s);
+      if(L.missing){ v='cannot place'; cls='bad'; }
+      else { v=fmtM(L.date); cls='hit';
+        if(t.pub){ const B=landsFor(t,s,t.pub.rule);
+          if(!B.missing && +B.date!==+L.date) was=`was ${fmtM(B.date)}`; } } }
+    return `<div class="stu"><span class="n">${esc(s.name)}</span><span class="v ${cls}">${esc(v)}</span>
+      <span class="d">${esc(s.line)}</span>${was?`<span class="was">${esc(was)}</span>`:''}</div>`;
+  }).join('');
+  const checks=validate(t).map(c=>`<div class="chk ${c.lv}">${ICO[c.lv]}<div>
+      <div class="h">${esc(c.h)}</div><div class="b">${esc(c.b)}${
+      c.fix?` <button class="mini" data-goto="${c.fix}" style="margin-top:6px">Open in Key dates</button>`:''}</div>
+    </div></div>`).join('');
+  document.getElementById('rail').innerHTML=`
+    <div class="rail-s"><span class="lbl">Who this reaches</span>
+      <div class="reach"><b>${pct}%</b><span>${reach.toLocaleString()} of ${TOTAL.toLocaleString()} students</span></div>
+      <div class="bar"><i style="width:${pct}%"></i><i class="o" style="width:${100-pct}%"></i></div>
+      <p class="hint" style="margin-top:9px">${esc(gateText(t.gate))}</p></div>
+    <div class="rail-s"><span class="lbl">Where it lands</span>${rows}</div>
+    <div class="rail-s"><span class="lbl">Checks</span><div class="checks">${checks}</div></div>`;
+}
+
+/* ============ key dates ============ */
+function usedBy(k){ return TASKS.filter(t=>t.rule.anchor===k); }
+function renderCal(){
+  const fixed=ANCHORS.filter(a=>a.kind==='fixed'), derived=ANCHORS.filter(a=>a.kind!=='fixed');
+  const late=fixed.filter(a=>staleness(a).late || !a.src).length;
+  const rows=fixed.map(a=>{
+    const s=staleness(a), u=usedBy(a.key);
+    const cls=!a.src||s.late?'late':s.due?'due':'ok';
+    const pinned=u.filter(t=>t.rule.kind==='fixed').length;
+    return `<tr${hlAnchor===a.key?' style="background:var(--draft-soft)"':''}>
+      <td><span class="nm">${esc(a.label[0].toUpperCase()+a.label.slice(1))}</span><span class="k">${esc(a.key)}</span></td>
+      <td class="mono" style="white-space:nowrap">${esc(a.rule)}</td>
+      <td><input class="in" style="font-family:var(--f-mono);font-size:11px" value="${esc(a.src)}"
+        placeholder="paste the page that sets this date" data-src="${a.key}"></td>
+      <td><span class="age ${cls}">${!a.src?'no source':s.m+' mo ago'}</span>
+        <span class="k">by ${esc(a.by)}</span></td>
+      <td class="usedby">${u.length} task${u.length===1?'':'s'}${pinned?`<br>${pinned} pinned to it`:''}</td>
+      <td><button class="mini" data-confirm="${a.key}">Confirm current</button></td></tr>`;
+  }).join('');
+  document.getElementById('calPage').innerHTML=`
+    <div class="pg-h"><h2>Key dates</h2>
+      <p>Every fixed deadline in the catalog points at one of these. They are the only place in the system
+      where a wrong value quietly becomes a student missing a deadline, so each one carries a source and a
+      date it was last confirmed. ${late?`<strong>${late} need attention.</strong>`:'All current.'}</p></div>
+    <div class="tblwrap"><table><thead><tr>
+      <th>Key date</th><th>Set by</th><th>Source</th><th>Last confirmed</th><th>Used by</th><th></th>
+    </tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="pg-h" style="margin-top:32px;margin-bottom:12px"><h2 style="font-size:16px">Dates we work out ourselves</h2>
+      <p style="font-size:14px">Derived from what the student tells us, so there is nothing to verify. They can be
+      absent &mdash; a student who is not taking the SAT has no test date, and any task timed from one will refuse to compile.</p></div>
+    <div class="tblwrap"><table><thead><tr><th>Key date</th><th>Where it comes from</th><th>Used by</th></tr></thead>
+      <tbody>${derived.map(a=>`<tr>
+        <td><span class="nm">${esc(a.label[0].toUpperCase()+a.label.slice(1))}</span><span class="k">${esc(a.key)}</span></td>
+        <td style="font-family:var(--f-copy);font-size:14px">${esc(a.desc)}</td>
+        <td class="usedby">${usedBy(a.key).length} tasks</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ============ review & publish ============ */
+function renderPub(){
+  const d=dirtyTasks(), bl=blockers();
+  const affected=new Set(); let moves=0;
+  d.forEach(t=>changedFor(t).forEach(s=>{affected.add(s.id); moves++;}));
+  const people=STUDENTS.filter(s=>affected.has(s.id)).reduce((a,s)=>a+s.cohort,0);
+  const gate = bl.length
+    ? `<div class="gate stop"><div class="gate-h">${ICO.e}<h3>${bl.length} thing${bl.length>1?'s':''} must be fixed before this can go out</h3></div>
+        <div class="gate-b"><div class="checks">${bl.map(b=>`<div class="chk e">${ICO.e}<div>
+          <div class="h">${esc(b.t.title)} &mdash; ${esc(b.c.h)}</div>
+          <div class="b">${esc(b.c.b)} <button class="mini" data-sel="${b.t.id}" style="margin-top:6px">Open task</button>
+          ${b.c.fix?`<button class="mini" data-goto="${b.c.fix}" style="margin-top:6px">Open in Key dates</button>`:''}</div>
+        </div></div>`).join('')}</div></div></div>`
+    : d.length
+      ? `<div class="gate"><div class="gate-h">${ICO.o}<h3>Ready to publish</h3>
+          <button class="pub" id="pubBtn2">Publish ${d.length} change${d.length>1?'s':''}</button></div>
+        <div class="gate-b"><div class="row">
+          <div class="fld"><span class="lbl">Students affected</span>
+            <div class="reach"><b>${people.toLocaleString()}</b><span>of ${TOTAL.toLocaleString()}</span></div></div>
+          <div class="fld"><span class="lbl">Tasks changing</span><div class="reach"><b>${d.length}</b><span>in the catalog</span></div></div>
+          <div class="fld"><span class="lbl">Timelines that shift</span><div class="reach"><b>${moves}</b><span>profile-level moves</span></div></div>
+        </div></div></div>`
+      : `<div class="gate"><div class="gate-h">${ICO.o}<h3>Nothing waiting to publish</h3></div>
+         <div class="gate-b"><p class="empty">The live catalog matches your drafts.</p></div></div>`;
+
+  const diffs=d.length?`<div class="card"><div class="card-h"><span class="lbl">What changes</span></div>
+    <div class="card-b"><ul class="diffs">${d.map(t=>{
+      const rowsOut=[];
+      if(!t.pub) rowsOut.push(['status','','<span class="now">brand new task</span>']);
+      else{
+        if(t.pub.title!==t.title) rowsOut.push(['title',esc(t.pub.title),esc(t.title)]);
+        if(t.pub.why!==t.why) rowsOut.push(['rationale',esc(t.pub.why),esc(t.why)]);
+        if(ruleText(t.pub.rule)!==ruleText(t.rule)) rowsOut.push(['timing',esc(ruleText(t.pub.rule)),esc(ruleText(t.rule))]);
+        if(gateText(t.pub.gate)!==gateText(t.gate)) rowsOut.push(['audience',esc(gateText(t.pub.gate)),esc(gateText(t.gate))]);
+        if(t.pub.requires.join()!==t.requires.join()) rowsOut.push(['prerequisites',
+          esc(t.pub.requires.map(r=>(task(r)||{title:r}).title).join(', ')||'none'),
+          esc(t.requires.map(r=>(task(r)||{title:r}).title).join(', ')||'none')]);
+        if(t.pub.dur!==t.dur) rowsOut.push(['effort',t.pub.dur+' days',t.dur+' days']);
+      }
+      const ch=changedFor(t);
+      return `<li><div class="dh"><span class="nm">${esc(t.title)}</span>
+        ${t.state==='new'?'<span class="chip new">new</span>':'<span class="chip draft">edited</span>'}
+        <span class="usedby">${ch.length?ch.map(s=>s.name).join(', ')+' move':'no dates move'}</span></div>
+        <div class="dl">${rowsOut.map(r=>{
+          const long=(r[1]+r[2]).length>110;
+          return `<span class="f">${r[0]}</span><span class="${long?'stk':''}">${
+            r[1]?`<span class="was">${r[1]}</span>${long?'':'<span class="arrow">→</span>'}`:''}<span class="now">${r[2]}</span></span>`;
+        }).join('')}</div></li>`;
+    }).join('')}</ul></div></div>`:'';
+
+  document.getElementById('pubPage').innerHTML=`
+    <div class="pg-h"><h2>Review &amp; publish</h2>
+      <p>Nothing reaches a student timeline until it goes out from here. Publishing recompiles every affected
+      plan, so the number that matters is not how many tasks you edited &mdash; it is how many students wake up
+      to a different timeline.</p></div>
+    ${gate}${diffs}
+    <div class="card"><div class="card-h"><span class="lbl">Recently published</span></div>
+      <div class="card-b"><ul class="log">${HISTORY.map(h=>
+        `<li><span class="when">${esc(h[0])}</span><span><b>${esc(h[1])}</b> &mdash; ${esc(h[2])}</span></li>`).join('')}</ul></div></div>`;
+}
+
+/* ============ chrome + wiring ============ */
+function renderTop(){
+  const d=dirtyTasks(), bl=blockers();
+  const el=document.getElementById('dirty');
+  el.className='dirty'+(d.length?'':' clean');
+  el.innerHTML=`<i></i>${d.length?`${d.length} unpublished change${d.length>1?'s':''}`:'Everything published'}`;
+  const b=document.getElementById('pubBtn');
+  b.disabled=!d.length;
+  b.className='pub'+(bl.length?' blocked':'');
+  b.textContent=bl.length?`${bl.length} problem${bl.length>1?'s':''} to fix`:'Publish';
+  document.querySelectorAll('#tabs button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===view)));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+view));
+}
+let toastT=null;
+function toast(kind,msg){
+  const el=document.getElementById('toast');
+  el.innerHTML=`<span class="lbl">${esc(kind)}</span><span>${msg}</span>`;
+  el.classList.add('on'); clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('on'),3400);
+}
+function touch(t){ if(t.state==='published') t.state='draft'; }
+function render(){ renderTop(); renderNav(); renderEditor(); renderRail();
+  if(view==='calendar') renderCal(); if(view==='publish') renderPub(); }
+
+document.addEventListener('click',e=>{
+  const m=e.target.closest('[data-menu]');
+  document.querySelectorAll('.menu.on').forEach(x=>{ if(!m||x.id!=='m-'+m.dataset.menu) x.classList.remove('on'); });
+  if(m){ document.getElementById('m-'+m.dataset.menu).classList.toggle('on'); return; }
+
+  const tab=e.target.closest('#tabs button');
+  if(tab){ view=tab.dataset.view; if(view!=='calendar') hlAnchor=null; return render(); }
+  if(e.target.closest('#pubBtn, #pubBtn2')){
+    const bl=blockers();
+    if(bl.length){ view='publish'; render(); return toast('cannot publish',`<b>${bl.length}</b> blocking problem${bl.length>1?'s':''}`); }
+    const d=dirtyTasks(); if(!d.length) return;
+    const people=new Set(); d.forEach(t=>changedFor(t).forEach(s=>people.add(s.id)));
+    const n=STUDENTS.filter(s=>people.has(s.id)).reduce((a,s)=>a+s.cohort,0);
+    d.forEach(t=>{ t.state='published';
+      t.pub={title:t.title,why:t.why,rule:clone(t.rule),gate:clone(t.gate),requires:clone(t.requires),dur:t.dur}; });
+    HISTORY.unshift(['just now','You',`Published ${d.length} change${d.length>1?'s':''}`]);
+    render(); return toast('published',`<b>${d.length}</b> change${d.length>1?'s':''} live · <b>${n.toLocaleString()}</b> timelines recompiled`);
+  }
+  const g=e.target.closest('[data-goto]');
+  if(g){ view='calendar'; hlAnchor=g.dataset.goto; render();
+    setTimeout(()=>{const r=document.querySelector('#calPage tr[style]'); if(r) r.scrollIntoView({block:'center',behavior:'smooth'});},60); return; }
+  const s=e.target.closest('[data-sel]');
+  if(s){ sel=s.dataset.sel; view='catalog'; return render(); }
+  const cf=e.target.closest('[data-confirm]');
+  if(cf){ const a=anchor(cf.dataset.confirm);
+    if(!a.src) return toast('needs a source','add the page that sets this date first');
+    a.on=TODAY.toISOString().slice(0,10); a.by='You'; render();
+    return toast('confirmed',`<b>${esc(a.label)}</b> re-verified`); }
+
+  const t=task(sel); if(!t) return;
+  const rv=e.target.closest('#revert');
+  if(rv){ Object.assign(t,{title:t.pub.title,why:t.pub.why,rule:clone(t.pub.rule),
+    gate:clone(t.pub.gate),requires:clone(t.pub.requires),dur:t.pub.dur,state:'published'});
+    render(); return toast('reverted','back to the live version'); }
+  const rc=e.target.closest('[data-rmcond]');
+  if(rc){ t.gate.splice(+rc.dataset.rmcond,1); touch(t); return render(); }
+  const ac=e.target.closest('[data-addcond]');
+  if(ac){ const f=field(ac.dataset.addcond);
+    t.gate.push(f.type==='enum'?{field:f.k,op:'in',values:[f.opts[0][0]]}:{field:f.k,op:'is',values:[true]});
+    touch(t); return render(); }
+  const av=e.target.closest('[data-addval]');
+  if(av){ const [i,v]=av.dataset.addval.split(':'); t.gate[+i].values.push(v); touch(t); return render(); }
+  const rmv=e.target.closest('[data-rmval]');
+  if(rmv){ const [i,v]=rmv.dataset.rmval.split(':'); const c=t.gate[+i];
+    if(c.values.length>1){ c.values=c.values.filter(x=>x!==v); touch(t); render(); }
+    else toast('kept','a condition needs at least one value'); return; }
+  const ar=e.target.closest('[data-addreq]');
+  if(ar){ t.requires.push(ar.dataset.addreq); touch(t); return render(); }
+  const rr=e.target.closest('[data-rmreq]');
+  if(rr){ t.requires.splice(+rr.dataset.rmreq,1); touch(t); return render(); }
+  if(e.target.closest('#newTask')){
+    const id='task-'+(TASKS.length+1);
+    TASKS.push({id, module:'core', cat:'Explore', dur:5, title:'Untitled task',
+      why:'', rule:R('flexible','program_start','before',6,'months',12,'months',2,'months'),
+      gate:[], requires:[], state:'new', pub:null});
+    sel=id; view='catalog'; render();
+    const el=document.querySelector('.f-title'); if(el){el.focus(); el.select();}
+    return toast('created','new task — it is a draft until you publish');
+  }
+});
+document.addEventListener('input',e=>{
+  const t=task(sel); if(!t) return;
+  const f=e.target.dataset.f;
+  if(f){ if(f==='dur') t.dur=Math.max(1,+e.target.value||1); else t[f]=e.target.value;
+    touch(t); if(e.target.tagName==='TEXTAREA') autosize(e.target);
+    renderTop(); renderNav(); renderRail();
+    if(f==='cat'||f==='module') render();
+    return; }
+  const r=e.target.dataset.r;
+  if(r){
+    if(r==='kind') t.rule.kind=e.target.value;
+    else if(r==='anchor') t.rule.anchor=e.target.value;
+    else if(r==='dir') t.rule.dir=e.target.value;
+    else if(r==='unit') t.rule.unit=e.target.value;
+    else if(r==='n') t.rule.n=Math.max(0,+e.target.value||0);
+    else if(r==='fromN') t.rule.win.fromN=Math.max(0,+e.target.value||0);
+    else if(r==='toN') t.rule.win.toN=Math.max(0,+e.target.value||0);
+    else if(r==='fromUnit') t.rule.win.fromUnit=e.target.value;
+    else if(r==='toUnit') t.rule.win.toUnit=e.target.value;
+    else if(r.indexOf('cond')===0){ t.gate[+r.slice(4)].values=[e.target.value==='true']; }
+    touch(t);
+    if(r==='kind'||r==='dir'||r.indexOf('cond')===0) render(); else { renderTop(); renderNav(); renderRail();
+      const pre=document.querySelector('pre.json');
+      if(pre) pre.textContent=JSON.stringify({timing:t.rule,duration_days:t.dur},null,2); }
+    return;
+  }
+  const sr=e.target.dataset.src;
+  if(sr){ anchor(sr).src=e.target.value.trim(); renderTop(); renderRail(); }
+});
+render();
+</script>
+</body>
+</html>
