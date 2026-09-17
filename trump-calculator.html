@@ -1,5 +1,5 @@
 <!-- ============================================================
-     TRUMP ACCOUNT CALCULATOR — Level All
+     530A ACCOUNT CALCULATOR — Level All
      Paste this entire block into a Webflow Embed element.
      Self-contained: styles + markup + script (Chart.js via CDN).
      ============================================================ -->
@@ -305,7 +305,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <div class="la-calc">
-  <h1>Estimate Your Trump Account Growth</h1>
+  <h1>Estimate Your 530A Account Growth</h1>
   <p class="sub">Projected value from birth to age 65 · Assumes 7% annual return by default</p>
 
   <div class="fields">
@@ -322,7 +322,7 @@
       <div class="field">
         <input type="range" id="la-s-age" min="0" max="17" step="1" value="0">
         <div class="field-range"><span>Newborn</span><span>Age 17</span></div>
-        <p class="field-help">Trump Accounts are available for U.S. citizen children under age 18. The account converts to a traditional IRA when the child turns 18.</p>
+        <p class="field-help">530A Accounts are available for U.S. citizen children under age 18. The account converts to a traditional IRA when the child turns 18.</p>
       </div>
     </div>
 
@@ -449,7 +449,7 @@
   </div>
 
   <div class="legend">
-    <span><span class="dot" style="background:#34D39A"></span><span id="la-leg-text">Trump account</span></span>
+    <span><span class="dot" style="background:#34D39A"></span><span id="la-leg-text">530A account</span></span>
   </div>
 
   <div class="chart-wrap">
@@ -476,7 +476,7 @@
     <div class="sl">
       <div class="sl-head"><span class="sl-name">Tax Rate at Conversion</span><span class="sl-val" id="la-v-taxrate">22%</span></div>
       <input type="range" id="la-s-taxrate" min="10" max="37" step="1" value="22">
-      <p class="sub-help">Your <b>marginal federal tax rate</b> at age 24. Conversion amounts count as ordinary income, so the rate depends on your total income that year — salary, side income, etc. By 24, most people have a job, so the conversion may push you into a higher bracket than the Trump Account funds alone would.</p>
+      <p class="sub-help">Your <b>marginal federal tax rate</b> at age 24. Conversion amounts count as ordinary income, so the rate depends on your total income that year — salary, side income, etc. By 24, most people have a job, so the conversion may push you into a higher bracket than the 530A Account funds alone would.</p>
     </div>
     <p class="tax-explainer">The <b>Value at 65</b> above is now <b>tax-free</b> — you already paid at 24. Without Roth, you'd see a higher number, but you'd owe taxes on every retirement withdrawal.</p>
     <div class="tax-grid">
@@ -499,14 +499,14 @@
     <details class="faq">
       <summary>What are these accounts?</summary>
       <div class="faq-body">
-        <p>They are long-term investment accounts the U.S. Treasury starts for every child at birth. Each account, known as a Trump Account, begins with a public contribution and can grow over time with added contributions from friends, family, employers, and charitable organizations, plus market growth. The money is managed for you and can't be taken out early, so it stays invested as the child grows up. By the time they turn 18, it gives young people a real financial head start as they make big life decisions.</p>
+        <p>They are long-term investment accounts the U.S. Treasury starts for every child at birth. Each account, known as a 530A Account, begins with a public contribution and can grow over time with added contributions from friends, family, employers, and charitable organizations, plus market growth. The money is managed for you and can't be taken out early, so it stays invested as the child grows up. By the time they turn 18, it gives young people a real financial head start as they make big life decisions.</p>
       </div>
     </details>
 
     <details class="faq">
       <summary>Who is eligible?</summary>
       <div class="faq-body">
-        <p>All U.S. children under age 18 with a valid Social Security Number are eligible to establish a Trump Account.</p>
+        <p>All U.S. children under age 18 with a valid Social Security Number are eligible to establish a 530A Account.</p>
       </div>
     </details>
 
@@ -518,16 +518,16 @@
     </details>
 
     <details class="faq">
-      <summary>Who can open a Trump Account?</summary>
+      <summary>Who can open a 530A Account?</summary>
       <div class="faq-body">
-        <p>Parents and guardians can elect to open Trump Accounts for their eligible children.</p>
+        <p>Parents and guardians can elect to open 530A Accounts for their eligible children.</p>
       </div>
     </details>
 
     <details class="faq">
       <summary>When can the money be used?</summary>
       <div class="faq-body">
-        <p>Funds in a Trump Account are locked until the child turns 18. This protects the savings and gives it time to grow.</p>
+        <p>Funds in a 530A Account are locked until the child turns 18. This protects the savings and gives it time to grow.</p>
         <p>Once the account holder becomes an adult, they can use the money without penalty for major life milestones, including:</p>
         <ul>
           <li><b>Education:</b> tuition, fees, and other costs for college or job training</li>
@@ -637,7 +637,7 @@
   function buildChart(data, roth) {
     var ctx = $('la-chart');
     var datasets = [{
-      label:'Trump account',
+      label:'530A account',
       data:data.vals,
       borderColor: roth ? function(c){
         var area = c.chart.chartArea;
@@ -690,7 +690,7 @@
                 var name;
                 if (roth && age >= 24) name = 'Roth IRA (tax-free)';
                 else if (age >= 18) name = 'Traditional IRA';
-                else name = 'Trump Account';
+                else name = '530A Account';
                 return name + ': ' + fmt(item.raw);
               }
             }
@@ -758,8 +758,8 @@
     $('la-m-65').textContent = fmt(data.bal65 || 0);
     $('la-roth-opts').classList.toggle('show', inp.roth);
     $('la-leg-text').textContent = inp.roth
-      ? 'Trump Account → Traditional IRA at 18 → Roth IRA at 24'
-      : 'Trump Account → Traditional IRA at 18';
+      ? '530A Account → Traditional IRA at 18 → Roth IRA at 24'
+      : '530A Account → Traditional IRA at 18';
     if (inp.roth) {
       $('la-m-tax').textContent = fmt(data.taxOwed);
       var taxSaved = Math.round(data.balTrad65 * inp.taxRate);
