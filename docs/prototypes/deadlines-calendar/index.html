@@ -397,6 +397,8 @@ function renderFilters() {
   $('filtersCount').hidden = !n; $('filtersCount').textContent = n;
 }
 
+// Only the next task (the earliest unfinished one in view) gets a Start/Continue button.
+let nextId = null;
 function eventHTML(t) {
   const done = t.pct >= 100, d = parse(t.date), past = !done && t.date < TODAY;
   const tile = `<div class="tile">
@@ -413,7 +415,7 @@ function eventHTML(t) {
   const tags = t.pct === 0 && t.rec ? `<div class="tags"><span class="badge">Recommended</span><button class="link" data-dismiss="${t.id}">Dismiss</button></div>` : '';
   const action = done
     ? `<div class="done-pill">Complete<svg><use href="#i-check-solid"/></svg></div>`
-    : `<button class="btn" data-advance="${t.id}">${t.pct > 0 ? 'Continue' : 'Start'}</button>`;
+    : t.id === nextId ? `<button class="btn" data-advance="${t.id}">${t.pct > 0 ? 'Continue' : 'Start'}</button>` : '';
   return `<div class="event ${done ? 'is-done' : ''}">${tile}
     <div class="event__body">
       <div class="event__text">
@@ -426,6 +428,7 @@ function eventHTML(t) {
 }
 
 const visible = t => matches(t) && (state.showCompleted || t.pct < 100);
+const findNext = () => (tasks.filter(t => matches(t) && t.pct < 100).sort((a, b) => a.date.localeCompare(b.date))[0] || {}).id;
 function monthKeys() {
   // Every month from the first visible task's month through the last one's.
   const dates = tasks.filter(visible).map(t => t.date).sort();
@@ -447,6 +450,7 @@ function homeKey() {
 
 function renderCalendar() {
   let html = '', lastYear = '';
+  nextId = findNext();
   for (const key of monthKeys()) {
     const [y, m] = key.split('-');
     if (lastYear && y !== lastYear) html += `<div class="year" id="y-${y}"><img src="assets/86e3c.svg" alt=""><p class="year__num">${y}</p></div>`;
