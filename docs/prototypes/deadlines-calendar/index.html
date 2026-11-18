@@ -112,7 +112,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
 .tile__shade { position:absolute; inset:0; background:linear-gradient(to top, #213168 15%, rgba(33,49,104,.2)); }
 .tile__sm { font-size:11px; line-height:20px; letter-spacing:1px; text-transform:uppercase; }
 .tile__day { font-size:32px; line-height:32px; letter-spacing:-.1px; }
-.event.is-done .tile { background:var(--card); border:2px solid var(--border); color:var(--muted-foreground); }
+.event.is-done .tile { background:var(--background); border:2px solid var(--border); color:var(--muted-foreground); }
 .event__body { flex:1; min-width:0; display:flex; gap:16px; align-items:center; padding-left:24px; }
 .event__text { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
 .event__eyebrow { display:flex; gap:6px; align-items:center; font-size:12px; line-height:1; color:var(--muted-foreground); }
@@ -126,7 +126,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
 .bar__track { flex:1; height:8px; border-radius:9999px; background:var(--secondary); overflow:hidden; }
 .bar__fill { height:100%; border-radius:9999px; background:var(--primary); transition:width .3s; }
 .tags { display:flex; gap:6px; align-items:center; font-size:12px; line-height:16px; }
-.badge { padding:2px 8px; border-radius:6px; background:var(--secondary); border:1px solid transparent; color:var(--muted-foreground); }
+.tags .link:first-child { padding-left:0; }
 .link { padding:2px 4px; border-radius:9999px; color:var(--muted-foreground); }
 .link:hover { text-decoration:underline; }
 .btn { height:32px; padding:8px 12px; border-radius:9999px; background:var(--primary); color:#fff; font-size:12px; line-height:16px; flex:none; box-shadow:0 1px 2px rgba(0,23,59,.05); }
@@ -173,6 +173,9 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
 .why__text { color:var(--muted-foreground); font-weight:400; margin-top:2px; }
 .why__tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .why__tag { padding:2px 8px; border-radius:6px; background:var(--primary); color:#fff; font-size:12px; line-height:16px; }
+/* "Why am I seeing this?" reuses the dialog without the dismiss reasons. */
+.overlay.is-why .reason, .overlay.is-why .modal__sub, .overlay.is-why .why > div > p:first-child { display:none; }
+.overlay.is-why .why { margin-top:0; }
 .modal__foot { display:flex; justify-content:space-between; align-items:center; padding:24px; border-top:1px solid var(--border); }
 .btn-outline { height:36px; padding:8px 16px; border-radius:9999px; border:2px solid var(--border); color:var(--muted-foreground); }
 .btn--lg { height:36px; padding:8px 16px; font-size:14px; line-height:20px; }
@@ -412,7 +415,7 @@ function eventHTML(t) {
       ${t.pct > 0 ? `<div class="bar"><div class="bar__track"><div class="bar__fill" style="width:${t.pct}%"></div></div><span>${t.pct}%</span></div>` : ''}
     </div>` : '';
   // A recommendation stops being flagged (and can't be dismissed) once the student starts it.
-  const tags = t.pct === 0 && t.rec ? `<div class="tags"><span class="badge">Recommended</span><button class="link" data-dismiss="${t.id}">Dismiss</button></div>` : '';
+  const tags = t.pct === 0 && t.rec ? `<div class="tags"><button class="link" data-why="${t.id}">Why am I seeing this?</button><button class="link" data-dismiss="${t.id}">Dismiss</button></div>` : '';
   const action = done
     ? `<div class="done-pill">Done<svg><use href="#i-check-solid"/></svg></div>`
     : t.id === nextId ? `<button class="btn" data-advance="${t.id}">${t.pct > 0 ? 'Continue' : 'Start'}</button>` : '';
@@ -528,12 +531,16 @@ const WHY = {
   p7:['Planning to attend a 4-year college'], p8:['Interested in visiting colleges'], p12:['In 12th Grade','Want to pursue a trade'],
 };
 let pending = null, opener = null;
-function openDismiss(t, from) {
-  pending = t; opener = from;
+function openDismiss(t, from, why = false) {
+  pending = t; if (from) opener = from;
+  // why = true shows only the reasons behind the recommendation; its Dismiss button leads on to the feedback step.
+  $('overlay').classList.toggle('is-why', why);
+  $('modalTitle').textContent = why ? 'Why am I seeing this?' : 'Why did you dismiss this event?';
+  document.querySelector('.modal__foot [data-close]').textContent = why ? 'Close' : 'Cancel';
   document.querySelectorAll('.reason input').forEach(i => i.checked = false);
   $('whyTags').innerHTML = (WHY[t.parent] || ['In 12th Grade']).map(w => `<span class="why__tag">${esc(w)}</span>`).join('');
   $('overlay').classList.add('is-on');
-  document.querySelector('.reason input').focus();
+  (why ? document.querySelector('.modal__close') : document.querySelector('.reason input')).focus();
 }
 function closeDismiss() {
   $('overlay').classList.remove('is-on'); pending = null;
@@ -544,7 +551,7 @@ document.addEventListener('keydown', e => {
   if (!pending) return;
   if (e.key === 'Escape') closeDismiss();
   if (e.key === 'Tab') { // keep focus inside the dialog
-    const f = [...$('overlay').querySelectorAll('button, input')], first = f[0], last = f[f.length - 1];
+    const f = [...$('overlay').querySelectorAll('button, input')].filter(el => el.offsetParent), first = f[0], last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   }
@@ -563,11 +570,21 @@ document.addEventListener('click', e => {
   else if (b.id === 'showCompleted') { state.showCompleted = !state.showCompleted; renderFilters(); renderCalendar(); jump(homeKey(), false); spy(); }
   else if (d.jump) jump(d.jump);
   else if (d.dismiss) openDismiss(tasks[d.dismiss], b)
+  else if (d.why) openDismiss(tasks[d.why], b, true)
   else if ('close' in d) closeDismiss();
+  else if (b.id === 'confirmDismiss' && $('overlay').classList.contains('is-why')) openDismiss(pending);
   else if (b.id === 'confirmDismiss') {
     const t = pending, reasons = [...document.querySelectorAll('.reason input:checked')].map(i => i.value);
-    t.dismissed = true; t.dismissReasons = reasons; closeDismiss(); renderCalendar();
-    toast(`Dismissed “${t.title}”${reasons.length ? ' · Thanks for the feedback' : ''}`, () => { t.dismissed = false; renderCalendar(); });
+    t.dismissReasons = reasons;
+    if (reasons.includes('I already completed this task')) {
+      // Already done: keep the event and mark it complete instead of removing it.
+      const before = t.pct;
+      t.pct = 100; closeDismiss(); renderCalendar();
+      toast(`Marked “${t.title}” as done`, () => { t.pct = before; renderCalendar(); });
+    } else {
+      t.dismissed = true; closeDismiss(); renderCalendar();
+      toast(`Dismissed “${t.title}”${reasons.length ? ' · Thanks for the feedback' : ''}`, () => { t.dismissed = false; renderCalendar(); });
+    }
   }
   else if (d.advance) {
     const t = tasks[d.advance], before = t.pct;
