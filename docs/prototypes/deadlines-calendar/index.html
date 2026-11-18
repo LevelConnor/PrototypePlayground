@@ -82,6 +82,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
 .group__items > :first-child { margin-top:8px; }
 .filters-wrap { display:grid; grid-template-rows:1fr; }
 .filters-clip { min-height:0; }
+.drawer__head, .scrim { display:none; }
 .filter { display:flex; gap:12px; align-items:center; width:100%; padding:8px 12px; border-radius:10px; color:var(--muted-foreground); }
 .filter:hover { background:rgba(33,49,104,.5); }
 .filter span { flex:1; min-width:0; }
@@ -143,7 +144,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
 .rail__months-inner { min-height:0; overflow:hidden; display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
 .rail__months-inner > :first-child { margin-top:4px; }
 .rail__year { transition:color .2s ease; }
-@media (prefers-reduced-motion:reduce) { .rail__months, .group, .group__list, .group__head > .icon, .filters-wrap { transition:none !important; } }
+@media (prefers-reduced-motion:reduce) { .rail__months, .group, .group__list, .group__head > .icon, .filters-wrap, .scrim { transition:none !important; } }
 .rail__year { font-size:16px; line-height:24px; color:var(--blue-200); }
 .rail__year.is-active { color:var(--muted-foreground); }
 .rail__month { display:flex; gap:8px; align-items:center; font-size:12px; line-height:20px; letter-spacing:2px; text-transform:uppercase; color:var(--blue-200); }
@@ -199,10 +200,16 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
   .sidebar { width:100%; padding:32px 48px 0; overflow:visible; align-items:center; gap:0; }
   .sidebar > * { width:100%; max-width:660px; }
   .filters-btn { display:flex; }
-  .filters-wrap { grid-template-rows:0fr; opacity:0; visibility:hidden; transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1), opacity .25s ease, visibility 0s .35s; }
-  .sidebar.is-open .filters-wrap { grid-template-rows:1fr; opacity:1; visibility:visible; transition-delay:0s; }
-  .filters-clip { overflow:hidden; }
-  .filters { margin-top:16px; }
+  /* Filters fly out from the right edge over a dimmed page. */
+  .filters-wrap { display:block; position:fixed; top:0; right:0; bottom:0; z-index:15; width:min(380px, calc(100vw - 48px)); max-width:none; background:var(--background); border-left:2px solid var(--border); box-shadow:-20px 0 40px rgba(0,0,0,.35); overflow-y:auto; overscroll-behavior:contain; transform:translateX(100%); visibility:hidden; transition:transform .35s cubic-bezier(.4,0,.2,1), visibility 0s .35s; }
+  body.filters-open .filters-wrap { transform:none; visibility:visible; transition-delay:0s; }
+  .filters-clip { padding:24px; }
+  .drawer__head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .drawer__title { font-size:18px; line-height:28px; font-weight:600; }
+  .filters { width:100%; }
+  .scrim { display:block; position:fixed; inset:0; z-index:14; background:rgba(0,12,32,.72); opacity:0; visibility:hidden; transition:opacity .3s ease, visibility 0s .3s; }
+  body.filters-open .scrim { opacity:1; visibility:visible; transition-delay:0s; }
+  body.filters-open { overflow:hidden; }
   .main__scroll { height:auto; overflow:visible; padding:0 48px 48px; }
   .main__inner { padding-top:24px; padding-bottom:0; }
   .main__fade { display:none; }
@@ -264,9 +271,12 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
           <h1 class="page-title">My Calendar</h1>
           <p class="today"><img class="dot" src="assets/95506.svg" width="6" height="6" alt=""><span id="todayLabel"></span></p>
         </div>
-        <button class="filters-btn" id="filtersBtn" aria-expanded="false" aria-controls="filters"><svg class="icon"><use href="#i-filters"/></svg>Filters<span class="count" id="filtersCount" hidden></span></button>
+        <button class="filters-btn" id="filtersBtn" aria-expanded="false" aria-controls="filtersPanel"><svg class="icon"><use href="#i-filters"/></svg>Filters<span class="count" id="filtersCount" hidden></span></button>
       </div>
-      <div class="filters-wrap"><div class="filters-clip"><div class="filters" id="filters"></div></div></div>
+      <div class="filters-wrap" id="filtersPanel"><div class="filters-clip">
+        <div class="drawer__head"><h2 class="drawer__title">Filters</h2><button class="modal__close" id="filtersClose" aria-label="Close filters"><svg class="icon"><use href="#i-close"/></svg></button></div>
+        <div class="filters" id="filters"></div>
+      </div></div>
     </aside>
 
     <main class="main">
@@ -278,6 +288,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--muted-foreground
   </div>
 </div>
 
+<div class="scrim" id="scrim"></div>
 <div class="overlay" id="overlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal__head">
@@ -557,10 +568,20 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// Tablet/phone: the filters live in a fly-out panel on the right.
+function setFilters(open) {
+  document.body.classList.toggle('filters-open', open);
+  $('filtersBtn').setAttribute('aria-expanded', open);
+  (open ? $('filtersClose') : $('filtersBtn')).focus({ preventScroll:true });
+}
+$('scrim').addEventListener('click', () => setFilters(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pending && document.body.classList.contains('filters-open')) setFilters(false); });
+
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset;
-  if (b.id === 'filtersBtn') { b.setAttribute('aria-expanded', document.querySelector('.sidebar').classList.toggle('is-open')); }
+  if (b.id === 'filtersBtn') setFilters(!document.body.classList.contains('filters-open'));
+  else if (b.id === 'filtersClose') setFilters(false);
   else if (d.toggle) {
     // Toggle in place (no re-render) so the list can animate open and closed.
     const open = state.open[d.toggle] = !state.open[d.toggle];
