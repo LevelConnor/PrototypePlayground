@@ -414,7 +414,7 @@ function eventHTML(t) {
   // A recommendation stops being flagged (and can't be dismissed) once the student starts it.
   const tags = t.pct === 0 && t.rec ? `<div class="tags"><span class="badge">Recommended</span><button class="link" data-dismiss="${t.id}">Dismiss</button></div>` : '';
   const action = done
-    ? `<div class="done-pill">Complete<svg><use href="#i-check-solid"/></svg></div>`
+    ? `<div class="done-pill">Done<svg><use href="#i-check-solid"/></svg></div>`
     : t.id === nextId ? `<button class="btn" data-advance="${t.id}">${t.pct > 0 ? 'Continue' : 'Start'}</button>` : '';
   return `<div class="event ${done ? 'is-done' : ''}">${tile}
     <div class="event__body">
