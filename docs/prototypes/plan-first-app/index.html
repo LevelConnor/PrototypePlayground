@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan-First App</title>
+<style>
+@font-face { font-family:"Graphik"; src:url("../../fonts/GraphikRegular.otf") format("opentype");  font-weight:400; font-display:swap; }
+@font-face { font-family:"Graphik"; src:url("../../fonts/GraphikMedium.otf") format("opentype");   font-weight:500; font-display:swap; }
+@font-face { font-family:"Graphik"; src:url("../../fonts/GraphikSemibold.otf") format("opentype"); font-weight:600; font-display:swap; }
+
+:root{
+  --bg:#F3F6FB; --surface:#FFFFFF; --surface-2:#EEF2F8; --surface-3:#E4EAF3;
+  --line:#DCE3EE; --line-2:#C3CDDC;
+  --ink:#0B1A33; --ink-2:#43536F; --ink-3:#6A7891;
+  --accent:#0083FF; --accent-ink:#0064C8; --accent-soft:#E2EFFF; --accent-line:#A9CFFF;
+  --ok:#1C7F53; --ok-soft:#DFF3E8;
+  --warn:#A35F00; --warn-soft:#FFF0D6;
+  --note:#7A3EC8; --note-soft:#F1E8FD;
+  --navy:#061530; --navy-2:#16294f; --navy-line:#22386b; --navy-soft:#93c5fd;
+  --sh:0 1px 2px rgba(11,26,51,.05), 0 6px 18px -10px rgba(11,26,51,.18);
+  --r:12px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#08111F; --surface:#0F1B2E; --surface-2:#14233A; --surface-3:#1B2D48;
+  --line:#1F3150; --line-2:#2C4268;
+  --ink:#E8EEF8; --ink-2:#A8B6CC; --ink-3:#7F8EA8;
+  --accent:#3D9DFF; --accent-ink:#7DBDFF; --accent-soft:#0F2A4D; --accent-line:#24538A;
+  --ok:#5BC48F; --ok-soft:#10301F;
+  --warn:#E6A44A; --warn-soft:#33240C;
+  --note:#B993F0; --note-soft:#271A3D;
+  --sh:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --bg:#08111F; --surface:#0F1B2E; --surface-2:#14233A; --surface-3:#1B2D48;
+  --line:#1F3150; --line-2:#2C4268;
+  --ink:#E8EEF8; --ink-2:#A8B6CC; --ink-3:#7F8EA8;
+  --accent:#3D9DFF; --accent-ink:#7DBDFF; --accent-soft:#0F2A4D; --accent-line:#24538A;
+  --ok:#5BC48F; --ok-soft:#10301F;
+  --warn:#E6A44A; --warn-soft:#33240C;
+  --note:#B993F0; --note-soft:#271A3D;
+  --sh:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:"Graphik",system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-weight:600; letter-spacing:-.015em; text-wrap:balance}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+/* ---------- prototype controls (outside the app) ---------- */
+.demo{position:sticky; top:0; z-index:50; background:var(--navy); color:#fff; border-bottom:1px solid var(--navy-line)}
+.demo__in{display:flex; flex-wrap:wrap; align-items:center; gap:10px 22px; padding:10px 20px; max-width:1280px; margin:0 auto}
+.demo__lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--navy-soft)}
+.demo__back{color:var(--navy-soft); text-decoration:none; font-size:13px}
+.demo__back:hover{color:#fff}
+.grades{display:flex; gap:3px; background:var(--navy-2); border:1px solid var(--navy-line); border-radius:9px; padding:3px}
+.grades button{border:0; background:transparent; color:var(--navy-soft); border-radius:6px; min-width:36px; padding:5px 8px; font-size:13.5px; font-weight:500}
+.grades button:hover{color:#fff; background:rgba(255,255,255,.06)}
+.grades button[aria-pressed="true"]{background:#0083FF; color:#fff}
+.switch{display:flex; align-items:center; gap:8px; border:1px solid var(--navy-line); background:var(--navy-2); color:var(--navy-soft);
+  border-radius:20px; padding:5px 12px 5px 8px; font-size:13px}
+.switch i{width:26px; height:15px; border-radius:10px; background:#2b4370; position:relative; transition:background .15s}
+.switch i::after{content:""; position:absolute; top:2px; left:2px; width:11px; height:11px; border-radius:50%; background:#fff; transition:transform .15s}
+.switch[aria-pressed="true"]{color:#fff}
+.switch[aria-pressed="true"] i{background:var(--note)}
+.switch[aria-pressed="true"] i::after{transform:translateX(11px)}
+.demo__r{margin-left:auto; display:flex; gap:10px; align-items:center}
+
+/* ---------- app shell ---------- */
+.app{display:grid; grid-template-columns:232px minmax(0,1fr); max-width:1280px; margin:0 auto; min-height:calc(100vh - 56px)}
+.side{position:sticky; top:56px; align-self:start; height:calc(100vh - 56px); padding:22px 14px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:22px}
+.brand{display:flex; align-items:center; gap:9px; padding:0 10px; font-weight:600; font-size:17px}
+.brand svg{width:20px; height:20px; color:var(--accent)}
+.tabs{display:flex; flex-direction:column; gap:3px}
+.tab{display:flex; align-items:center; gap:11px; border:0; background:transparent; text-align:left; padding:10px 12px; border-radius:10px; color:var(--ink-2); font-weight:500}
+.tab svg{width:20px; height:20px; flex:none}
+.tab:hover{background:var(--surface-2); color:var(--ink)}
+.tab[aria-current="page"]{background:var(--accent-soft); color:var(--accent-ink)}
+.tab small{margin-left:auto; font-size:11px; color:var(--ink-3); font-weight:400}
+.who{margin-top:auto; display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:var(--surface); border:1px solid var(--line)}
+.ava{width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#0083FF,#7A3EC8); color:#fff; display:grid; place-items:center; font-weight:600; font-size:13px; flex:none}
+.who b{display:block; font-size:14px; font-weight:600}
+.who span{font-size:12px; color:var(--ink-3)}
+
+main{min-width:0; padding:28px 32px 96px}
+.page{max-width:860px; margin:0 auto}
+
+/* ---------- shared bits ---------- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh)}
+.eyebrow{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:3px 9px; border-radius:20px; background:var(--surface-2); color:var(--ink-2); white-space:nowrap}
+.pill.focus{background:var(--accent); color:#fff}
+.pill.ok{background:var(--ok-soft); color:var(--ok)}
+.pill.warn{background:var(--warn-soft); color:var(--warn)}
+.pill.soft{background:var(--accent-soft); color:var(--accent-ink)}
+.btn{border:1px solid var(--line-2); background:var(--surface); border-radius:9px; padding:7px 13px; font-size:13.5px; font-weight:500}
+.btn:hover{border-color:var(--accent); color:var(--accent-ink)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn.primary:hover{background:var(--accent-ink); color:#fff}
+.btn.added{background:var(--ok-soft); border-color:transparent; color:var(--ok)}
+.muted{color:var(--ink-3)}
+.note{display:none; margin-top:8px; font-size:12px; color:var(--note); background:var(--note-soft); border-radius:7px; padding:5px 9px; width:fit-content}
+body.notes .note{display:block}
+.note b{font-weight:600}
+
+/* ---------- plan header ---------- */
+.hello{display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px 16px; margin-bottom:20px}
+.hello h1{font-size:30px; line-height:1.15}
+.hello p{color:var(--ink-2); margin-top:4px}
+
+/* stage road */
+.road{padding:18px 18px 14px; margin-bottom:18px}
+.road__track{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin-top:12px}
+.stage{position:relative; border:0; background:transparent; text-align:left; padding:0 0 4px}
+.stage__bar{height:8px; border-radius:6px; background:var(--surface-3); margin-bottom:10px; overflow:hidden; position:relative}
+.stage__bar span{position:absolute; inset:0 auto 0 0; background:var(--accent); border-radius:6px}
+.stage__name{display:block; font-size:13.5px; font-weight:600; color:var(--ink-2)}
+.stage__gr{display:block; font-size:12px; color:var(--ink-3)}
+.stage.past .stage__bar span{width:100%; background:var(--ok)}
+.stage.past .stage__name{color:var(--ink-2)}
+.stage.now .stage__name{color:var(--accent-ink)}
+.stage.future .stage__name{color:var(--ink-3); font-weight:500}
+.stage.future .stage__bar{background:repeating-linear-gradient(90deg,var(--surface-3) 0 6px,transparent 6px 10px)}
+.stage[aria-expanded="true"] .stage__name{text-decoration:underline; text-underline-offset:3px}
+.stage:hover .stage__name{color:var(--ink)}
+.preview{margin-top:14px; padding:14px 16px; border-radius:10px; background:var(--surface-2); display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center}
+.preview div{flex:1 1 320px}
+.preview h3{font-size:15px}
+.preview p{font-size:14px; color:var(--ink-2); margin-top:2px}
+
+/* this week */
+.week{padding:18px 18px 8px; margin-bottom:26px}
+.week__h{display:flex; align-items:baseline; gap:10px; margin-bottom:6px}
+.week__h h2{font-size:18px}
+.todo{display:flex; gap:12px; align-items:flex-start; padding:11px 0; border-top:1px solid var(--line)}
+.todo:first-of-type{border-top:0}
+.check{flex:none; width:22px; height:22px; margin-top:1px; border-radius:7px; border:1.5px solid var(--line-2); background:var(--surface); display:grid; place-items:center; padding:0}
+.check svg{width:14px; height:14px; opacity:0; color:#fff}
+.todo.done .check{background:var(--ok); border-color:var(--ok)}
+.todo.done .check svg{opacity:1}
+.todo.done .todo__t{text-decoration:line-through; color:var(--ink-3)}
+.todo__t{font-weight:500}
+.todo__m{display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:4px; font-size:12.5px; color:var(--ink-3)}
+.todo__due{margin-left:auto; flex:none; font-size:12.5px; color:var(--ink-3); white-space:nowrap; padding-top:2px}
+.todo__due.soon{color:var(--warn); font-weight:500}
+
+/* plan sections */
+.sec-h{display:flex; align-items:baseline; gap:10px; margin:0 0 12px}
+.sec-h h2{font-size:18px}
+.sections{display:flex; flex-direction:column; gap:14px}
+.sec{padding:18px}
+.sec__top{display:flex; align-items:flex-start; gap:12px}
+.sec__icon{width:36px; height:36px; border-radius:10px; background:var(--accent-soft); color:var(--accent-ink); display:grid; place-items:center; flex:none}
+.sec__icon svg{width:19px; height:19px}
+.sec__title{flex:1; min-width:0}
+.sec__title h3{font-size:16.5px}
+.sec__title p{font-size:13.5px; color:var(--ink-3)}
+.sec__body{margin-top:14px}
+.sec.focus{border-color:var(--accent-line); box-shadow:0 0 0 1px var(--accent-line), var(--sh)}
+.sec.ghost{background:transparent; border-style:dashed; box-shadow:none}
+.sec.ghost .sec__icon{background:var(--surface-2); color:var(--ink-3)}
+.sec.ghost h3{color:var(--ink-2)}
+.ghost-msg{margin-top:12px; font-size:14px; color:var(--ink-2); max-width:62ch}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{display:inline-flex; align-items:center; gap:8px; padding:7px 8px 7px 12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); font-size:14px}
+.chip small{color:var(--ink-3); font-size:12px}
+.chip .x{border:0; background:transparent; width:22px; height:22px; border-radius:6px; color:var(--ink-3); display:grid; place-items:center; padding:0}
+.chip .x:hover{background:var(--surface-3); color:var(--ink)}
+.chip.star{border-color:var(--accent-line); background:var(--accent-soft)}
+.add-link{border:1px dashed var(--line-2); background:transparent; border-radius:10px; padding:7px 12px; font-size:14px; color:var(--ink-2)}
+.add-link:hover{border-color:var(--accent); color:var(--accent-ink)}
+
+.subhead{font-size:12.5px; font-weight:600; color:var(--ink-3); margin:16px 0 8px}
+.subhead:first-child{margin-top:0}
+
+/* pathway picker */
+.paths{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.path{border:1.5px solid var(--line); background:var(--surface); border-radius:11px; padding:12px; text-align:left}
+.path:hover{border-color:var(--accent-line)}
+.path[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.path b{display:block; font-size:14.5px; font-weight:600}
+.path span{display:block; font-size:12.5px; color:var(--ink-3); margin-top:3px}
+.path .fit{display:inline-block; margin-top:8px; font-size:11.5px; font-weight:500; color:var(--ok); background:var(--ok-soft); padding:2px 8px; border-radius:20px}
+.review{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line)}
+
+/* courses grid */
+.years{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+.year{border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--surface)}
+.year.now{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+.year.later{border-style:dashed; background:transparent}
+.year__h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+.year__h b{font-size:13.5px}
+.year__h span{font-size:11px; color:var(--ink-3)}
+.year ul{list-style:none; margin:0; padding:0; font-size:13px; color:var(--ink-2)}
+.year li{padding:2px 0}
+.year li.cte{color:var(--accent-ink); font-weight:500}
+.year li em{font-style:normal; font-size:11px; color:var(--ink-3)}
+
+/* rows */
+.rows{display:flex; flex-direction:column}
+.row{display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line)}
+.row:first-child{border-top:0; padding-top:0}
+.row__main{flex:1; min-width:0}
+.row__main b{display:block; font-weight:500; font-size:14.5px}
+.row__main span{font-size:12.5px; color:var(--ink-3)}
+.row__val{font-size:14px; font-weight:600; white-space:nowrap}
+.callout{margin-top:12px; padding:11px 13px; border-radius:10px; background:var(--ok-soft); color:var(--ok); font-size:13.5px}
+.callout b{font-weight:600}
+.bar{height:7px; border-radius:6px; background:var(--surface-3); overflow:hidden; margin-top:6px}
+.bar span{display:block; height:100%; background:var(--accent); border-radius:6px}
+
+/* ---------- explore / learn / me ---------- */
+.page-h{margin-bottom:18px}
+.page-h h1{font-size:28px}
+.page-h p{color:var(--ink-2); margin-top:4px; max-width:64ch}
+.cats{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px}
+.cat{border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:6px 14px; font-size:13.5px; font-weight:500; color:var(--ink-2)}
+.cat:hover{border-color:var(--accent-line)}
+.cat[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--surface)}
+.grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+.item{padding:16px; display:flex; flex-direction:column; gap:8px}
+.item h3{font-size:16px}
+.item p{font-size:13.5px; color:var(--ink-2)}
+.item__meta{display:flex; flex-wrap:wrap; gap:6px}
+.item__foot{display:flex; align-items:center; gap:10px; margin-top:auto; padding-top:6px}
+.item__foot .muted{font-size:12.5px}
+.why{font-size:12.5px; color:var(--accent-ink)}
+.learn-row{display:flex; gap:14px; padding:16px; align-items:center}
+.learn-row + .learn-row{margin-top:10px}
+.thumb{width:52px; height:52px; border-radius:12px; display:grid; place-items:center; color:#fff; flex:none; font-weight:600; font-size:12px}
+.learn-row .row__main b{font-size:15.5px; font-weight:600}
+.moves{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-size:12.5px; color:var(--accent-ink); background:var(--accent-soft); padding:3px 9px; border-radius:20px}
+.me-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
+.me-grid .card{padding:18px}
+.me-grid h2{font-size:16.5px; margin-bottom:10px}
+.report{display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--line)}
+.report:first-of-type{border-top:0}
+.report__main{flex:1}
+.report__main b{display:block; font-weight:500}
+.report__main span{font-size:12.5px; color:var(--ink-3)}
+.span2{grid-column:1/-1}
+
+/* toast */
+.toast{position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px); opacity:0; pointer-events:none; background:var(--ink); color:var(--surface);
+  padding:10px 16px; border-radius:10px; font-size:14px; font-weight:500; box-shadow:var(--sh); transition:opacity .2s, transform .2s; z-index:60}
+.toast.on{opacity:1; transform:translate(-50%,0)}
+
+/* ---------- mobile ---------- */
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed; z-index:40; top:auto; bottom:0; left:0; right:0; height:auto; padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-right:0; border-top:1px solid var(--line); background:var(--surface); flex-direction:row}
+  .brand,.who{display:none}
+  .tabs{flex-direction:row; width:100%; justify-content:space-around}
+  .tab{flex-direction:column; gap:3px; padding:6px 4px; font-size:11.5px; flex:1; align-items:center}
+  .tab small{display:none}
+  main{padding:20px 16px 110px}
+  .demo__in{padding:9px 16px; gap:8px 14px}
+  .demo__r{margin-left:0}
+  .hello h1{font-size:25px}
+  .road__track{grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px}
+  .stage__name{font-size:11.5px; line-height:1.25}
+  .stage__gr{font-size:10.5px}
+  .paths,.grid,.me-grid{grid-template-columns:minmax(0,1fr)}
+  .years{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .todo__due{display:none}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<div class="demo" role="region" aria-label="Prototype controls">
+  <div class="demo__in">
+    <a class="demo__back" href="../../">← Playground</a>
+    <span class="demo__lbl">Student grade</span>
+    <div class="grades" id="grades"></div>
+    <div class="demo__r">
+      <button class="switch" id="notesBtn" aria-pressed="false"><i></i>Show roadmap notes</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <nav class="side" aria-label="Main">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd"><path d="M8.36 0 L8.36 3.392 L19.962 3.392 L19.962 15.343 L23.355 15.343 L23.355 0 L8.36 0 Z"/><path d="M0 8.357 L0 11.749 L11.602 11.749 L11.602 23.7 L14.996 23.7 L14.996 8.357 L0 8.357 Z"/></g></svg>
+      Level All
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="who">
+      <div class="ava">MT</div>
+      <div><b>Maya Torres</b><span id="whoGrade"></span></div>
+    </div>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   Data
+   ============================================================ */
+const STAGES = [
+  {id:'discover', name:'Discover',           grades:[6,7],  q:'What am I into? What jobs exist?',
+   blurb:'Take quizzes, try projects, and save careers that catch your eye. Nothing is locked in.'},
+  {id:'choose',   name:'Choose a direction', grades:[8],    q:'Which high school pathway fits me?',
+   blurb:'Pick a pathway and draft your 9th grade courses. Your counselor reviews it with you.'},
+  {id:'build',    name:'Build',              grades:[9,10], q:'Am I taking the right classes and trying things?',
+   blurb:'Keep your course plan on track, log activities, and get real experience in fields you like.'},
+  {id:'narrow',   name:'Narrow',             grades:[11],   q:'Where will I go, and what will it cost?',
+   blurb:'Build a list of colleges and programs, see what each really costs, and plan your tests.'},
+  {id:'launch',   name:'Launch',             grades:[12],   q:'Apply, pay, decide.',
+   blurb:'Send applications, finish the FAFSA, win scholarships, and pick where you are going.'}
+];
+const stageOf = g => STAGES.find(s => s.grades.includes(g));
+const stageIdx = g => STAGES.indexOf(stageOf(g));
+const ord = g => g + 'th';
+
+/* Explore catalog. seed = grade at which Maya has already saved it. */
+const CATALOG = [
+  {id:'vet',  kind:'career', title:'Veterinarian',        meta:['$119k median','Doctorate'],         seed:6, blurb:'Diagnose and treat animals, from pets to livestock.'},
+  {id:'pt',   kind:'career', title:'Physical Therapist',  meta:['$99k median','Doctorate'],          seed:7, blurb:'Help people recover movement after injuries and surgery.'},
+  {id:'rn',   kind:'career', title:'Registered Nurse',    meta:['$86k median','2 or 4-year degree'], seed:8, blurb:'Care for patients and coordinate treatment in hospitals and clinics.'},
+  {id:'bme',  kind:'career', title:'Biomedical Engineer', meta:['$100k median',"Bachelor's"],        seed:9, blurb:'Design medical devices, from prosthetics to imaging tools.'},
+  {id:'elec', kind:'career', title:'Electrician',         meta:['$61k median','Apprenticeship'],     blurb:'Install and repair the wiring that powers homes and businesses.'},
+  {id:'gd',   kind:'career', title:'Graphic Designer',    meta:['$58k median',"Bachelor's"],         blurb:'Create visuals for brands, apps, and campaigns.'},
+  {id:'wild', kind:'career', title:'Wildlife Biologist',  meta:['$70k median',"Bachelor's"],         blurb:'Study animals in the wild and protect their habitats.'},
+  {id:'swe',  kind:'career', title:'Software Developer',  meta:['$132k median',"Bachelor's"],        blurb:'Build the apps and systems people use every day.'},
+
+  {id:'hsa',  kind:'program', title:'Health Sciences Academy',  meta:['High school pathway','Lottery'], seed:7, max:8, blurb:'Four years of health courses, ending in a CNA certification.'},
+  {id:'eng',  kind:'program', title:'Engineering & Tech Academy',meta:['High school pathway','Lottery'], max:8, blurb:'Project-based engineering, robotics, and electronics.'},
+  {id:'dma',  kind:'program', title:'Digital Media Academy',     meta:['High school pathway','Open enrollment'], max:8, blurb:'Design, video, and web production with industry tools.'},
+
+  {id:'tmcc', kind:'college', title:'TMCC Nursing (AAS)',           meta:['$4.1k/yr net','2 years','Reno'],  seed:10, min:10, blurb:'Associate degree in nursing. Transfers into UNR’s RN-to-BSN.'},
+  {id:'unr',  kind:'college', title:'University of Nevada, Reno',   meta:['$14.2k/yr net','4 years','Reno'], seed:11, min:10, blurb:'BS in Nursing. Direct-admit for strong Health Sciences students.'},
+  {id:'bsu',  kind:'college', title:'Boise State University',       meta:['$19.8k/yr net','4 years','Idaho'],seed:11, min:10, blurb:'BS in Nursing with a strong clinical placement program.'},
+  {id:'osu',  kind:'college', title:'Oregon State University',      meta:['$24.6k/yr net','4 years','Oregon'], min:10, blurb:'Bioengineering and pre-vet tracks.'},
+  {id:'unlv', kind:'college', title:'UNLV',                         meta:['$12.9k/yr net','4 years','Las Vegas'], min:10, blurb:'BS in Nursing and a new kinesiology program.'},
+
+  {id:'sciol', kind:'opp', title:'Science Olympiad',            meta:['Club','Middle school'], max:8, blurb:'Compete in team science events against other schools.'},
+  {id:'camp',  kind:'opp', title:'Summer STEM Camp at UNR',     meta:['1 week','Free'], max:9, blurb:'A week of hands-on labs on a real college campus.'},
+  {id:'hosp',  kind:'opp', title:'Renown Hospital Volunteer',   meta:['Volunteer','Ages 14+'], min:9, blurb:'Help patients and families at Reno’s largest hospital.'},
+  {id:'shadow',kind:'opp', title:'Job Shadow Day: Nursing',     meta:['1 day','Spring'], min:9, blurb:'Follow a nurse through a real shift.'},
+  {id:'intern',kind:'opp', title:'Paid Clinic Internship',      meta:['Paid','$15/hr','Ages 16+'], min:11, blurb:'Summer internship at a community health clinic.'},
+
+  {id:'promise', kind:'scholar', title:'Nevada Promise Scholarship', meta:['Covers community college tuition'], seed:12, min:11, blurb:'Free community college tuition if you apply by the deadline and do community service.'},
+  {id:'mill',    kind:'scholar', title:'Millennium Scholarship',     meta:['Up to $10k total'], seed:12, min:11, blurb:'Automatic for Nevada graduates with a 3.25 GPA.'},
+  {id:'rotary',  kind:'scholar', title:'Reno Rotary Health Careers', meta:['$1,000','Essay'], min:11, blurb:'For students heading into health care careers.'}
+];
+const KIND = {
+  career: {label:'Careers',              section:'direction', sectionName:'My direction'},
+  program:{label:'High school pathways', section:'path',      sectionName:'My path through school'},
+  college:{label:'Colleges & programs',  section:'after',     sectionName:'After high school'},
+  opp:    {label:'Opportunities',        section:'exp',       sectionName:'Experiences'},
+  scholar:{label:'Scholarships',         section:'apply',     sectionName:'Apply & pay'}
+};
+
+const WEEK = {
+  6:[ {t:'Take the interest quiz', m:['From your plan','Discover'], due:'Fri', soon:true},
+      {t:'Finish “What is a career cluster?”', m:['Assigned by Ms. Rivera'], due:'Nov 18'},
+      {t:'Save 3 careers that look fun', m:['From your plan','1 of 3 saved']} ],
+  7:[ {t:'Explore 2 careers in Health Science', m:['Because you saved Veterinarian'], due:'Fri', soon:true},
+      {t:'Finish the “Jobs in your town” project', m:['Assigned by Ms. Rivera','60% done'], due:'Nov 20'},
+      {t:'Look at high school pathways', m:['From your plan','Next year you choose one']} ],
+  8:[ {t:'Pick your high school pathway', m:['Draft due to Ms. Rivera'], due:'Feb 13', soon:true},
+      {t:'Compare Health Sciences vs. Engineering academy', m:['From your plan']},
+      {t:'Talk with your family about 9th grade courses', m:['Mom can see your plan']} ],
+  9:[ {t:'Join one club or team', m:['From your plan','Experiences']},
+      {t:'Log your volunteer hours', m:['Renown Hospital','12 hrs this month'], due:'Sun'},
+      {t:'Review your 10th grade course requests', m:['Assigned by Mr. Okafor'], due:'Dec 4'} ],
+  10:[{t:'Request 11th grade courses', m:['AP Bio or dual enrollment?'], due:'Dec 4', soon:true},
+      {t:'Find a summer opportunity', m:['Because you saved Registered Nurse']},
+      {t:'Start your college list', m:['From your plan','1 saved']} ],
+  11:[{t:'Compare net cost for 3 schools', m:['From your plan','After high school'], due:'Fri'},
+      {t:'Register for the March SAT', m:['Deadline'], due:'Feb 13', soon:true},
+      {t:'Ask for a job shadow', m:['Because you saved Registered Nurse']} ],
+  12:[{t:'FAFSA: get your parents’ 2025 tax return', m:['Apply & pay','Step 3 of 5'], due:'Fri', soon:true},
+      {t:'Boise State application', m:['Apply & pay','Essay done'], due:'Dec 1', soon:true},
+      {t:'Apply for Reno Rotary scholarship', m:['$1,000','Essay'], due:'Jan 15'} ]
+};
+
+const COURSES = {
+  core:{
+    9:['English 9','Geometry','Biology','World History','Spanish I'],
+    10:['English 10','Algebra II','Chemistry','US History','Spanish II'],
+    11:['AP Lang','Pre-Calculus','AP Biology','Gov & Econ','Spanish III'],
+    12:['English 12','Statistics','Anatomy & Physiology','AP Psychology']
+  },
+  cte:{
+    health:{9:'Health Science I',10:'Health Science II',11:'Medical Terminology',12:'CNA Certification'},
+    eng:{9:'Intro to Engineering',10:'Principles of Engineering',11:'Digital Electronics',12:'Engineering Design'},
+    media:{9:'Digital Media I',10:'Graphic Design',11:'Video Production',12:'Media Capstone'}
+  },
+  extra:{11:'Intro to Psychology · Dual enrollment (TMCC)', 12:null}
+};
+const PATHS = [
+  {id:'health', title:'Health Sciences Academy', sub:'Ends in a CNA certification', fits:['vet','pt','rn','bme']},
+  {id:'eng',    title:'Engineering & Tech',     sub:'Robotics, electronics, design', fits:['bme','elec','swe']},
+  {id:'media',  title:'Digital Media',          sub:'Design, video, and web', fits:['gd']}
+];
+
+const EXPERIENCES = [
+  {t:'Science Club', s:'Member', from:6, to:8, hrs:'Weekly'},
+  {t:'Robotics Team', s:'Builder', from:7, to:8, hrs:'2 hrs/week'},
+  {t:'Animal shelter volunteer', s:'Washoe County SPCA', from:9, hrs:'40 hrs'},
+  {t:'JV Soccer', s:'Midfield', from:9, hrs:'Fall season'},
+  {t:'Renown Hospital volunteer', s:'Summer program', from:10, hrs:'60 hrs'},
+  {t:'Job shadow: ER nurse', s:'Renown Regional', from:11, hrs:'1 day'},
+  {t:'Vet clinic assistant', s:'Paid · part-time', from:12, hrs:'10 hrs/week'}
+];
+
+const LEARN = {
+  discover:[
+    {t:'What is a career cluster?', k:'Journey', p:40, by:'Assigned by Ms. Rivera', moves:'Save 3 careers', c:'#0083FF'},
+    {t:'Interest quiz', k:'Quiz', p:0, by:'From your plan', moves:'My direction', c:'#7A3EC8'},
+    {t:'Jobs in your town', k:'Project', p:60, by:'Assigned by Ms. Rivera', moves:'My direction', c:'#1C7F53'},
+    {t:'A day with a veterinarian', k:'Video series', p:0, by:'Because you saved Veterinarian', moves:'My direction', c:'#D9480F'}],
+  choose:[
+    {t:'Picking a high school pathway', k:'Journey', p:25, by:'Assigned by Ms. Rivera', moves:'Pick your pathway', c:'#0083FF'},
+    {t:'Strengths & values check', k:'Self-assessment', p:0, by:'From your plan', moves:'My direction', c:'#7A3EC8'},
+    {t:'A day with a nurse', k:'Video series', p:0, by:'Because you saved Registered Nurse', moves:'My direction', c:'#D9480F'}],
+  build:[
+    {t:'Your first résumé', k:'Project', p:30, by:'From your plan', moves:'Experiences', c:'#1C7F53'},
+    {t:'How to ask for a job shadow', k:'Journey', p:0, by:'Because you saved Registered Nurse', moves:'Experiences', c:'#0083FF'},
+    {t:'AP vs. dual enrollment', k:'Journey', p:0, by:'Assigned by Mr. Okafor', moves:'My path through school', c:'#7A3EC8'}],
+  narrow:[
+    {t:'Net price, explained', k:'Journey', p:50, by:'From your plan', moves:'After high school', c:'#0083FF'},
+    {t:'Build a balanced college list', k:'Project', p:0, by:'Assigned by Mr. Okafor', moves:'After high school', c:'#1C7F53'},
+    {t:'SAT prep: math sprint', k:'Practice', p:20, by:'From your plan', moves:'Apply & pay', c:'#D9480F'}],
+  launch:[
+    {t:'FAFSA, step by step', k:'Journey', p:60, by:'From your plan', moves:'Apply & pay', c:'#0083FF'},
+    {t:'Write your Common App essay', k:'Project', p:80, by:'Assigned by Mr. Okafor', moves:'Apply & pay', c:'#1C7F53'},
+    {t:'Compare your aid offers', k:'Tool', p:0, by:'Unlocks in March', moves:'Apply & pay', c:'#7A3EC8'}]
+};
+
+/* ============================================================
+   State
+   ============================================================ */
+const S = {
+  grade:7, tab:'plan', cat:'career', preview:null, notes:false,
+  added:new Set(), removed:new Set(), done:new Set(),
+  pathway:null, sent:false
+};
+const pathwayFor = g => S.pathway || (g >= 9 ? 'health' : null);
+const visible = it => (!it.min || S.grade >= it.min) && (!it.max || S.grade <= it.max);
+const isSaved = it => !S.removed.has(it.id) && (S.added.has(it.id) || (it.seed && it.seed <= S.grade));
+const saved = kind => CATALOG.filter(it => it.kind === kind && visible(it) && isSaved(it));
+
+/* ============================================================
+   Icons
+   ============================================================ */
+const I = {
+  plan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>',
+  explore:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',
+  learn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 2h13v-4"/></svg>',
+  me:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  compass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+  school:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  x:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+const note = html => `<p class="note">${html}</p>`;
+
+/* ============================================================
+   Plan sections
+   ============================================================ */
+// opens = first grade the section has real content; focus = grades where it is the priority
+const SECTIONS = [
+  {id:'direction', title:'My direction', sub:'Careers I’m considering and what I’ve learned about myself', icon:I.compass, opens:6, focus:[6,7],
+   note:'<b>Career Discovery 1–3</b> (P-ENG-73, 99, 120) write here. <b>Connected Tools</b> means every quiz result lands in this one record.'},
+  {id:'path', title:'My path through school', sub:'High school pathway and courses, year by year', icon:I.map, opens:8, focus:[8,9,10],
+   note:'<b>Course Planning Upgrade</b> (P-ENG-106). The 8th grade review is the <b>CAP</b> approval moment (P-ENG-82).'},
+  {id:'exp', title:'Experiences', sub:'Clubs, volunteering, jobs, and awards', icon:I.star, opens:6, focus:[9,10],
+   note:'<b>Opportunities 1: Record</b> (P-ENG-101). Same fields as the Common App Activities section.'},
+  {id:'after', title:'After high school', sub:'Colleges, programs, and what each really costs', icon:I.school, opens:10, focus:[11],
+   note:'<b>College & Scholarship Finder</b> saves here. <b>Budgeting Tools</b> (P-ENG-107) supplies the cheapest-route and net-cost numbers.'},
+  {id:'apply', title:'Apply & pay', sub:'Applications, FAFSA, and scholarships', icon:I.send, opens:11, focus:[12],
+   note:'<b>FAFSA Helper</b> (P-ENG-97) and <b>Common App – Read Only</b> (P-ENG-96) live here instead of in a tools hub.'}
+];
+
+const GHOST = {
+  path:g => `In 8th grade you’ll choose a high school pathway and draft your 9th grade courses. ${saved('career').length ? `The ${saved('career').length} career${saved('career').length>1?'s':''} you’ve saved will suggest which pathways fit.` : 'Save a few careers and we’ll suggest which pathways fit.'}`,
+  after:g => `In 11th grade you’ll build a list of colleges and programs and see what each one really costs. For now, every career you save shows the training it takes.`,
+  apply:g => `Senior year: applications, the FAFSA, and scholarships all happen here, step by step, with your family alongside you.`
+};
+
+function chipList(kind, opts={}){
+  const items = saved(kind);
+  const star = opts.star;
+  const chips = items.map(it => `
+    <span class="chip ${star && it.id===star ? 'star':''}">
+      ${star && it.id===star ? '★ ':''}${it.title}${opts.meta ? ` <small>${it.meta[opts.meta]}</small>`:''}
+      <button class="x" data-act="remove" data-id="${it.id}" aria-label="Remove ${it.title}">${I.x}</button>
+    </span>`).join('');
+  return `<div class="chips">${chips || ''}<button class="add-link" data-act="explore" data-cat="${kind}">+ Find ${KIND[kind].label.toLowerCase()}</button></div>`;
+}
+
+function body_direction(g){
+  const careers = saved('career');
+  const focus = g >= 9 && careers.find(c => c.id==='rn') ? 'rn' : null;
+  let h = `<p class="subhead">Careers I’m considering</p>${chipList('career',{star:focus, meta:1})}`;
+  h += `<p class="subhead">About me</p><div class="chips">
+          <span class="pill soft">Helping people</span><span class="pill soft">Science</span><span class="pill soft">Animals</span>
+          ${g>=8 ? '<span class="pill soft">Patient</span><span class="pill soft">Detail-oriented</span>' : ''}
+        </div>
+        <p class="muted" style="font-size:12.5px;margin-top:8px">From your interest quiz${g>=8?' and strengths check':''}. ${g<8?'Strengths check opens in 8th grade.':''}</p>`;
+  return h;
+}
+
+function body_path(g){
+  if (g === 8){
+    const pw = S.pathway;
+    const careers = saved('career').map(c => c.id);
+    const cards = PATHS.map(p => {
+      const fit = p.fits.filter(id => careers.includes(id)).length;
+      return `<button class="path" data-act="pathway" data-id="${p.id}" aria-pressed="${pw===p.id}">
+        <b>${p.title}</b><span>${p.sub}</span>
+        ${fit ? `<span class="fit">Fits ${fit} saved career${fit>1?'s':''}</span>` : ''}
+      </button>`;}).join('');
+    const ninth = pw ? [...COURSES.core[9].slice(0,4), COURSES.cte[pw][9]] : null;
+    const saveP = saved('program');
+    return `
+      <p class="subhead">Pick a high school pathway</p>
+      <div class="paths">${cards}</div>
+      ${saveP.length ? `<p class="muted" style="font-size:12.5px;margin-top:8px">You saved ${saveP.map(p=>p.title).join(', ')} in 7th grade.</p>`:''}
+      ${ninth ? `<p class="subhead">Draft 9th grade courses</p>
+        <div class="chips">${ninth.map((c,i)=>`<span class="pill ${i===4?'soft':''}">${c}</span>`).join('')}</div>` : ''}
+      <div class="review">
+        ${S.sent ? `<span class="pill ok">Sent to Ms. Rivera · she reviews by Feb 13</span>`
+                 : `<span class="pill warn">Draft</span><span class="muted" style="font-size:13px">Ms. Rivera reviews it with you before Feb 13</span>
+                    <button class="btn primary" data-act="send" ${pw?'':'disabled style="opacity:.5;cursor:not-allowed"'}>Send for review</button>`}
+      </div>`;
+  }
+  if (g < 8){
+    const sp = saved('program');
+    return `<p class="ghost-msg">${GHOST.path(g)}</p>
+      ${g===7 || sp.length ? `<p class="subhead">Pathways I’m curious about</p>${chipList('program')}` : ''}`;
+  }
+  // 9–12
+  const pw = pathwayFor(g);
+  const pwName = PATHS.find(p=>p.id===pw).title;
+  const years = [9,10,11,12].map(y => {
+    const cls = y<g ? 'done' : y===g ? 'now' : 'later';
+    const lab = y<g ? 'Completed' : y===g ? 'This year' : 'Planned';
+    const extra = y===11 && g>=10 ? `<li><em>+ ${COURSES.extra[11]}</em></li>` : '';
+    return `<div class="year ${cls}"><div class="year__h"><b>${ord(y)} grade</b><span>${lab}</span></div>
+      <ul>${COURSES.core[y].map(c=>`<li>${c}</li>`).join('')}<li class="cte">${COURSES.cte[pw][y]}</li>${extra}</ul></div>`;
+  }).join('');
+  return `<div class="chips" style="margin-bottom:12px"><span class="pill soft">${pwName}</span>
+      <span class="pill ok">On track to graduate</span>${g>=10?'<span class="pill">6 college credits planned</span>':''}</div>
+    <div class="years">${years}</div>`;
+}
+
+function body_exp(g){
+  const rows = EXPERIENCES.filter(e => e.from<=g && (!e.to || g<=e.to)).map(e =>
+    `<div class="row"><div class="row__main"><b>${e.t}</b><span>${e.s}</span></div><span class="muted" style="font-size:13px">${e.hrs}</span></div>`).join('');
+  const want = saved('opp');
+  return `<div class="rows">${rows}</div>
+    ${want.length ? `<p class="subhead">Want to try</p>${chipList('opp')}` : `<div style="margin-top:12px"><button class="add-link" data-act="explore" data-cat="opp">+ Find opportunities</button></div>`}
+    ${g>=12 ? `<div class="callout"><b>Ready for the Common App:</b> 5 of 10 activity slots filled from what you’ve logged here.</div>`:''}`;
+}
+
+function body_after(g){
+  if (g === 10){
+    return `<p class="muted" style="font-size:14px;margin-bottom:10px">Start a list now. You’ll compare real costs next year.</p>${chipList('college',{meta:0})}`;
+  }
+  const list = saved('college');
+  const rows = list.map(c => `<div class="row"><div class="row__main"><b>${c.title}</b><span>${c.meta.slice(1).join(' · ')}</span></div>
+     <span class="row__val">${c.meta[0]}</span>
+     <button class="x chip-x" data-act="remove" data-id="${c.id}" aria-label="Remove ${c.title}" style="border:0;background:transparent;color:var(--ink-3)">${I.x}</button></div>`).join('');
+  return `<div class="rows">${rows || '<p class="muted">No schools saved yet.</p>'}</div>
+    <div style="margin-top:10px"><button class="add-link" data-act="explore" data-cat="college">+ Find colleges & programs</button></div>
+    <div class="callout"><b>Cheapest route to Registered Nurse:</b> TMCC Nursing, then UNR’s RN-to-BSN. About $38k total, $42k less than four years at UNR.</div>`;
+}
+
+function body_apply(g){
+  if (g === 11){
+    return `<div class="rows">
+      <div class="row"><div class="row__main"><b>PSAT</b><span>October</span></div><span class="pill ok">Done · 1210</span></div>
+      <div class="row"><div class="row__main"><b>SAT</b><span>March 14</span></div><span class="pill warn">Register by Feb 13</span></div></div>
+      <p class="ghost-msg">Applications, the FAFSA, and scholarships open here next fall.</p>`;
+  }
+  const sch = saved('scholar');
+  return `
+    <p class="subhead">Applications</p>
+    <div class="rows">
+      <div class="row"><div class="row__main"><b>University of Nevada, Reno</b><span>Early Action · Common App</span></div><span class="pill ok">Submitted Nov 1</span></div>
+      <div class="row"><div class="row__main"><b>Boise State University</b><span>Regular · Common App</span></div><span class="pill warn">Due Dec 1</span></div>
+      <div class="row"><div class="row__main"><b>TMCC Nursing</b><span>Rolling admission</span></div><span class="pill">Not started</span></div>
+    </div>
+    <p class="subhead">FAFSA</p>
+    <div class="row" style="border:0;padding:0"><div class="row__main"><b>Step 3 of 5: parents’ 2025 tax return</b>
+      <span>Your mom is a contributor and sees this step too</span><div class="bar"><span style="width:55%"></span></div></div></div>
+    <p class="subhead">Scholarships</p>
+    ${chipList('scholar')}`;
+}
+
+/* ============================================================
+   Views
+   ============================================================ */
+function viewPlan(){
+  const g = S.grade, st = stageOf(g), si = stageIdx(g);
+  const road = STAGES.map((s,i) => {
+    const cls = i<si ? 'past' : i===si ? 'now' : 'future';
+    let fill = i<si ? '<span></span>' : '';
+    if (i===si){ const pos = s.grades.indexOf(g); fill = `<span style="width:${Math.round((pos+1)/(s.grades.length+1)*100)}%"></span>`; }
+    const gr = s.grades.length>1 ? `Grades ${s.grades[0]}–${s.grades[s.grades.length-1]}` : `Grade ${s.grades[0]}`;
+    return `<button class="stage ${cls}" data-act="preview" data-id="${s.id}" aria-expanded="${S.preview===s.id}">
+      <div class="stage__bar">${fill}</div><span class="stage__name">${s.name}</span><span class="stage__gr">${gr}</span></button>`;
+  }).join('');
+  let prev = '';
+  if (S.preview){
+    const p = STAGES.find(s=>s.id===S.preview), pi = STAGES.indexOf(p);
+    const rel = pi<si ? 'You did this' : pi===si ? 'You are here' : 'Coming up';
+    prev = `<div class="preview"><div><p class="eyebrow">${rel}</p><h3>${p.name}: ${p.q}</h3><p>${p.blurb}</p></div>
+      ${pi!==si ? `<button class="btn" data-act="grade" data-g="${p.grades[0]}">See ${ord(p.grades[0])} grade</button>`:''}</div>`;
+  }
+
+  const todos = (WEEK[g]||[]).map((t,i) => {
+    const key = g+'-'+i, done = S.done.has(key);
+    return `<div class="todo ${done?'done':''}">
+      <button class="check" data-act="todo" data-k="${key}" aria-pressed="${done}" aria-label="Mark “${t.t}” done">${I.check}</button>
+      <div style="flex:1;min-width:0"><div class="todo__t">${t.t}</div><div class="todo__m">${t.m.map(x=>`<span>${x}</span>`).join('<span>·</span>')}</div></div>
+      ${t.due ? `<span class="todo__due ${t.soon?'soon':''}">${t.due}</span>`:''}</div>`;
+  }).join('');
+
+  // order: focus sections first, then open, then ghost
+  const rank = s => s.focus.includes(g) ? 0 : g >= s.opens ? 1 : 2;
+  const secs = [...SECTIONS].sort((a,b) => rank(a)-rank(b) || SECTIONS.indexOf(a)-SECTIONS.indexOf(b)).map(s => {
+    const r = rank(s);
+    const cls = r===0 ? 'focus' : r===2 ? 'ghost' : '';
+    const badge = r===0 ? '<span class="pill focus">Focus now</span>' : r===2 ? `<span class="pill">Opens in ${ord(s.opens)} grade</span>` : '';
+    let body;
+    if (r===2 && s.id!=='path') body = `<p class="ghost-msg">${GHOST[s.id](g)}</p>`;
+    else body = `<div class="sec__body">${window['body_'+s.id](g)}</div>`;
+    return `<section class="card sec ${cls}" id="sec-${s.id}">
+      <div class="sec__top"><div class="sec__icon">${s.icon}</div>
+        <div class="sec__title"><h3>${s.title}</h3><p>${s.sub}</p></div>${badge}</div>
+      ${body}${note(s.note)}</section>`;
+  }).join('');
+
+  return `<div class="page">
+    <div class="hello">
+      <div><p class="eyebrow">${ord(g)} grade · ${st.name}</p><h1>Hi Maya. ${st.q}</h1>
+      <p>Your plan runs from 6th grade to graduation. It fills in as you go.</p></div>
+    </div>
+    <div class="card road">
+      <p class="eyebrow">Your road</p>
+      <div class="road__track">${road}</div>${prev}
+      ${note('<b>One living plan</b>, not a form per year. Carry-forward from <b>CAP Improvements</b> (P-ENG-82) is the model, not a feature. The plan follows Maya when she changes schools.')}
+    </div>
+    <div class="card week">
+      <div class="week__h"><h2>This week</h2><span class="muted" style="font-size:13px">${(WEEK[g]||[]).length - [...S.done].filter(k=>k.startsWith(g+'-')).length} to do</span></div>
+      ${todos}
+      ${note('Replaces a separate home page: <b>Homepage</b> (P-ENG-67), <b>Content Related Deadlines</b> (P-ENG-108) and <b>Push Notifications</b> (P-ENG-104) all feed this list.')}
+    </div>
+    <div class="sec-h"><h2>My plan</h2><span class="muted" style="font-size:13px">Goals, steps, and what you’ve done</span></div>
+    <div class="sections">${secs}</div>
+  </div>`;
+}
+
+function viewExplore(){
+  const g = S.grade;
+  const cats = Object.keys(KIND).filter(k => CATALOG.some(it => it.kind===k && visible(it)));
+  if (!cats.includes(S.cat)) S.cat = cats[0];
+  const items = CATALOG.filter(it => it.kind===S.cat && visible(it));
+  const savedCareers = saved('career').map(c=>c.title);
+  const cards = items.map(it => {
+    const on = isSaved(it);
+    let why = '';
+    if (it.kind==='career' && !on && ['wild','bme','pt','rn'].includes(it.id) && savedCareers.length) why = `Because you saved ${savedCareers[0]}`;
+    if (it.kind==='college' && !on) why = 'Has a nursing program';
+    if (it.kind==='opp' && !on) why = 'Matches your interest in health care';
+    return `<article class="card item">
+      <h3>${it.title}</h3>
+      <div class="item__meta">${it.meta.map(m=>`<span class="pill">${m}</span>`).join('')}</div>
+      <p>${it.blurb}</p>${why ? `<span class="why">${why}</span>`:''}
+      <div class="item__foot">
+        <button class="btn ${on?'added':'primary'}" data-act="${on?'remove':'add'}" data-id="${it.id}">${on?'✓ In your plan':'Add to my plan'}</button>
+        <span class="muted">${on ? 'Under '+KIND[it.kind].sectionName : 'Goes to '+KIND[it.kind].sectionName}</span>
+      </div></article>`;
+  }).join('');
+  return `<div class="page">
+    <div class="page-h"><p class="eyebrow">Explore</p><h1>What’s out there</h1>
+      <p>One place to search careers, ${g<=8?'high school pathways':'colleges and programs'}, opportunities${g>=11?', and scholarships':''}. Everything you save goes straight into your plan.</p>
+      ${note('<b>Career Discovery</b>, the <b>College & Scholarship Finder</b>, <b>Opportunities 2</b> (P-ENG-121) and the <b>Recommendation Engine</b> (P-ENG-66) share one search and one “Add to my plan” action. Categories appear by grade.')}</div>
+    <div class="cats">${cats.map(k=>`<button class="cat" data-act="cat" data-cat="${k}" aria-pressed="${S.cat===k}">${KIND[k].label}</button>`).join('')}</div>
+    <div class="grid">${cards}</div></div>`;
+}
+
+function viewLearn(){
+  const st = stageOf(S.grade);
+  const rows = LEARN[st.id].map(l => `<article class="card learn-row">
+      <div class="thumb" style="background:${l.c}">${l.k.split(' ')[0].slice(0,4)}</div>
+      <div class="row__main"><span class="muted" style="font-size:12.5px">${l.k} · ${l.by}</span><b>${l.t}</b>
+        <span class="moves">Moves forward: ${l.moves}</span>
+        ${l.p ? `<div class="bar" style="max-width:220px"><span style="width:${l.p}%"></span></div>`:''}</div>
+      <button class="btn ${l.p?'primary':''}">${l.p?'Continue':'Start'}</button></article>`).join('');
+  return `<div class="page">
+    <div class="page-h"><p class="eyebrow">Learn · ${st.name}</p><h1>What to work on</h1>
+      <p>Journeys, projects, and lists your teachers share. Each one says which part of your plan it moves forward, so nothing is busywork.</p>
+      ${note('Journeys and projects become means, not ends. <b>Discovery Page Enhancements</b> (P-PRO-118) lists show up here; <b>End of Content Screens</b> (P-ENG-100) become “here’s how this changed your plan.”')}</div>
+    ${rows}</div>`;
+}
+
+function viewMe(){
+  const g = S.grade;
+  const reports = [
+    g>=8 && {t:'Nevada Academic Plan', s:'State-required · generated from your plan'},
+    {t:'Career Development Plan', s:'Required by your district · generated from your plan'},
+    g>=12 && {t:'Common App Activities', s:'5 activities ready to copy'},
+    g>=9 && {t:'Résumé', s:'Built from your experiences'}
+  ].filter(Boolean);
+  const viewers = [
+    {n:'Ms. Rivera', r:'Middle school counselor', on:g<=8},
+    {n:'Mr. Okafor', r:'High school counselor', on:g>=9},
+    {n:'Mom', r:'Family', on:g>=8}
+  ].filter(v=>v.on);
+  return `<div class="page">
+    <div class="page-h"><p class="eyebrow">Me</p><h1>Maya Torres</h1>
+      <p>${ord(g)} grade · ${g<=8?'Billinghurst Middle School':'Galena High School'}. Everything you’ve shared and done, in one place. Your plan pulls from here.</p></div>
+    <div class="me-grid">
+      <div class="card"><h2>About me</h2>
+        <p class="subhead">Interests</p><div class="chips"><span class="pill soft">Helping people</span><span class="pill soft">Science</span><span class="pill soft">Animals</span></div>
+        ${g>=8?`<p class="subhead">Strengths</p><div class="chips"><span class="pill soft">Patient</span><span class="pill soft">Detail-oriented</span><span class="pill soft">Calm under pressure</span></div>`:''}
+      </div>
+      <div class="card"><h2>What I’ve done</h2>
+        <div class="rows">
+          <div class="row"><div class="row__main"><b>Activities</b><span>Clubs, volunteering, jobs</span></div><span class="row__val">${EXPERIENCES.filter(e=>e.from<=g&&(!e.to||g<=e.to)).length}</span></div>
+          <div class="row"><div class="row__main"><b>Documents</b><span>Transcripts, certificates, essays</span></div><span class="row__val">${g<9?1:g<11?4:g<12?7:11}</span></div>
+          <div class="row"><div class="row__main"><b>Journeys finished</b><span>Across every grade</span></div><span class="row__val">${(g-5)*3}</span></div>
+        </div></div>
+      <div class="card span2"><h2>Made from your plan</h2>
+        ${reports.map(r=>`<div class="report"><div class="report__main"><b>${r.t}</b><span>${r.s}</span></div><span class="pill ok">Up to date</span><button class="btn">Preview</button></div>`).join('')}
+        ${note('The state plan is a <b>report</b>, not a place. Nothing here is a separate form to fill out, which resolves the canceled <b>Career Development Plan</b> (P-ENG-102).')}
+      </div>
+      <div class="card span2"><h2>Who can see your plan</h2>
+        ${viewers.map(v=>`<div class="report"><div class="ava" style="width:30px;height:30px;font-size:12px">${v.n.split(' ').pop()[0]}</div><div class="report__main"><b>${v.n}</b><span>${v.r}</span></div><span class="pill">${v.r==='Family'?'Can view':'Can view & comment'}</span></div>`).join('')}
+        ${note('Educators open this same plan from their roster. Open question: should families see it from 6th grade, or from 8th as shown here?')}
+      </div>
+    </div></div>`;
+}
+
+/* ============================================================
+   Render + events
+   ============================================================ */
+const TABS = [{id:'plan',label:'My Plan',icon:I.plan,hint:'Home'},{id:'explore',label:'Explore',icon:I.explore},{id:'learn',label:'Learn',icon:I.learn},{id:'me',label:'Me',icon:I.me}];
+const $ = id => document.getElementById(id);
+
+function render(){
+  $('grades').innerHTML = [6,7,8,9,10,11,12].map(g=>`<button data-act="grade" data-g="${g}" aria-pressed="${S.grade===g}">${g}</button>`).join('');
+  $('tabs').innerHTML = TABS.map(t=>`<button class="tab" data-act="tab" data-tab="${t.id}" ${S.tab===t.id?'aria-current="page"':''}>${t.icon}<span>${t.label}</span>${t.hint?`<small>${t.hint}</small>`:''}</button>`).join('');
+  $('whoGrade').textContent = `${ord(S.grade)} grade · ${stageOf(S.grade).name}`;
+  $('main').innerHTML = {plan:viewPlan, explore:viewExplore, learn:viewLearn, me:viewMe}[S.tab]();
+  document.body.classList.toggle('notes', S.notes);
+  $('notesBtn').setAttribute('aria-pressed', S.notes);
+}
+
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  if (a==='grade'){ S.grade=+b.dataset.g; S.preview=null; window.scrollTo({top:0}); }
+  else if (a==='tab'){ S.tab=b.dataset.tab; window.scrollTo({top:0}); }
+  else if (a==='preview'){ S.preview = S.preview===id ? null : id; }
+  else if (a==='todo'){ const k=b.dataset.k; S.done.has(k)?S.done.delete(k):S.done.add(k); }
+  else if (a==='explore'){ S.tab='explore'; S.cat=b.dataset.cat; window.scrollTo({top:0}); }
+  else if (a==='cat'){ S.cat=b.dataset.cat; }
+  else if (a==='add'){ const it=CATALOG.find(x=>x.id===id); S.removed.delete(id); S.added.add(id); toast(`Added ${it.title} to ${KIND[it.kind].sectionName}`); }
+  else if (a==='remove'){ const it=CATALOG.find(x=>x.id===id); S.added.delete(id); S.removed.add(id); toast(`Removed ${it.title} from your plan`); }
+  else if (a==='pathway'){ S.pathway=id; S.sent=false; }
+  else if (a==='send'){ S.sent=true; toast('Sent to Ms. Rivera for review'); }
+  else return;
+  render();
+});
+$('notesBtn').addEventListener('click', () => { S.notes=!S.notes; render(); });
+
+render();
+</script>
+</body>
+</html>

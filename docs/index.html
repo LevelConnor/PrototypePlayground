@@ -17,6 +17,8 @@
     --surface-lift:#1c3260;
     --border:      #22386b;
     --accent:      #0083FF;
+    --ring-from:   #BFDBFE;
+    --ring-to:     #68F4B8;
     --fg:          #ffffff;
     --fg-soft:     #93c5fd;
     --fg-mute:     #6e8fc4;
@@ -89,6 +91,7 @@
   }
 
   .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-height: 272px;
@@ -98,18 +101,38 @@
     background: var(--surface);
     color: inherit;
     text-decoration: none;
-    transition: border-color .18s ease, background-color .18s ease,
-                box-shadow .18s ease, transform .18s ease;
+    transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+
+  /* Gradient border ring, drawn over the 1px border and faded in on hover.
+     Gradients can't transition, so the ring's opacity does instead.
+     2px wide without nudging the layout. */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--ring-from), var(--ring-to));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity .18s ease;
+    pointer-events: none;
   }
 
   .card:hover,
   .card:focus-visible {
-    border-color: var(--accent);
     background: var(--surface-lift);
-    /* inset ring fakes a 2px border without nudging the layout */
-    box-shadow: inset 0 0 0 1px var(--accent), 0 12px 28px rgba(0,0,0,.30);
+    box-shadow: 0 12px 28px rgba(0,0,0,.30);
     transform: translateY(-2px);
     outline: none;
+  }
+
+  .card:hover::before,
+  .card:focus-visible::before {
+    opacity: 1;
   }
 
   .card__title {
@@ -148,7 +171,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card { transition: none; }
+    .card, .card::before { transition: none; }
     .card:hover, .card:focus-visible { transform: none; }
   }
 </style>
@@ -175,6 +198,14 @@
       <h2 class="card__title">My Calendar: deadlines</h2>
       <p class="card__desc">
         Every dated task from assignments, journeys, and projects in one scrolling calendar. Filter by source, start or continue tasks, and dismiss recommendations.
+      </p>
+      <p class="card__date">November 2026</p>
+    </a>
+
+    <a class="card" href="prototypes/plan-first-app/">
+      <h2 class="card__title">Plan-first app</h2>
+      <p class="card__desc">
+        One plan from 6th grade to graduation as the home screen. Slide the grade and watch it fill in while Explore, Learn, and Me feed it.
       </p>
       <p class="card__date">November 2026</p>
     </a>
